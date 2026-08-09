@@ -1,0 +1,11 @@
+# 依赖
+node_modules/
+# 数据（大文件，不入库）
+data/
+# 日志
+logs/
+*.log
+# 备份
+*.bak*
+# 临时
+/tmp/
