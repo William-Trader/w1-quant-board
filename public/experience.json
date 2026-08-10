@@ -615,17 +615,30 @@
   },
   "metrics": {
    "sharpe": 1.94,
-   "profit_factor": 6.61,
+   "sortino": 13.4,
+   "calmar": 43.8,
+   "recovery": 21.68,
+   "expectancy": 2031,
+   "cagr": 186.7,
+   "vol_ann": 128.9,
    "max_dd": 5720,
    "max_dd_pct": 4.3,
+   "profit_factor": 6.61,
+   "win_rate": 70,
    "avg_win": 3176,
    "avg_loss": -581,
    "max_win": 16480,
    "max_loss": -1200,
+   "avg_pnl": 961,
    "win_streak": 15,
    "loss_streak": 4,
-   "avg_pnl": 961,
-   "win_rate": 70
+   "style": "稳健波段型 · 多55/空55/观望19 · 平均仓位5.6% · 约7天一出手 · 14日持仓",
+   "style_tag": "稳健波段型",
+   "longs": 55,
+   "shorts": 55,
+   "flats": 19,
+   "avg_pos": 5.6,
+   "avg_gap": 7
   }
  },
  "results": [
