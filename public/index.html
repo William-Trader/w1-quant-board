@@ -1739,7 +1739,7 @@ fetch('/api/oi-summary').then(function(r){return r.json()}).then(function(oi){
   startTabTimer('markets',draw);
 };
 
-/* ================= PANEL: 指标战绩（过去一年二十次典型行情盲测） ================= */
+/* ================= PANEL: 指标战绩（过去一年一百次典型行情盲测） ================= */
 async function uniPlace(btn){
   if(btn){btn.disabled=true;btn.textContent='⏳'}
   const r=await api('/api/unified/place',{method:'POST',body:JSON.stringify({symbol:'BTC'})}).catch(()=>null);
@@ -1759,10 +1759,10 @@ PANELS.experience=async function(){startTabTimer('experience',PANELS.experience)
     const S=d.summary||{};
     const accC=S.acc>=0.6?'var(--up)':S.acc>=0.5?'var(--amber)':'var(--down)';
     const pnlC=S.total_pnl>=0?'var(--up)':'var(--down)';
-    let html='<div class="card"><div class="card-title">📚 '+T('指标战绩 · 过去一年五十次典型行情盲测','Track Record · 50 Blind Tests')+'</div>'
+    let html='<div class="card"><div class="card-title">📚 '+T('指标战绩 · 过去一年一百次典型行情盲测','Track Record · 100 Blind Tests')+'</div>'
     +'<div style="font-size:11px;color:var(--text3);margin-bottom:10px">🕐 '+T('数据基于','Data as of')+' '+esc(d.generated||'2026-08-10')+' · '+T('指标战绩仅供研究参考','track record for research only')+'</div>';
     html+='<div style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:14px">'
-      +T('以 10000u 为本金、100x 杠杆为基准（10000u 当 100000u 用），覆盖 2024 牛市 / 顶部反转 / 恐慌暴跌 / 底部磨底 / 震荡盘整 / 趋势中继 / 大选暴涨 / 破10万 / 深跌抄底等 50 个典型决策点。每次决策只用截止时点的历史数据（冻结时间，严禁未来函数），验证未来 14 日方向。','With 10000u capital and 100x leverage (10000u as 100000u), covering 50 decision points across 2024-2026: bull runs, top reversals, panic crashes, base building, ranges, uptrends, election pumps, and more. Each call uses only data up to the frozen timestamp.')+'</div>';
+      +T('以 10000u 为本金、100x 杠杆为基准（10000u 当 100000u 用），覆盖 2024 牛市 / 顶部反转 / 恐慌暴跌 / 底部磨底 / 震荡盘整 / 趋势中继 / 大选暴涨 / 破10万 / 深跌抄底等 100 个典型决策点。每次决策只用截止时点的历史数据（冻结时间，严禁未来函数），验证未来 14 日方向。','With 10000u capital and 100x leverage (10000u as 100000u), covering 100 decision points across 2024-2026: bull runs, top reversals, panic crashes, base building, ranges, uptrends, election pumps, and more. Each call uses only data up to the frozen timestamp.')+'</div>';
     // Hero 大数字
     html+='<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px">'
       +'<div style="flex:1;min-width:150px;background:linear-gradient(135deg,rgba(16,185,129,0.10),rgba(59,130,246,0.06));border:1px solid var(--border);border-radius:12px;padding:14px 16px;text-align:center">'
@@ -1795,7 +1795,7 @@ PANELS.experience=async function(){startTabTimer('experience',PANELS.experience)
       +'<div style="font-size:10px;color:var(--amber)">'+(S.w10?T('第'+S.w10.call+'场 '+S.w10.chg+'% 即归零','wiped at call '+S.w10.call):T('未归零','survived'))+'</div></div>'
       +'</div>'
       +'<div style="font-size:11px;color:var(--text2);margin-top:10px;line-height:1.6">💡 '+T('同样面对 '+S.total+' 场行情，无脑满仓 100x 第 '+(S.w100?S.w100.call:'—')+' 场 '+(S.w100?S.w100.chg+'%':'')+' 即爆仓、10x 第 '+(S.w10?S.w10.call:'—')+' 场 '+(S.w10?S.w10.chg+'%':'')+' 归零——活下来靠的不是方向多准，而是仓位管理。','Facing the same '+S.total+' markets, all-in 100x died at call '+(S.w100?S.w100.call:'—')+', all-in 10x wiped at call '+(S.w10?S.w10.call:'—')+'. Survival is not about accuracy — it is position management.')+'</div></div>';
-    // 50 场盲测卡片
+    // 盲测卡片
     // ===== 净值曲线（真实走势） =====
     const eq=S.equity||[];
     const allVals=eq;
@@ -1807,7 +1807,7 @@ PANELS.experience=async function(){startTabTimer('experience',PANELS.experience)
     function eqPath(arr){let d='';for(let i=0;i<arr.length;i++){const p=eqXY(arr,i);d+=(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)}return d}
     let eqGrid='';for(let i=0;i<=4;i++){const v=eqMin+eqSpan*i/4,y=eqPad.t+eqih*(1-i/4);eqGrid+='<line x1="'+eqPad.l+'" y1="'+y+'" x2="'+(eqW-eqPad.r)+'" y2="'+y+'" stroke="#31363f" stroke-width="0.5"/><text x="'+(eqPad.l-5)+'" y="'+(y+3)+'" fill="#6d6a62" font-size="8" text-anchor="end">'+Math.round(v)+'</text>'}
     const eqN=eq.length-1;let eqXl='';for(let i=0;i<=eqN;i++){if(i%5===0||i===eqN){const x=eqPad.l+eqiw*i/eqN;eqXl+='<text x="'+x+'" y="'+(eqH-7)+'" fill="#6d6a62" font-size="8" text-anchor="middle">'+(i===0?'起':i)+'</text>'}}
-    html+='<div class="card"><div class="card-title">📈 '+T('净值曲线 · '+S.total+'场真实走势','EQUITY CURVE · '+S.total+' CALLS')+'</div>'
+    html+='<div class="card"><div class="card-title">📈 '+T('净值曲线 · 一百场真实走势','EQUITY CURVE · 100 CALLS')+'</div>'
       +'<svg viewBox="0 0 '+eqW+' '+eqH+'" width="100%" preserveAspectRatio="xMidYMid meet">'
       +eqGrid
       +'<path d="'+eqPath(eq)+'" fill="none" stroke="#5f9e7a" stroke-width="2.4" stroke-linecap="round"/>'
