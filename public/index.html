@@ -1786,9 +1786,9 @@ PANELS.experience=async function(){startTabTimer('experience',PANELS.experience)
       +'</div>'
       +'<div style="font-size:11px;color:var(--text2);margin-top:10px;line-height:1.6">💡 '+T('同样面对 50 场行情，无脑满仓 100x 第 2 场 -4.1% 即爆仓、10x 第 8 场 -10.4% 归零——活下来靠的不是方向多准，而是仓位管理。','Facing the same 50 markets, all-in 100x died at call 2 (-4.1%), all-in 10x wiped at call 8 (-10.4%). Survival is not about accuracy — it is position management.')+'</div></div>';
     // 50 场盲测卡片
-    // ===== 净值曲线（框架 vs 对照组） =====
-    const eq=S.equity||[],c100=S.ctl100||[],c10=S.ctl10||[];
-    const allVals=eq.concat(c100).concat(c10);
+    // ===== 净值曲线（真实走势） =====
+    const eq=S.equity||[];
+    const allVals=eq;
     const eqMin=Math.min.apply(null,allVals),eqMax=Math.max.apply(null,allVals);
     const eqSpan=(eqMax-eqMin)||1;
     const eqW=640,eqH=180,eqPad={l:44,r:10,t:10,b:24};
@@ -1797,18 +1797,14 @@ PANELS.experience=async function(){startTabTimer('experience',PANELS.experience)
     function eqPath(arr){let d='';for(let i=0;i<arr.length;i++){const p=eqXY(arr,i);d+=(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)}return d}
     let eqGrid='';for(let i=0;i<=4;i++){const v=eqMin+eqSpan*i/4,y=eqPad.t+eqih*(1-i/4);eqGrid+='<line x1="'+eqPad.l+'" y1="'+y+'" x2="'+(eqW-eqPad.r)+'" y2="'+y+'" stroke="#31363f" stroke-width="0.5"/><text x="'+(eqPad.l-5)+'" y="'+(y+3)+'" fill="#6d6a62" font-size="8" text-anchor="end">'+Math.round(v)+'</text>'}
     const eqN=eq.length-1;let eqXl='';for(let i=0;i<=eqN;i++){if(i%5===0||i===eqN){const x=eqPad.l+eqiw*i/eqN;eqXl+='<text x="'+x+'" y="'+(eqH-7)+'" fill="#6d6a62" font-size="8" text-anchor="middle">'+(i===0?'起':i)+'</text>'}}
-    html+='<div class="card"><div class="card-title">📈 '+T('净值曲线 · 五十场实战对比','EQUITY CURVE · 50 CALLS')+'</div>'
+    html+='<div class="card"><div class="card-title">📈 '+T('净值曲线 · 五十场真实走势','EQUITY CURVE · 50 CALLS')+'</div>'
       +'<svg viewBox="0 0 '+eqW+' '+eqH+'" width="100%" preserveAspectRatio="xMidYMid meet">'
       +eqGrid
-      +'<path d="'+eqPath(c100)+'" fill="none" stroke="#c06a5e" stroke-width="1.6" stroke-dasharray="4,3"/>'
-      +'<path d="'+eqPath(c10)+'" fill="none" stroke="#d9a441" stroke-width="1.4" stroke-dasharray="4,3"/>'
-      +'<path d="'+eqPath(eq)+'" fill="none" stroke="#5f9e7a" stroke-width="2.2"/>'
+      +'<path d="'+eqPath(eq)+'" fill="none" stroke="#5f9e7a" stroke-width="2.4" stroke-linecap="round"/>'
       +eqXl+'</svg>'
       +'<div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:8px;font-size:11px">'
-      +'<span><span class="dot" style="background:#5f9e7a"></span>'+T('框架分仓 100x','Framework 100x')+' → +'+S.total_pnl+'u</span>'
-      +'<span><span class="dot" style="background:#d9a441"></span>'+T('满仓 10x','All-in 10x')+' → 0u</span>'
-      +'<span><span class="dot" style="background:#c06a5e"></span>'+T('满仓 100x','All-in 100x')+' → 0u</span></div>'
-      +'<div style="font-size:11px;color:var(--text2);margin-top:6px;line-height:1.6">💡 '+T('绿色是唯一没归零的：满仓 100x 第 2 场 -4.1% 爆仓、满仓 10x 第 8 场 -10.4% 归零；框架线回撤可控、稳步向上。','Green is the only survivor: all-in 100x died at -4.1% (call 2), all-in 10x wiped at -10.4% (call 8); framework pulls back controlled.')+'</div></div>';
+      +'<span><span class="dot" style="background:#5f9e7a"></span>'+T('框架分仓 100x 净值','Framework 100x Equity')+' → '+S.equity[S.equity.length-1]+'u（+'+S.total_pnl+'u）</span></div>'
+      +'<div style="font-size:11px;color:var(--text2);margin-top:6px;line-height:1.6">💡 '+T('真实净值曲线：10000u 起步，全程无爆仓，稳步向上。','Real equity curve: started at 10000u, zero liquidations, steady growth.')+'</div></div>';
     // ===== 行情类型分组命中率 =====
     if(S.regime_stats&&S.regime_stats.length){
       html+='<div class="card"><div class="card-title">🎯 '+T('按行情类型 · 命中率','BY REGIME · HIT RATE')+'</div>'
