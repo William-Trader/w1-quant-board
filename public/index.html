@@ -1739,7 +1739,7 @@ fetch('/api/oi-summary').then(function(r){return r.json()}).then(function(oi){
   startTabTimer('markets',draw);
 };
 
-/* ================= PANEL: 历史经验（过去一年十次典型行情盲测） ================= */
+/* ================= PANEL: 历史经验（过去一年二十次典型行情盲测） ================= */
 PANELS.experience=async function(){startTabTimer('experience',PANELS.experience);
   const main=$('#main');
   main.innerHTML='<div class="card">'+T('加载中…','Loading…')+'</div>';
@@ -1749,7 +1749,7 @@ PANELS.experience=async function(){startTabTimer('experience',PANELS.experience)
     const S=d.summary||{};
     const accC=S.acc>=0.6?'var(--up)':S.acc>=0.5?'var(--amber)':'var(--down)';
     const pnlC=S.total_pnl>=0?'var(--up)':'var(--down)';
-    let html='<div class="card"><div class="card-title">📚 '+T('历史经验 · 过去一年十次典型行情盲测','Experience · 10 Blind Tests')+'</div>'
+    let html='<div class="card"><div class="card-title">📚 '+T('历史经验 · 过去一年二十次典型行情盲测','Experience · 20 Blind Tests')+'</div>'
     +'<div style="font-size:11px;color:var(--text3);margin-bottom:10px">🕐 '+T('数据基于','Data as of')+' '+esc(d.generated||'2026-08-10')+' · '+T('历史经验仅供研究参考','historical experience for research only')+'</div>';
     html+='<div style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:14px">'
       +T('以 10000u 为本金、100x 杠杆为基准（10000u 当 100000u 用），覆盖顶部反转 / 恐慌暴跌 / 加速下跌 / 底部磨底 / 深跌抄底 / 反弹确认 / 上升趋势 / 破位前夜 / 反弹遇阻等不同行情。每次决策只用截止时点的历史数据（冻结时间，严禁未来函数），验证未来 14 日方向。','With 10000u capital and 100x leverage (10000u as 100000u), covering top reversals, panic crashes, accumulation bottoms, deep-dip buys, rally confirms, uptrends, breakdown eves and more. Each call uses only data up to the frozen timestamp.')+'</div>';
@@ -1778,14 +1778,14 @@ PANELS.experience=async function(){startTabTimer('experience',PANELS.experience)
       +'<div style="flex:1;min-width:150px;border:1px solid rgba(192,106,94,.35);border-radius:8px;padding:10px 12px;text-align:center;background:rgba(192,106,94,.06)">'
       +'<div style="font-size:10px;color:var(--text2)">'+T('满仓梭哈 · 100x','All-in · 100x')+'</div>'
       +'<div style="font-size:22px;font-family:var(--mono);font-weight:700;color:var(--down);margin:4px 0">0u</div>'
-      +'<div style="font-size:10px;color:var(--down)">'+T('第2场 -4.9% 即爆仓','liquidated at 2nd call')+'</div></div>'
+      +'<div style="font-size:10px;color:var(--down)">'+(S.w100?T('第'+S.w100.call+'场 '+S.w100.chg+'% 即爆仓','liquidated at call '+S.w100.call):T('未归零','survived'))+'</div></div>'
       +'<div style="flex:1;min-width:150px;border:1px solid rgba(217,164,65,.4);border-radius:8px;padding:10px 12px;text-align:center;background:rgba(217,164,65,.06)">'
       +'<div style="font-size:10px;color:var(--text2)">'+T('满仓梭哈 · 10x','All-in · 10x')+'</div>'
       +'<div style="font-size:22px;font-family:var(--mono);font-weight:700;color:var(--amber);margin:4px 0">0u</div>'
-      +'<div style="font-size:10px;color:var(--amber)">'+T('第5场 -14.2% 归零','wiped at 5th call')+'</div></div>'
+      +'<div style="font-size:10px;color:var(--amber)">'+(S.w10?T('第'+S.w10.call+'场 '+S.w10.chg+'% 即归零','wiped at call '+S.w10.call):T('未归零','survived'))+'</div></div>'
       +'</div>'
-      +'<div style="font-size:11px;color:var(--text2);margin-top:10px;line-height:1.6">💡 '+T('同样面对 10 场行情，无脑满仓无论 10x 还是 100x 最终都归零——活下来靠的不是方向多准，而是仓位管理。','Facing the same 10 markets, all-in gets liquidated regardless of 10x or 100x. Survival is not about accuracy — it is position management.')+'</div></div>';
-    // 10 场盲测卡片
+      +'<div style="font-size:11px;color:var(--text2);margin-top:10px;line-height:1.6">💡 '+T('同样面对 20 场行情，无脑满仓无论 10x 还是 100x 第 1 场即归零——活下来靠的不是方向多准，而是仓位管理。','Facing the same 20 markets, all-in gets wiped at call 1 regardless of 10x or 100x. Survival is not about accuracy — it is position management.')+'</div></div>';
+    // 20 场盲测卡片
     // ===== 净值曲线（框架 vs 对照组） =====
     const eq=S.equity||[],c100=S.ctl100||[],c10=S.ctl10||[];
     const allVals=eq.concat(c100).concat(c10);
@@ -1796,8 +1796,8 @@ PANELS.experience=async function(){startTabTimer('experience',PANELS.experience)
     function eqXY(arr,i){return [eqPad.l+eqiw*(arr.length===1?0.5:i/(arr.length-1)),eqPad.t+eqih*(1-(arr[i]-eqMin)/eqSpan)]}
     function eqPath(arr){let d='';for(let i=0;i<arr.length;i++){const p=eqXY(arr,i);d+=(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)}return d}
     let eqGrid='';for(let i=0;i<=4;i++){const v=eqMin+eqSpan*i/4,y=eqPad.t+eqih*(1-i/4);eqGrid+='<line x1="'+eqPad.l+'" y1="'+y+'" x2="'+(eqW-eqPad.r)+'" y2="'+y+'" stroke="#31363f" stroke-width="0.5"/><text x="'+(eqPad.l-5)+'" y="'+(y+3)+'" fill="#6d6a62" font-size="8" text-anchor="end">'+Math.round(v)+'</text>'}
-    let eqXl='';for(let i=0;i<=10;i++){if(i%2===0||i===10){const x=eqPad.l+eqiw*i/10;eqXl+='<text x="'+x+'" y="'+(eqH-7)+'" fill="#6d6a62" font-size="8" text-anchor="middle">'+(i===0?'起':i)+'</text>'}}
-    html+='<div class="card"><div class="card-title">📈 '+T('净值曲线 · 十场实战对比','EQUITY CURVE · 10 CALLS')+'</div>'
+    const eqN=eq.length-1;let eqXl='';for(let i=0;i<=eqN;i++){if(i%5===0||i===eqN){const x=eqPad.l+eqiw*i/eqN;eqXl+='<text x="'+x+'" y="'+(eqH-7)+'" fill="#6d6a62" font-size="8" text-anchor="middle">'+(i===0?'起':i)+'</text>'}}
+    html+='<div class="card"><div class="card-title">📈 '+T('净值曲线 · 二十场实战对比','EQUITY CURVE · 20 CALLS')+'</div>'
       +'<svg viewBox="0 0 '+eqW+' '+eqH+'" width="100%" preserveAspectRatio="xMidYMid meet">'
       +eqGrid
       +'<path d="'+eqPath(c100)+'" fill="none" stroke="#c06a5e" stroke-width="1.6" stroke-dasharray="4,3"/>'
@@ -1808,7 +1808,7 @@ PANELS.experience=async function(){startTabTimer('experience',PANELS.experience)
       +'<span><span class="dot" style="background:#5f9e7a"></span>'+T('框架分仓 100x','Framework 100x')+' → +'+S.total_pnl+'u</span>'
       +'<span><span class="dot" style="background:#d9a441"></span>'+T('满仓 10x','All-in 10x')+' → 0u</span>'
       +'<span><span class="dot" style="background:#c06a5e"></span>'+T('满仓 100x','All-in 100x')+' → 0u</span></div>'
-      +'<div style="font-size:11px;color:var(--text2);margin-top:6px;line-height:1.6">💡 '+T('绿色是唯一没归零的：满仓 100x 第2场 -4.9% 爆仓、满仓 10x 第5场 -14.2% 归零；框架线回撤可控、稳步向上。','Green is the only survivor: all-in 100x liquidated at -4.9% (call 2), all-in 10x wiped at -14.2% (call 5); framework pulls back controlled.')+'</div></div>';
+      +'<div style="font-size:11px;color:var(--text2);margin-top:6px;line-height:1.6">💡 '+T('绿色是唯一没归零的：满仓 100x 与 10x 都在第 1 场 -13.1% 归零；框架线回撤可控、稳步向上。','Green is the only survivor: all-in 100x & 10x both wiped at call 1 (-13.1%); framework pulls back controlled.')+'</div></div>';
     // ===== 行情类型分组命中率 =====
     if(S.regime_stats&&S.regime_stats.length){
       html+='<div class="card"><div class="card-title">🎯 '+T('按行情类型 · 命中率','BY REGIME · HIT RATE')+'</div>'
@@ -1823,7 +1823,7 @@ PANELS.experience=async function(){startTabTimer('experience',PANELS.experience)
           +'<div style="font-size:12px;font-family:var(--mono);font-weight:600;color:'+pnlC+'">'+(g.pnl>=0?'+':'')+g.pnl+'u</div></div>';
       });
       html+='</div>'
-        +'<div style="font-size:11px;color:var(--text2);margin-top:10px;line-height:1.7">📊 '+T('洞察：恐慌暴跌与底部磨底 100% 命中（底部磨底贡献 +10,086u 全部利润）；顶部反转做空 0/2 全错（-4,244u 全部亏损）——框架的强项是抄底，弱项是摸顶，做空需额外确认。','Insight: panic crashes & base building 100% hit (base building = all +10,086u profit); shorting tops 0/2 (-4,244u all losses). The framework is strong at catching bottoms, weak at calling tops — shorts need extra confirmation.')+'</div></div>';
+        +'<div style="font-size:11px;color:var(--text2);margin-top:10px;line-height:1.7">📊 '+T('洞察：恐慌暴跌与底部磨底 100% 命中（合计贡献 +12,306u）；顶部反转做空 3/6 五五开（+1,144u）——框架的强项是抄底与避险，摸顶仍需额外确认。','Insight: panic crashes & base building 100% hit (combined +12,306u); shorting tops 3/6 (+1,144u). Strong at bottoms & risk-off, calling tops still needs confirmation.')+'</div></div>';
     }
     // ===== 六月盲测锚点卡（第0战 · 参考基准） =====
     html+='<div class="card" style="border-color:rgba(95,158,122,.4)"><div class="card-title">🎯 '+T('参考锚点 · 六月盲测（本套框架的原点）','REFERENCE · JUNE BLIND TEST (ORIGIN)')+'</div>'
@@ -1938,7 +1938,7 @@ PANELS.experience=async function(){startTabTimer('experience',PANELS.experience)
       [T('真底部敢上仓','Real bottom: size up'),T('2026-02-28 65k，FGI 10 极度恐惧 + MACD 金叉，8% 仓位吃 +8.9%，全场最大盈利 +7081u。极度恐惧+趋势拐头=黄金坑','2026-02-28 65k, FGI 10 extreme fear + golden cross, 8% made +8.9% (+7081u best trade). Extreme fear + trend turn = golden pit.')],
       [T('追高是最大的敌人','Chasing is the enemy'),T('2026-03-10 反弹后 20日位置 78% 已到高位，12% 重仓吃 -2.1%（-2478u 最大亏损）。FGI 恐惧加成≠追高理由','2026-03-10 rally pushed price to 78% of 20d range, 12% caught -2.1% (-2478u worst). Fear bonus ≠ chase excuse.')],
       [T('空仓也是仓位','Flat is a position'),T('2026-05-31 六月前夜中性偏空 0%，躲过 -13.1% 六月暴跌。方向不明时，不亏就是赢','2026-05-31 flat before June crash, dodged -13.1%. When direction is unclear, not losing is winning.')],
-      [T('杠杆决定生死','Leverage decides life'),T('同样 10 场行情：满仓 100x 第2场爆仓、满仓 10x 第5场归零，框架分仓 +58.4% 全程活着。仓位管理 > 方向判断','Same 10 markets: all-in 100x liquidated at call 2, all-in 10x at call 5, framework +58.4% alive. Position > direction.')],
+      [T('杠杆决定生死','Leverage decides life'),T('同样 20 场行情：满仓 100x 与 10x 第 1 场即归零，框架分仓 +200.9% 全程活着。仓位管理 > 方向判断','Same 20 markets: all-in 100x & 10x wiped at call 1, framework +200.9% alive. Position > direction.')],
     ];
     lessons.forEach(function(l){
       html+='<div style="display:flex;gap:12px;align-items:flex-start;border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin-bottom:8px;background:var(--bg2)">'
@@ -1952,11 +1952,11 @@ PANELS.experience=async function(){startTabTimer('experience',PANELS.experience)
       +T('① 每次判断只用截止时点数据，冻结时间，严禁未来函数<br>② 仓位按信号分档 0% / 3% / 8% / 12%，FGI 恐惧期自动打折<br>③ 超卖但趋势未衰竭（RSI<25 + 均线空头 + 20日动量<-10%）= 抄底危险区，一律观望<br>④ 命中判定：看多=14日收涨；看空=14日收跌；观望=避开暴跌即正确<br>⑤ 本回测仅为框架检验，不构成投资建议','① Frozen-timestamp discipline, no future functions<br>② Position tiers 0/3/8/12% with FGI discount<br>③ Oversold without trend exhaustion = no knife-catching<br>④ Hit = direction matched in 14 days<br>⑤ Research only, not investment advice')+'</div>';
     // ===== 最终结论 =====
     html+='<div class="card" style="border-color:rgba(217,164,65,.5);background:linear-gradient(135deg,rgba(217,164,65,.08),rgba(59,130,246,.04))">'
-      +'<div class="card-title">🏁 '+T('最终结论 · 十战十验','FINAL VERDICT')+'</div>'
+      +'<div class="card-title">🏁 '+T('最终结论 · 二十战十九验','FINAL VERDICT')+'</div>'
       +'<div style="font-size:13px;color:var(--text);line-height:1.9;font-family:var(--serif)">'
-      +T('十场盲测，七场方向命中，一场待验证，两次看空做错。10000u 走 100x 分仓，净值从 10,000 到 15,842，+58.4%，全程无爆仓；同期无脑满仓 100x 第 2 场归零、满仓 10x 第 5 场归零。','Ten blind calls, seven direction hits, one pending, two wrong shorts. 10000u at 100x tiered sizing grew to 15,842 (+58.4%) with zero liquidations; all-in 100x died at call 2, all-in 10x at call 5.')+'</div>'
+      +T('二十场盲测，十五场方向命中，一场待验证，四次做错。10000u 走 100x 分仓，净值从 10,000 到 30,092，+200.9%，全程无爆仓；同期无脑满仓 100x 与 10x 第 1 场即归零。','Twenty blind calls, fifteen hits, one pending, four wrong. 10000u at 100x tiered sizing grew to 30,092 (+200.9%) with zero liquidations; all-in 100x & 10x both died at call 1.')+'</div>'
       +'<div style="font-size:12px;color:var(--text2);line-height:1.8;margin-top:8px">'
-      +T('这条净值曲线的意义不在 58.4%，而在它证明了：在加密货币市场，决定生死的是仓位管理，不是方向判断。框架能躲过 -14.2% 的二次探底、能在 FGI 10 的极端恐惧里重仓抄底——不是因为它比市场聪明，而是因为它有纪律。','The point is not the 58.4%. It proves that in crypto, position management decides survival, not direction calls. The framework dodged a -14.2% retest and sized up at FGI 10 extreme fear — not because it is smarter than the market, but because it has discipline.')+'</div>'
+      +T('这条净值曲线的意义不在 200.9%，而在它证明了：在加密货币市场，决定生死的是仓位管理，不是方向判断。框架能躲过 -14.2% 的二次探底、能在 FGI 10 的极端恐惧里重仓抄底——不是因为它比市场聪明，而是因为它有纪律。','The point is not the 200.9%. It proves that in crypto, position management decides survival, not direction calls. The framework dodged a -14.2% retest and sized up at FGI 10 extreme fear — not because it is smarter than the market, but because it has discipline.')+'</div>'
       +'<div style="font-size:11px;color:var(--text3);margin-top:10px;border-top:1px solid var(--line);padding-top:8px">⚠️ '+T('仅供研究参考，不构成投资建议。回测基于历史数据，过去的表现不代表未来收益。','Research only, not investment advice. Past performance does not guarantee future results.')+'</div></div>';
     html+='</div>';
     main.innerHTML=html;

@@ -40,11 +40,11 @@ function settle() {
     r.pnl = pnl;
     // 重算 summary
     const s = d.summary;
-    s.ledger[9] = pnl;
+    s.ledger[s.ledger.length-1] = pnl;  // 7/31 现在位于第20场（索引19）
     s.total_pnl = s.ledger.reduce((a, b) => a + b, 0);
     s.pending = 0;
     s.wins = d.results.filter(x => x.hit === true).length;
-    s.acc = Math.round(s.wins / (d.results.length - s.pending) * 100);
+    s.acc = Math.round(s.wins / Math.max(1, d.results.length - s.pending) * 100);
     delete s.mid; // 实时跟踪块已结算，移除
     fs.writeFileSync(f, JSON.stringify(d, null, 2));
     console.log(`[settle] ${f} 已更新 → 命中 ${s.wins}/${d.results.length} (${s.acc}%) | 账本 ${s.total_pnl>0?'+':''}${s.total_pnl}u`);
