@@ -1777,7 +1777,36 @@ PANELS.experience=async function(){startTabTimer('experience',PANELS.experience)
       +'<div style="font-size:11px;color:var(--text2);letter-spacing:1px">'+T('方法论','Method')+'</div>'
       +'<div style="font-size:15px;font-weight:700;color:var(--text);margin-top:8px">'+T('信号评分 · 风控分档','Signal Score · Risk Tiers')+'</div>'
       +'<div style="font-size:11px;color:var(--text2);margin-top:4px">'+T('FGI 恐惧打折 · 抄底危险区观望','FGI discount · No knife-catching')+'</div></div></div>'
-    // 对照组对比
+    
+    // ===== 回测指标卡（夏普/胜率/盈利率等） =====
+    html+='<div class="card" style="border-color:rgba(95,158,122,.35)"><div class="card-title">📊 '+T('回测指标','BACKTEST METRICS')+'</div>'
+      +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px">'
+      +'<div style="border:1px solid var(--line);border-radius:8px;padding:10px 12px;text-align:center;background:var(--bg2)">'
+      +'<div style="font-size:10px;color:var(--text3)">'+T('夏普比率 (年化)','Sharpe (ann.)')+'</div>'
+      +'<div style="font-size:22px;font-family:var(--mono);font-weight:700;color:'+(S.metrics&&S.metrics.sharpe>=1?'var(--up)':S.metrics&&S.metrics.sharpe>=0?'var(--amber)':'var(--down)')+'">'+(S.metrics?S.metrics.sharpe:'—')+'</div></div>'
+      +'<div style="border:1px solid var(--line);border-radius:8px;padding:10px 12px;text-align:center;background:var(--bg2)">'
+      +'<div style="font-size:10px;color:var(--text3)">'+T('胜率','Win Rate')+'</div>'
+      +'<div style="font-size:22px;font-family:var(--mono);font-weight:700;color:'+(S.acc>=70?'var(--up)':S.acc>=50?'var(--amber)':'var(--down)')+'">'+S.acc+'%</div></div>'
+      +'<div style="border:1px solid var(--line);border-radius:8px;padding:10px 12px;text-align:center;background:var(--bg2)">'
+      +'<div style="font-size:10px;color:var(--text3)">'+T('总盈利率','Total Return')+'</div>'
+      +'<div style="font-size:22px;font-family:var(--mono);font-weight:700;color:'+(S.total_pnl>=0?'var(--up)':'var(--down)')+'">'+(S.total_pnl>=0?'+':'')+(S.total_pnl/100).toFixed(1)+'%</div></div>'
+      +'<div style="border:1px solid var(--line);border-radius:8px;padding:10px 12px;text-align:center;background:var(--bg2)">'
+      +'<div style="font-size:10px;color:var(--text3)">'+T('盈亏比','Profit Factor')+'</div>'
+      +'<div style="font-size:22px;font-family:var(--mono);font-weight:700;color:'+(S.metrics&&S.metrics.profit_factor>=1.5?'var(--up)':S.metrics&&S.metrics.profit_factor>=1?'var(--amber)':'var(--down)')+'">'+(S.metrics?S.metrics.profit_factor:'—')+'</div></div>'
+      +'<div style="border:1px solid var(--line);border-radius:8px;padding:10px 12px;text-align:center;background:var(--bg2)">'
+      +'<div style="font-size:10px;color:var(--text3)">'+T('最大回撤','Max Drawdown')+'</div>'
+      +'<div style="font-size:22px;font-family:var(--mono);font-weight:700;color:var(--down)">-'+(S.metrics?(S.metrics.max_dd_pct||0):'—')+'%</div></div>'
+      +'<div style="border:1px solid var(--line);border-radius:8px;padding:10px 12px;text-align:center;background:var(--bg2)">'
+      +'<div style="font-size:10px;color:var(--text3)">'+T('平均单笔','Avg Trade')+'</div>'
+      +'<div style="font-size:22px;font-family:var(--mono);font-weight:700;color:'+(S.metrics&&S.metrics.avg_pnl>=0?'var(--up)':'var(--down)')+'">'+(S.metrics?((S.metrics.avg_pnl>=0?'+':'')+S.metrics.avg_pnl):'—')+'u</div></div>'
+      +'<div style="border:1px solid var(--line);border-radius:8px;padding:10px 12px;text-align:center;background:var(--bg2)">'
+      +'<div style="font-size:10px;color:var(--text3)">'+T('平均盈 / 平均亏','Avg Win/Loss')+'</div>'
+      +'<div style="font-size:15px;font-family:var(--mono);font-weight:700;color:var(--text);margin-top:6px">'+(S.metrics?('+'+(S.metrics.avg_win||0)+'u / '+(S.metrics.avg_loss||0)+'u'):'—')+'</div></div>'
+      +'<div style="border:1px solid var(--line);border-radius:8px;padding:10px 12px;text-align:center;background:var(--bg2)">'
+      +'<div style="font-size:10px;color:var(--text3)">'+T('最长连胜 / 连亏','Win/Loss Streak')+'</div>'
+      +'<div style="font-size:15px;font-family:var(--mono);font-weight:700;color:var(--text);margin-top:6px">'+(S.metrics?((S.metrics.win_streak||0)+' / '+(S.metrics.loss_streak||0)):'—')+'</div></div>'
+      +'</div></div>'
+// 对照组对比
     html+='<div style="border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:16px;background:var(--bg2)">'
       +'<div style="font-size:11px;color:var(--text3);letter-spacing:1px;margin-bottom:10px">'+T('对照组 · 同样的 10000u，三种活法','CONTROL GROUP · SAME 10000u, THREE PATHS')+'</div>'
       +'<div style="display:flex;gap:12px;flex-wrap:wrap">'
@@ -1889,7 +1918,39 @@ PANELS.experience=async function(){startTabTimer('experience',PANELS.experience)
       }
       html+='';
     }
-    d.results.forEach(function(r,i){
+    // ===== 回测明细：折叠 + 月份筛选 + 新的在上（老的在下） =====
+    var _rev = d.results.slice().reverse(); // 新的在上
+    var _months = [];
+    _rev.forEach(function(r){ var _m=r.date.slice(0,7); if(_months.indexOf(_m)<0) _months.push(_m); });
+    if(!window._trMonth) window._trMonth='all';
+    html+='<div class="card-title" style="margin-top:16px">🗂️ '+T('回测明细 · 点击月份卡片展开','DETAILS · CLICK TO EXPAND')+'</div>';
+    html+='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">'
+      +'<button class="tf-btn" style="'+(window._trMonth==='all'?'background:var(--amber);color:#141414;border-color:var(--amber)':'')+'" onclick="window._trMonth=\'all\';PANELS[\'experience\']()">'+T('全部','All')+' ('+d.results.length+')</button>';
+    _months.forEach(function(m){
+      var _ms=_rev.filter(function(r){return r.date.slice(0,7)===m});
+      var _mh=_ms.filter(function(r){return r.hit===true}).length;
+      var _mp=_ms.reduce(function(s,r){return s+r.pnl},0);
+      html+='<button class="tf-btn" style="'+(window._trMonth===m?'background:var(--amber);color:#141414;border-color:var(--amber)':'')+'" onclick="window._trMonth=\''+m+'\';PANELS[\'experience\']()">'+m+' <span style="opacity:.7">'+_mh+'/'+(_ms.length-_ms.filter(function(r){return r.hit===null}).length)+' · '+( _mp>=0?'+':'')+_mp+'u</span></button>';
+    });
+    html+='</div>';
+    var _vis = _rev.filter(function(r){return window._trMonth==='all'||r.date.slice(0,7)===window._trMonth});
+    var _groups = [];
+    _vis.forEach(function(r){ var _m=r.date.slice(0,7); var _g=null; for(var _i=0;_i<_groups.length;_i++){if(_groups[_i].m===_m){_g=_groups[_i];break}} if(!_g){_g={m:_m,rows:[]};_groups.push(_g)} _g.rows.push(r); });
+    _groups.forEach(function(g){
+      var _gs=g.rows;
+      var _gh=_gs.filter(function(r){return r.hit===true}).length;
+      var _gp=_gs.filter(function(r){return r.hit===null}).length;
+      var _gpnl=_gs.reduce(function(s,r){return s+r.pnl},0);
+      var _gacc=_gs.length-_gp>0?Math.round(_gh/(_gs.length-_gp)*100):null;
+      html+='<div style="border:1px solid var(--line);border-radius:10px;margin-bottom:8px;background:var(--bg2);overflow:hidden">'
+        +'<div onclick="var _n=this.nextElementSibling;_n.style.display=_n.style.display===\'none\'?\'block\':\'none\';this.querySelector(\'.tr-arrow\').textContent=_n.style.display===\'none\'?\'▶\':\'▼\'" style="cursor:pointer;display:flex;align-items:center;gap:10px;padding:12px 16px;user-select:none">'
+        +'<span class="tr-arrow" style="font-size:10px;color:var(--text3)">▶</span>'
+        +'<span style="font-size:14px;font-weight:700;color:var(--text)">'+g.m+'</span>'
+        +'<span style="font-size:11px;color:var(--text2)">'+_gs.length+' '+T('场','calls')+' · '+T('命中','hits')+' '+_gh+'/'+(_gs.length-_gp)+(_gacc!=null?' ('+_gacc+'%)':'')+'</span>'
+        +'<span style="margin-left:auto;font-size:12px;font-family:var(--mono);font-weight:700;color:'+(_gpnl>=0?'var(--up)':'var(--down)')+'">'+(_gpnl>=0?'+':'')+_gpnl+'u</span>'
+        +'</div>'
+        +'<div style="display:none;padding:4px 16px 14px">';
+      _gs.forEach(function(r,i){
       const hitC=r.hit===true?'var(--up)':r.hit===false?'var(--down)':'var(--amber)';
       const hitTxt=r.hit===true?T('✅ 命中','HIT'):r.hit===false?T('❌ 未中','MISS'):T('⏳ 待验证','PENDING');
       const pnlC2=r.pnl>=0?'var(--up)':'var(--down)';
@@ -1938,6 +1999,8 @@ PANELS.experience=async function(){startTabTimer('experience',PANELS.experience)
           }).join('')
         +'</div></div>'
         +'</div>';
+      });
+      html+='</div></div>';
     });
     // 盲测纪律
     // 经验教训
