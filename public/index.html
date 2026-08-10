@@ -2227,7 +2227,7 @@ PANELS.signals=async function(){
     if(p&&p.ok)box.innerHTML=posCardHtml(p);
   };
   main.innerHTML=`
-  ${posCardHtml(pos)}
+  <div id="uniPosBox">${posCardHtml(pos)}</div>
   ${state.admin?`
   <div class="card">
     <div class="card-title">⚙️ ${T('给单引擎 v4.0 设置','Signal Engine v4.0 Settings')}
@@ -2455,7 +2455,7 @@ PANELS.signals=async function(){
       st.textContent=r&&r.ok?'✅ '+T('已保存','Saved'):'❌ '+esc((r&&r.error)||'');
     }catch(e){st.textContent='❌ '+e.message;}
   };
-  $('#btSwSave').onclick=saveBtSw;
+  if($('#btSwSave'))$('#btSwSave').onclick=saveBtSw;
   const runBt=async()=>{
     const btn=$('#btRun'), st=$('#btStatus');
     if(btn.disabled)return;
@@ -2531,7 +2531,7 @@ PANELS.signals=async function(){
       btn.disabled=false; st.textContent='';
     }
   };
-  $('#btRun').onclick=runBt;
+  if($('#btRun'))$('#btRun').onclick=runBt;
   document.querySelectorAll('input[name="btModeR"]').forEach(r=>r.onchange=()=>{
     $('#btSymbol').style.display=(document.querySelector('input[name="btModeR"]:checked').value==='single')?'':'none';
     $('#btSymbolsAll').style.display=(document.querySelector('input[name="btModeR"]:checked').value==='single')?'none':'';
@@ -2547,11 +2547,11 @@ PANELS.signals=async function(){
       common: { cooldown_h: num('sig_cm_cd',4), daily_limit: Math.round(num('sig_cm_dl',8)) }
     };
   };
-  $('#sigSave').onclick=async()=>{
+  if($('#sigSave'))$('#sigSave').onclick=async()=>{
     const r=await api('/api/signal/settings',{method:'POST',body:JSON.stringify(collect())});
     if(r.ok){$('#sigMsg').className='form-msg ok';$('#sigMsg').textContent=T('✅ 已保存，下轮扫描生效','Saved, applied next scan')}else{$('#sigMsg').className='form-msg err';$('#sigMsg').textContent=esc(r.error||'保存失败')}
   };
-  $('#sigReset').onclick=async()=>{
+  if($('#sigReset'))$('#sigReset').onclick=async()=>{
     const r=await api('/api/signal/settings',{method:'POST',body:JSON.stringify({enabled:true,st:{enabled:true},fr:{enabled:true},common:{cooldown_h:4,daily_limit:8}})});
     if(r.ok){toast('已恢复默认');PANELS.signals()}else toast(r.error||'失败');
   };
