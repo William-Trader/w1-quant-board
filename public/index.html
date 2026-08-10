@@ -1794,7 +1794,7 @@ PANELS.experience=async function(){startTabTimer('experience',PANELS.experience)
       +'<div style="font-size:22px;font-family:var(--mono);font-weight:700;color:var(--amber);margin:4px 0">0u</div>'
       +'<div style="font-size:10px;color:var(--amber)">'+(S.w10?T('第'+S.w10.call+'场 '+S.w10.chg+'% 即归零','wiped at call '+S.w10.call):T('未归零','survived'))+'</div></div>'
       +'</div>'
-      +'<div style="font-size:11px;color:var(--text2);margin-top:10px;line-height:1.6">💡 '+T('同样面对 50 场行情，无脑满仓 100x 第 2 场 -4.1% 即爆仓、10x 第 8 场 -10.4% 归零——活下来靠的不是方向多准，而是仓位管理。','Facing the same 50 markets, all-in 100x died at call 2 (-4.1%), all-in 10x wiped at call 8 (-10.4%). Survival is not about accuracy — it is position management.')+'</div></div>';
+      +'<div style="font-size:11px;color:var(--text2);margin-top:10px;line-height:1.6">💡 '+T('同样面对 '+S.total+' 场行情，无脑满仓 100x 第 '+(S.w100?S.w100.call:'—')+' 场 '+(S.w100?S.w100.chg+'%':'')+' 即爆仓、10x 第 '+(S.w10?S.w10.call:'—')+' 场 '+(S.w10?S.w10.chg+'%':'')+' 归零——活下来靠的不是方向多准，而是仓位管理。','Facing the same '+S.total+' markets, all-in 100x died at call '+(S.w100?S.w100.call:'—')+', all-in 10x wiped at call '+(S.w10?S.w10.call:'—')+'. Survival is not about accuracy — it is position management.')+'</div></div>';
     // 50 场盲测卡片
     // ===== 净值曲线（真实走势） =====
     const eq=S.equity||[];
@@ -1807,7 +1807,7 @@ PANELS.experience=async function(){startTabTimer('experience',PANELS.experience)
     function eqPath(arr){let d='';for(let i=0;i<arr.length;i++){const p=eqXY(arr,i);d+=(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)}return d}
     let eqGrid='';for(let i=0;i<=4;i++){const v=eqMin+eqSpan*i/4,y=eqPad.t+eqih*(1-i/4);eqGrid+='<line x1="'+eqPad.l+'" y1="'+y+'" x2="'+(eqW-eqPad.r)+'" y2="'+y+'" stroke="#31363f" stroke-width="0.5"/><text x="'+(eqPad.l-5)+'" y="'+(y+3)+'" fill="#6d6a62" font-size="8" text-anchor="end">'+Math.round(v)+'</text>'}
     const eqN=eq.length-1;let eqXl='';for(let i=0;i<=eqN;i++){if(i%5===0||i===eqN){const x=eqPad.l+eqiw*i/eqN;eqXl+='<text x="'+x+'" y="'+(eqH-7)+'" fill="#6d6a62" font-size="8" text-anchor="middle">'+(i===0?'起':i)+'</text>'}}
-    html+='<div class="card"><div class="card-title">📈 '+T('净值曲线 · 五十场真实走势','EQUITY CURVE · 50 CALLS')+'</div>'
+    html+='<div class="card"><div class="card-title">📈 '+T('净值曲线 · '+S.total+'场真实走势','EQUITY CURVE · '+S.total+' CALLS')+'</div>'
       +'<svg viewBox="0 0 '+eqW+' '+eqH+'" width="100%" preserveAspectRatio="xMidYMid meet">'
       +eqGrid
       +'<path d="'+eqPath(eq)+'" fill="none" stroke="#5f9e7a" stroke-width="2.4" stroke-linecap="round"/>'
@@ -1829,7 +1829,7 @@ PANELS.experience=async function(){startTabTimer('experience',PANELS.experience)
           +'<div style="font-size:12px;font-family:var(--mono);font-weight:600;color:'+pnlC+'">'+(g.pnl>=0?'+':'')+g.pnl+'u</div></div>';
       });
       html+='</div>'
-        +'<div style="font-size:11px;color:var(--text2);margin-top:10px;line-height:1.7">📊 '+T('洞察：底部磨底 8/9 命中（+15,786u 最大利润源）、恐慌暴跌 7/8 命中（+7,080u）、震荡盘整 6/6 全避（0 亏损）；顶部反转 8/16 五五开（+8,730u）——框架的强项是抄底与避险，摸顶需额外确认。','Insight: base building 8/9 (+15,786u), panic crashes 7/8 (+7,080u), ranges 6/6 risk-off (0 loss); top reversals 8/16 (+8,730u). Strong at bottoms & risk-off, tops need confirmation.')+'</div></div>';
+        +'<div style="font-size:11px;color:var(--text2);margin-top:10px;line-height:1.7">📊 '+T('洞察：'+(function(){var _ins='';S.regime_stats.forEach(function(g,i){if(i>0)_ins+='、';_ins+=(g.name+' '+g.hit+'/'+(g.total-g.pending)+' 命中（'+(g.pnl>=0?'+':'')+g.pnl+'u）')});return _ins})(),'Insight: '+(function(){var _ins='';S.regime_stats.forEach(function(g,i){if(i>0)_ins+=', ';_ins+=(g.name+' '+g.hit+'/'+(g.total-g.pending)+' ('+(g.pnl>=0?'+':'')+g.pnl+'u)')});return _ins})())+'</div></div>';
     }
     // ===== 六月盲测锚点卡（第0战 · 参考基准） =====
     html+='<div class="card" style="border-color:rgba(95,158,122,.4)"><div class="card-title">🎯 '+T('参考锚点 · 六月盲测（本套框架的原点）','REFERENCE · JUNE BLIND TEST (ORIGIN)')+'</div>'
@@ -1885,7 +1885,7 @@ PANELS.experience=async function(){startTabTimer('experience',PANELS.experience)
             :(o?'<div style="margin-top:4px;font-size:12px;font-weight:600;color:var(--up)">🤖 '+T('自动开单中','Auto trading')+'</div>':'<span class="data-ts" style="margin-top:4px">'+T('引擎观望中','standby')+'</span>'))
           +'</div>'
           +'</div>'
-          +'<div style="font-size:11px;color:var(--text2);margin-top:8px;line-height:1.6">📌 '+T('统一引擎 = 指标战绩同一套引擎的实盘执行：历史 50 场回测验证 39 场逐字段一致 + 11 场历史人工口径除外，实盘完全按引擎判定执行。','Unified engine = the same engine as the 50 backtests, now executing live. Backtest accuracy verified.')+'</div></div>';
+          +'<div style="font-size:11px;color:var(--text2);margin-top:8px;line-height:1.6">📌 '+T('统一引擎 = 指标战绩同一套引擎的实盘执行：历史 '+S.total+' 场回测由同一引擎判定生成（随机抽样+人工场景），实盘完全按引擎判定执行。','Unified engine = the same engine as the '+S.total+' backtests, now executing live. Backtest accuracy verified.')+'</div></div>';
       }
       html+='';
     }
@@ -1948,7 +1948,7 @@ PANELS.experience=async function(){startTabTimer('experience',PANELS.experience)
       [T('真底部敢上仓','Real bottom: size up'),T('2026-02-28 65k，FGI 10 极度恐惧 + MACD 金叉，8% 仓位吃 +8.9%，全场最大盈利 +7081u。极度恐惧+趋势拐头=黄金坑','2026-02-28 65k, FGI 10 extreme fear + golden cross, 8% made +8.9% (+7081u best trade). Extreme fear + trend turn = golden pit.')],
       [T('追高是最大的敌人','Chasing is the enemy'),T('2026-03-10 反弹后 20日位置 78% 已到高位，12% 重仓吃 -2.1%（-2478u 最大亏损）。FGI 恐惧加成≠追高理由','2026-03-10 rally pushed price to 78% of 20d range, 12% caught -2.1% (-2478u worst). Fear bonus ≠ chase excuse.')],
       [T('空仓也是仓位','Flat is a position'),T('2026-05-31 六月前夜中性偏空 0%，躲过 -13.1% 六月暴跌。方向不明时，不亏就是赢','2026-05-31 flat before June crash, dodged -13.1%. When direction is unclear, not losing is winning.')],
-      [T('杠杆决定生死','Leverage decides life'),T('同样 50 场行情：满仓 100x 第 2 场爆仓、10x 第 8 场归零，框架分仓 +507.1% 全程活着。仓位管理 > 方向判断','Same 50 markets: all-in 100x died at call 2, all-in 10x at call 8, framework +507.1% alive. Position > direction.')],
+      [T('杠杆决定生死','Leverage decides life'),T('同样 '+S.total+' 场行情：满仓 100x 第 '+(S.w100?S.w100.call:'—')+' 场爆仓、10x 第 '+(S.w10?S.w10.call:'—')+' 场归零，框架分仓 +'+(S.total_pnl/100).toFixed(1)+'% 全程活着。仓位管理 > 方向判断','Same '+S.total+' markets: all-in 100x died at call '+(S.w100?S.w100.call:'—')+', all-in 10x at call '+(S.w10?S.w10.call:'—')+', framework +'+(S.total_pnl/100).toFixed(1)+'% alive. Position > direction.')],
     ];
     lessons.forEach(function(l){
       html+='<div style="display:flex;gap:12px;align-items:flex-start;border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin-bottom:8px;background:var(--bg2)">'
@@ -1962,11 +1962,11 @@ PANELS.experience=async function(){startTabTimer('experience',PANELS.experience)
       +T('① 每次判断只用截止时点数据，冻结时间，严禁未来函数<br>② 仓位按信号分档 0% / 3% / 8% / 12%，FGI 恐惧期自动打折<br>③ 超卖但趋势未衰竭（RSI<25 + 均线空头 + 20日动量<-10%）= 抄底危险区，一律观望<br>④ 命中判定：看多=14日收涨；看空=14日收跌；观望=避开暴跌即正确<br>⑤ 本回测仅为框架检验，不构成投资建议','① Frozen-timestamp discipline, no future functions<br>② Position tiers 0/3/8/12% with FGI discount<br>③ Oversold without trend exhaustion = no knife-catching<br>④ Hit = direction matched in 14 days<br>⑤ Research only, not investment advice')+'</div>';
     // ===== 最终结论 =====
     html+='<div class="card" style="border-color:rgba(217,164,65,.5);background:linear-gradient(135deg,rgba(217,164,65,.08),rgba(59,130,246,.04))">'
-      +'<div class="card-title">🏁 '+T('最终结论 · 五十战四十九验','FINAL VERDICT')+'</div>'
+      +'<div class="card-title">🏁 '+T('最终结论 · '+S.total+'战'+(S.total-S.pending)+'验','FINAL VERDICT')+'</div>'
       +'<div style="font-size:13px;color:var(--text);line-height:1.9;font-family:var(--serif)">'
-      +T('五十场盲测，三十五场方向命中，一场待验证，十四次做错。10000u 走 100x 分仓，净值从 10,000 到 60,706，+507.1%，全程无爆仓；同期无脑满仓 100x 第 2 场 -4.1% 爆仓、满仓 10x 第 8 场 -10.4% 归零。','Fifty blind calls, thirty-five hits, one pending, fourteen wrong. 10000u at 100x tiered sizing grew to 60,706 (+507.1%) with zero liquidations; all-in 100x died at call 2 (-4.1%), all-in 10x wiped at call 8 (-10.4%).')+'</div>'
+      +T(S.total+'场盲测，'+S.wins+'场方向命中，'+S.pending+'场待验证，'+(S.total-S.pending-S.wins)+'次做错。10000u 走 100x 分仓，净值从 10,000 到 '+S.equity[S.equity.length-1].toLocaleString()+'，+'+(S.total_pnl/100).toFixed(1)+'%，全程无爆仓；同期无脑满仓 100x 第 '+(S.w100?S.w100.call:'—')+' 场 '+(S.w100?S.w100.chg+'%':'')+' 爆仓、满仓 10x 第 '+(S.w10?S.w10.call:'—')+' 场 '+(S.w10?S.w10.chg+'%':'')+' 归零。',S.total+' blind calls, '+S.wins+' hits, '+S.pending+' pending, '+(S.total-S.pending-S.wins)+' wrong. 10000u at 100x tiered sizing grew to '+S.equity[S.equity.length-1].toLocaleString()+' (+'+(S.total_pnl/100).toFixed(1)+'%) with zero liquidations; all-in 100x died at call '+(S.w100?S.w100.call:'—')+', all-in 10x wiped at call '+(S.w10?S.w10.call:'—')+'.')+'</div>'
       +'<div style="font-size:12px;color:var(--text2);line-height:1.8;margin-top:8px">'
-      +T('这条净值曲线的意义不在 507.1%，而在它证明了：在加密货币市场，决定生死的是仓位管理，不是方向判断。框架能躲过 -14.2% 的二次探底、能在 FGI 10 的极端恐惧里重仓抄底——不是因为它比市场聪明，而是因为它有纪律。','The point is not the 507.1%. It proves that in crypto, position management decides survival, not direction calls. The framework dodged a -14.2% retest and sized up at FGI 10 extreme fear — not because it is smarter than the market, but because it has discipline.')+'</div>'
+      +T('这条净值曲线的意义不在 '+(S.total_pnl/100).toFixed(1)+'%，而在它证明了：在加密货币市场，决定生死的是仓位管理，不是方向判断。框架能躲过 -14.2% 的二次探底、能在 FGI 10 的极端恐惧里重仓抄底——不是因为它比市场聪明，而是因为它有纪律。','The point is not the '+(S.total_pnl/100).toFixed(1)+'%. It proves that in crypto, position management decides survival, not direction calls. The framework dodged a -14.2% retest and sized up at FGI 10 extreme fear — not because it is smarter than the market, but because it has discipline.')+'</div>'
       +'<div style="font-size:11px;color:var(--text3);margin-top:10px;border-top:1px solid var(--line);padding-top:8px">⚠️ '+T('仅供研究参考，不构成投资建议。回测基于历史数据，过去的表现不代表未来收益。','Research only, not investment advice. Past performance does not guarantee future results.')+'</div></div>';
     html+='</div>';
     main.innerHTML=html;
