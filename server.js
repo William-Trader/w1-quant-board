@@ -92,6 +92,21 @@ if (SMOKE) {
   collectors.startCron(ctx);
   startNewsCollector(ctx);
   collectors.prune(ctx);
+  // 全自动开单：统一引擎每5分钟扫描大方向，有信号且无同向OPEN单 → 市价自动开单
+  try {
+    const eng = require('./lib/experience_engine');
+    const signal = require('./lib/signal');
+    const autoOpenTimer = setInterval(() => {
+      try { eng.autoOpen(db, { symbol: 'BTC' }); } catch (e) { console.warn('[unified] 自动开单异常:', e.message); }
+      // 自动结算：OPEN 单到目标/止损/超时48h → 自动平仓入账
+      try {
+        const snaps = signal.futuresSnapshots(db, 1);
+        if (snaps.length) { const n = signal.resolveOpenSignals(db, snaps); if (n) console.log(`[unified] 自动结算 ${n} 单`); }
+      } catch (e) { console.warn('[unified] 自动结算异常:', e.message); }
+    }, 5 * 60 * 1000);
+    autoOpenTimer.unref && autoOpenTimer.unref();
+    console.log('[unified] 全自动开单+自动结算已启动（每5分钟扫描 BTC 大方向）');
+  } catch (e) { console.warn('[unified] 自动开单初始化失败:', e.message); }
 }
 
 const PORT = Number(env.PORT || 3300);

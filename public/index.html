@@ -1875,14 +1875,14 @@ PANELS.experience=async function(){startTabTimer('experience',PANELS.experience)
           +'<div style="font-size:10.5px;color:var(--text3);margin-top:3px">'+(j&&j.reasons&&j.reasons.length?j.reasons.join(' · '):'')+'</div></div>'
           +'<div style="flex:1;min-width:150px;text-align:center"><div style="font-size:10px;color:var(--text3);letter-spacing:1px">'+T('BTC 现价','BTC NOW')+'</div>'
           +'<div style="font-size:22px;font-family:var(--mono);font-weight:700;color:'+(lp!=null?'var(--text)':'var(--text3)')+'">'+(lp?Number(lp).toLocaleString():'—')+'</div>'
-          +(liveC!=null?'<div style="font-size:11px;color:'+(liveC>=0?'var(--up)':'var(--down)')+'">'+(liveC>=0?'+':'')+liveC.toFixed(2)+'% '+T('vs 挂单价','vs limit')+'</div>':'')+'</div>'
+          +(liveC!=null?'<div style="font-size:11px;color:'+(liveC>=0?'var(--up)':'var(--down)')+'">'+(liveC>=0?'+':'')+liveC.toFixed(2)+'% '+T('vs 入场价','vs entry')+'</div>':'')+'</div>'
           +'<div style="flex:1;min-width:170px;text-align:right"><div style="font-size:10px;color:var(--text3);letter-spacing:1px">'+(posOpen?T('当前持仓','OPEN POSITION'):T('挂单计划','LIMIT ORDER'))+'</div>'
-          +'<div style="font-size:13px;font-weight:600;margin:3px 0">'+(posOpen?esc(op.direction==='long'?'做多':'做空')+' @'+Number(op.entry).toLocaleString():(o?esc(o.direction==='long'?'限价多':'限价空')+' @'+Number(o.entry).toLocaleString():T('观望','standby')))+'</div>'
+          +'<div style="font-size:13px;font-weight:600;margin:3px 0">'+(posOpen?esc(op.direction==='long'?'做多':'做空')+' @'+Number(op.entry).toLocaleString():(o?esc(o.direction==='long'?'市价多':'市价空')+' @'+Number(o.entry).toLocaleString():T('观望','standby')))+'</div>'
           +'<div style="font-size:11px;color:var(--text2)">'+(posOpen?(op.pos_pct+'% · 止损'+Number(op.stop).toLocaleString()+' · 目标'+Number(op.target1).toLocaleString()):(o?(o.pos_pct+'% · 止损'+Number(o.stop).toLocaleString()+' · 目标'+Number(o.target1).toLocaleString()):T('无信号，空仓等待','flat, waiting')))+'</div></div>'
-          +'<div style="flex:none;text-align:center"><div style="font-size:10px;color:var(--text3);letter-spacing:1px">'+T('操作','ACTION')+'</div>'
+          +'<div style="flex:none;text-align:center"><div style="font-size:10px;color:var(--text3);letter-spacing:1px">'+T('引擎状态','ENGINE')+'</div>'
           +(posOpen
-            ?'<button class="btn secondary" style="margin-top:4px;font-size:11px;padding:4px 10px" onclick="switchTab(\'signals\')">'+T('去管理','Manage')+'</button>'
-            :(o?'<button class="btn" style="margin-top:4px;font-size:11px;padding:4px 10px" onclick="uniPlace(this)">'+T('按此开单','Place order')+'</button>':'<span class="data-ts">'+T('引擎观望中','standby')+'</span>'))
+            ?'<div style="margin-top:4px;font-size:12px;font-weight:600;color:var(--amber)">🤖 '+T('自动持仓中','Auto holding')+'</div>'
+            :(o?'<div style="margin-top:4px;font-size:12px;font-weight:600;color:var(--up)">🤖 '+T('自动开单中','Auto trading')+'</div>':'<span class="data-ts" style="margin-top:4px">'+T('引擎观望中','standby')+'</span>'))
           +'</div>'
           +'</div>'
           +'<div style="font-size:11px;color:var(--text2);margin-top:8px;line-height:1.6">📌 '+T('统一引擎 = 指标战绩同一套引擎的实盘执行：历史 50 场回测验证 39 场逐字段一致 + 11 场历史人工口径除外，实盘完全按引擎判定执行。','Unified engine = the same engine as the 50 backtests, now executing live. Backtest accuracy verified.')+'</div></div>';
@@ -2208,11 +2208,12 @@ PANELS.signals=async function(){
         +'<div style="flex:1;min-width:150px"><div style="font-size:10px;color:var(--text3);letter-spacing:1px">'+T('统一引擎当前判断','UNIFIED CALL')+'</div>'
         +'<div style="font-size:15px;font-weight:600;margin:3px 0">'+(j?esc(j.label):T('观望','flat'))+'</div>'
         +'<div style="font-size:11px;color:var(--text2)">'+T('综合分','Score')+' '+(j?j.score:'—')+' · '+T('仓位','Pos')+' '+(j?j.pos+'%':'—')+'</div></div>'
-        +(o?'<div style="flex:1;min-width:170px"><div style="font-size:10px;color:var(--text3);letter-spacing:1px">'+T('挂单计划','LIMIT ORDER')+'</div>'
-          +'<div style="font-size:14px;font-weight:600;margin:3px 0">'+(o.direction==='long'?'限价多':'限价空')+' @'+Number(o.entry).toLocaleString()+'</div>'
+        +(o?'<div style="flex:1;min-width:170px"><div style="font-size:10px;color:var(--text3);letter-spacing:1px">'+T('市价计划','MARKET ORDER')+'</div>'
+          +'<div style="font-size:14px;font-weight:600;margin:3px 0">'+(o.direction==='long'?'市价多':'市价空')+' @'+Number(o.entry).toLocaleString()+'</div>'
           +'<div style="font-size:11px;color:var(--text2)">'+o.pos_pct+'% · '+T('止损','SL')+' '+Number(o.stop).toLocaleString()+' · '+T('目标','TP')+' '+Number(o.target1).toLocaleString()+'</div></div>':'')
-        +'<div style="flex:none;text-align:center"><div style="font-size:10px;color:var(--text3);letter-spacing:1px">'+T('操作','ACTION')+'</div>'
-        +'<button class="btn" style="margin-top:4px;font-size:11px;padding:4px 12px" onclick="uniPlace(this)">'+T('按此开单','Place order')+'</button></div>'
+        +'<div style="flex:none;text-align:center"><div style="font-size:10px;color:var(--text3);letter-spacing:1px">'+T('引擎状态','ENGINE')+'</div>'
+        +'<div style="margin-top:4px;font-size:12px;font-weight:600;color:var(--up)">🤖 '+T('全自动开单','Auto trading')+'</div>'
+        +'<div style="font-size:10px;color:var(--text3);margin-top:2px">'+T('每5分钟扫描','5min scan')+'</div></div>'
         +'</div>';
     }
     return '<div class="card" style="border-color:rgba(95,158,122,.45);background:linear-gradient(135deg,rgba(95,158,122,.08),rgba(217,164,65,.05))">'
