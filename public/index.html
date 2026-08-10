@@ -519,7 +519,7 @@ const TABS=[
   {id:'account',zh:'登录/注册',en:'Account',pub:true},
   {id:'admin',zh:'后台',en:'Admin',pub:true},
   {id:'access',zh:'访问统计',en:'Access',pub:false,admin:true},
-  {id:'signals',zh:'交易信号',en:'Signals',pub:false,admin:true}
+  {id:'signals',zh:'交易信号',en:'Signals',pub:false}
 ];
 function renderNav(){
   $('#tabnav').innerHTML=TABS.filter(t=>!t.admin||state.admin).map(t=>`<div class="tab${state.tab===t.id?' active':''}${t.pub?'':' member-tab'}" data-tab="${t.id}">${state.lang==='zh'?t.zh:t.en}${t.pub?'':'<span class="lock">◆</span>'}</div>`).join('');
@@ -1740,6 +1740,16 @@ fetch('/api/oi-summary').then(function(r){return r.json()}).then(function(oi){
 };
 
 /* ================= PANEL: 指标战绩（过去一年二十次典型行情盲测） ================= */
+async function uniPlace(btn){
+  if(btn){btn.disabled=true;btn.textContent='⏳'}
+  const r=await api('/api/unified/place',{method:'POST',body:JSON.stringify({symbol:'BTC'})}).catch(()=>null);
+  if(btn){btn.disabled=false;btn.textContent=window.__lang==='en'?'Place order':'按此开单'}
+  if(r&&r.ok&&r.placed){toast('✅ '+window.__lang==='en'?'Order placed':'开单成功');PANELS.experience();}
+  else if(r&&r.reason==='dup_open'){toast('⚠️ '+window.__lang==='en'?'Already open':'已有同向持仓');PANELS.experience();}
+  else if(r&&r.reason==='no_signal'){toast('🛑 '+window.__lang==='en'?'No signal':'引擎观望中');}
+  else if(r&&r.__needLogin){toast('请先登录');switchTab('account');}
+  else toast('❌ '+window.__lang==='en'?'Failed':(r&&r.error||'开单失败'));
+}
 PANELS.experience=async function(){startTabTimer('experience',PANELS.experience);
   const main=$('#main');
   main.innerHTML='<div class="card">'+T('加载中…','Loading…')+'</div>';
@@ -1835,46 +1845,50 @@ PANELS.experience=async function(){startTabTimer('experience',PANELS.experience)
       +'<div style="font-size:11px;color:var(--text2)">'+T('结论：超卖但没超卖透，反弹全是逃命波','Oversold but not exhausted, rallies were exits')+'</div></div>'
       +'</div>'
       +'<div style="font-size:11px;color:var(--text2);margin-top:8px;line-height:1.6">📌 '+T('六月盲测是本套框架的验证起点：它产出了「抄底危险区观望」规则，并直接应用到 2026-01-31 二次探底（躲过 -14.2%）与 2026-05-31 六月前夜（躲过 -13.1%）。','June blind test is the origin: it produced the no-knife-catching rule, applied to 2026-01-31 (-14.2% dodged) and 2026-05-31 (-13.1% dodged).')+'</div></div>';
-    // ===== 进行中的场次（7/31 实时跟踪） =====
-    if(S.mid){
-      const mid=S.mid;
-      // 实时拉 BTC 现价
-      let live=null,liveErr=false;
+    // ===== 实盘进行中（统一引擎：指标战绩=实盘） =====
+    {
+      let uni=null,uniErr=false;
       try{
-        const mk=await fetch('/api/markets?t='+Date.now()).then(function(r){return r.json()});
-        const btc=(mk&&mk.spot||[]).find(function(x){return x.symbol==='BTC'});
-        if(btc&&btc.price){
-          const lp=btc.price;
-          const lc=(lp/mid.p0-1)*100;
-          // 空单 3%×100x：pnl = pos × dir(-1) × chg% × 100（与账本公式一致）
-          live={price:lp,chg:lc,pnl:Math.round(3*(-1)*lc*100)};
-        }else liveErr=true;
-      }catch(e){liveErr=true}
-      // 窗口倒计时：7/31 + 14 天 = 8/14 24:00 关闭
-      const endTs=new Date('2026-08-14T23:59:59+08:00').getTime();
-      const remain=endTs-Date.now();
-      const remainTxt=remain>0?(Math.ceil(remain/86400000)+' '+T('天','d')):T('已到窗口','closed');
-      const disp=live||{price:mid.price,chg:mid.chg_mid,pnl:mid.pnl_mid};
-      const dispC=disp.chg>=0?'var(--up)':'var(--down)';
-      const pnlC2=disp.pnl>=0?'var(--up)':'var(--down)';
-      html+='<div class="card" style="border-color:rgba(217,164,65,.4)"><div class="card-title">⏳ '+T('进行中的一场 · 7/31 反弹遇空 · 实时跟踪','LIVE CALL · 7/31 SHORT · LIVE')+(liveErr?'<span class="data-ts" style="margin-left:8px">'+T('现价暂不可用，显示缓存','cached')+'</span>':'')+'</div>'
-        +'<div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center">'
-        +'<div style="flex:1;min-width:160px"><div style="font-size:10px;color:var(--text3);letter-spacing:1px">'+T('盲测判断','CALL')+'</div>'
-        +'<div style="font-size:15px;font-weight:600;margin:3px 0">'+esc(mid.label)+'</div>'
-        +'<div style="font-size:11px;color:var(--text2)">'+T('入场 7/31 收','Entry')+' '+Number(mid.p0).toLocaleString()+' · 3%×100x '+T('空单','short')+'</div>'
-        +'<div style="font-size:11px;color:var(--amber);margin-top:2px">⏱ '+remainTxt+' '+T('后结算','to settle')+(remain>0?'':' · 14日窗口已满')+'</div></div>'
-        +'<div style="flex:1;min-width:140px;text-align:center"><div style="font-size:10px;color:var(--text3);letter-spacing:1px">'+T('BTC 现价','BTC NOW')+'</div>'
-        +'<div style="font-size:22px;font-family:var(--mono);font-weight:700;color:'+dispC+'">'+Number(disp.price).toLocaleString()+'</div>'
-        +'<div style="font-size:11px;color:var(--text2)">'+(disp.chg>=0?'+':'')+disp.chg.toFixed(1)+'% '+T('vs 入场','vs entry')+'</div></div>'
-        +'<div style="flex:1;min-width:140px;text-align:right"><div style="font-size:10px;color:var(--text3);letter-spacing:1px">'+T('空单浮盈亏','SHORT P&L')+'</div>'
-        +'<div style="font-size:22px;font-family:var(--mono);font-weight:700;color:'+pnlC2+'">'+(disp.pnl>=0?'+':'')+disp.pnl+'u</div>'
-        +'<div style="font-size:11px;color:var(--text2)">'+T('仓位 3% · 杠杆 100x','3% · 100x')+'</div></div>'
-        +'<div style="flex:none;text-align:center"><div style="font-size:10px;color:var(--text3);letter-spacing:1px">'+T('刷新','REFRESH')+'</div>'
-        +'<button class="btn secondary" style="margin-top:4px;font-size:11px;padding:4px 10px" onclick="PANELS.experience()">🔄</button></div>'
-        +'</div>'
-        +'<div style="font-size:11px;color:var(--text2);margin-top:8px;line-height:1.6">📌 '+esc(mid.note)+'</div></div>';
+        uni=await fetch('/api/unified/status?symbol=BTC&t='+Date.now()).then(function(r){return r.json()});
+        if(!uni||!uni.ok)uniErr=true;
+      }catch(e){uniErr=true}
+      const lp=uni&&uni.live_price?uni.live_price:null;
+      html+='<div class="card" style="border-color:rgba(217,164,65,.5);background:linear-gradient(135deg,rgba(217,164,65,.07),rgba(95,158,122,.04))">'
+        +'<div class="card-title">🎯 '+T('实盘进行中 · 统一引擎','LIVE POSITION · UNIFIED ENGINE')+(uniErr?'<span class="data-ts" style="margin-left:8px">'+T('暂不可用','n/a')+'</span>':'')+'</div>';
+      if(uniErr||!uni){
+        html+='<div class="empty">'+T('统一引擎状态加载失败','Unified engine unavailable')+'</div></div>';
+      }else if(uni.locked){
+        html+='<div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">'
+          +'<div style="font-size:30px">🔒</div>'
+          +'<div style="flex:1;min-width:180px"><div style="font-size:14px;font-weight:600;color:var(--text)">'+T('实盘判断为会员专享','Live calls are member-only')+'</div>'
+          +'<div style="font-size:11.5px;color:var(--text2);line-height:1.6;margin-top:4px">'+T('统一引擎当前正在实时研判 BTC 方向与仓位，登录会员可见完整判断、限价挂单与持仓跟踪。','The unified engine is analyzing BTC live. Sign in to see the full call, limit order and position tracking.')+'</div></div>'
+          +'<button class="btn" onclick="switchTab(\'account\')">'+T('登录解锁','Sign in')+'</button>'
+          +'</div></div>';
+      }else{
+        const j=uni.judge,o=uni.order,op=uni.open;
+        const liveC=lp!=null&&o?((lp/o.price-1)*100):null;
+        const posOpen=!!op;
+        html+='<div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center">'
+          +'<div style="flex:1;min-width:160px"><div style="font-size:10px;color:var(--text3);letter-spacing:1px">'+T('当前判断','CALL')+'</div>'
+          +'<div style="font-size:16px;font-weight:600;color:var(--text);margin:3px 0">'+(j?esc(j.label):'—')+'</div>'
+          +'<div style="font-size:11px;color:var(--text2)">'+T('综合分','Score')+' '+(j?j.score:'—')+' · '+T('仓位','Pos')+' '+(j?j.pos+'%':'—')+'</div>'
+          +'<div style="font-size:10.5px;color:var(--text3);margin-top:3px">'+(j&&j.reasons&&j.reasons.length?j.reasons.join(' · '):'')+'</div></div>'
+          +'<div style="flex:1;min-width:150px;text-align:center"><div style="font-size:10px;color:var(--text3);letter-spacing:1px">'+T('BTC 现价','BTC NOW')+'</div>'
+          +'<div style="font-size:22px;font-family:var(--mono);font-weight:700;color:'+(lp!=null?'var(--text)':'var(--text3)')+'">'+(lp?Number(lp).toLocaleString():'—')+'</div>'
+          +(liveC!=null?'<div style="font-size:11px;color:'+(liveC>=0?'var(--up)':'var(--down)')+'">'+(liveC>=0?'+':'')+liveC.toFixed(2)+'% '+T('vs 挂单价','vs limit')+'</div>':'')+'</div>'
+          +'<div style="flex:1;min-width:170px;text-align:right"><div style="font-size:10px;color:var(--text3);letter-spacing:1px">'+(posOpen?T('当前持仓','OPEN POSITION'):T('挂单计划','LIMIT ORDER'))+'</div>'
+          +'<div style="font-size:13px;font-weight:600;margin:3px 0">'+(posOpen?esc(op.direction==='long'?'做多':'做空')+' @'+Number(op.entry).toLocaleString():(o?esc(o.direction==='long'?'限价多':'限价空')+' @'+Number(o.entry).toLocaleString():T('观望','standby')))+'</div>'
+          +'<div style="font-size:11px;color:var(--text2)">'+(posOpen?(op.pos_pct+'% · 止损'+Number(op.stop).toLocaleString()+' · 目标'+Number(op.target1).toLocaleString()):(o?(o.pos_pct+'% · 止损'+Number(o.stop).toLocaleString()+' · 目标'+Number(o.target1).toLocaleString()):T('无信号，空仓等待','flat, waiting')))+'</div></div>'
+          +'<div style="flex:none;text-align:center"><div style="font-size:10px;color:var(--text3);letter-spacing:1px">'+T('操作','ACTION')+'</div>'
+          +(posOpen
+            ?'<button class="btn secondary" style="margin-top:4px;font-size:11px;padding:4px 10px" onclick="switchTab(\'signals\')">'+T('去管理','Manage')+'</button>'
+            :(o?'<button class="btn" style="margin-top:4px;font-size:11px;padding:4px 10px" onclick="uniPlace(this)">'+T('按此开单','Place order')+'</button>':'<span class="data-ts">'+T('引擎观望中','standby')+'</span>'))
+          +'</div>'
+          +'</div>'
+          +'<div style="font-size:11px;color:var(--text2);margin-top:8px;line-height:1.6">📌 '+T('统一引擎 = 指标战绩同一套引擎的实盘执行：历史 50 场回测验证 39 场逐字段一致 + 11 场历史人工口径除外，实盘完全按引擎判定执行。','Unified engine = the same engine as the 50 backtests, now executing live. Backtest accuracy verified.')+'</div></div>';
+      }
+      html+='';
     }
-
     d.results.forEach(function(r,i){
       const hitC=r.hit===true?'var(--up)':r.hit===false?'var(--down)':'var(--amber)';
       const hitTxt=r.hit===true?T('✅ 命中','HIT'):r.hit===false?T('❌ 未中','MISS'):T('⏳ 待验证','PENDING');
@@ -2126,6 +2140,7 @@ PANELS.signals=async function(){
   main.innerHTML='<div class="card">'+T('加载中…','Loading…')+'</div>';
   const d=await api('/api/signal/overview');
   if(d.__needLogin){state.user=null;switchTab('signals');return}
+  const pos=await api('/api/signal/positions').catch(()=>null);
   const ai=await api('/api/signal/ai').catch(()=>null);
   const stClsG=x=>x==='WIN'?'up':x==='LOSS'?'down':x==='OPEN'?'':'';
   const stZhG={WIN:'✅ 胜',LOSS:'❌ 负',FLAT:'➖ 平',OPEN:'⏳ 持仓'};
@@ -2164,7 +2179,56 @@ PANELS.signals=async function(){
   const stratTxt={MOM:'冲高回落',RES:'宏观共振',CLOUD:'云端共识',R3D:'三维共振',ST:'智能趋势',FR:'费率反转'};
   const bs=(d.byStrategy||[]).map(x=>`<tr><td>${stratTxt[x.strategy]||x.strategy||'—'}</td><td class="num">${x.cnt}</td><td class="num up">${x.wins||0}</td><td class="num down">${x.losses||0}</td></tr>`).join('')||'<tr><td colspan="4" class="empty">暂无</td></tr>';
   const en=(s.enabled?'':' disabled');
+  const posCardHtml=(p)=>{
+    if(!p||!p.ok)return '';
+    const rows=(p.rows||[]);
+    const uni=p.unified||{};
+    const j=uni.judge||null,o=uni.order||null;
+    let posHtml='<div class="empty">'+T('暂无持仓 · 引擎观望中','No open positions · engine flat')+'</div>';
+    if(rows.length){
+      posHtml='<div style="overflow-x:auto"><table><thead><tr><th>'+T('时间','Time')+'</th><th>'+T('币种','Coin')+'</th><th>'+T('方向','Dir')+'</th><th>'+T('入场','Entry')+'</th><th>'+T('止损','Stop')+'</th><th>'+T('目标','Target')+'</th><th>'+T('仓位','Pos')+'</th><th>'+T('现价','Now')+'</th><th>'+T('浮盈%','PnL %')+'</th><th>'+T('浮盈(U)','PnL U')+'</th></tr></thead><tbody>'
+        +rows.map(r=>{
+          const live=r.live||{};
+          const c=live.pnl_pct==null?'':(live.pnl_pct>=0?'up':'down');
+          return '<tr><td class="num">'+new Date(r.pushed_at).toLocaleString('zh-CN',{hour12:false,month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})+'</td>'
+            +'<td><b>'+esc(r.symbol)+'</b></td>'
+            +'<td class="'+(r.direction==='long'?'up':'down')+'">'+(r.direction==='long'?'多':'空')+'</td>'
+            +'<td class="num">'+fmtPrice(r.entry)+'</td>'
+            +'<td class="num">'+fmtPrice(r.stop)+'</td>'
+            +'<td class="num">'+fmtPrice(r.target1)+'</td>'
+            +'<td class="num">'+r.pos_pct+'%</td>'
+            +'<td class="num">'+(live.price!=null?fmtPrice(live.price):'—')+'</td>'
+            +'<td class="num '+c+'">'+(live.pnl_pct!=null?(live.pnl_pct>=0?'+':'')+live.pnl_pct+'%':'—')+'</td>'
+            +'<td class="num '+c+'">'+(live.pnl_usd!=null?(live.pnl_usd>=0?'+':'')+live.pnl_usd+' U':'—')+'</td></tr>';
+        }).join('')+'</tbody></table></div>';
+    }
+    let uniHtml='';
+    if(j||o){
+      uniHtml='<div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line,rgba(255,255,255,.08))">'
+        +'<div style="flex:1;min-width:150px"><div style="font-size:10px;color:var(--text3);letter-spacing:1px">'+T('统一引擎当前判断','UNIFIED CALL')+'</div>'
+        +'<div style="font-size:15px;font-weight:600;margin:3px 0">'+(j?esc(j.label):T('观望','flat'))+'</div>'
+        +'<div style="font-size:11px;color:var(--text2)">'+T('综合分','Score')+' '+(j?j.score:'—')+' · '+T('仓位','Pos')+' '+(j?j.pos+'%':'—')+'</div></div>'
+        +(o?'<div style="flex:1;min-width:170px"><div style="font-size:10px;color:var(--text3);letter-spacing:1px">'+T('挂单计划','LIMIT ORDER')+'</div>'
+          +'<div style="font-size:14px;font-weight:600;margin:3px 0">'+(o.direction==='long'?'限价多':'限价空')+' @'+Number(o.entry).toLocaleString()+'</div>'
+          +'<div style="font-size:11px;color:var(--text2)">'+o.pos_pct+'% · '+T('止损','SL')+' '+Number(o.stop).toLocaleString()+' · '+T('目标','TP')+' '+Number(o.target1).toLocaleString()+'</div></div>':'')
+        +'<div style="flex:none;text-align:center"><div style="font-size:10px;color:var(--text3);letter-spacing:1px">'+T('操作','ACTION')+'</div>'
+        +'<button class="btn" style="margin-top:4px;font-size:11px;padding:4px 12px" onclick="uniPlace(this)">'+T('按此开单','Place order')+'</button></div>'
+        +'</div>';
+    }
+    return '<div class="card" style="border-color:rgba(95,158,122,.45);background:linear-gradient(135deg,rgba(95,158,122,.08),rgba(217,164,65,.05))">'
+      +'<div class="card-title">🎯 '+T('实盘仓位后台 · 统一引擎','POSITION DESK · UNIFIED ENGINE')
+      +'<span style="margin-left:auto" class="data-ts">'+T('指标战绩同一引擎 · 实盘执行 · 30s 刷新','Same engine as Track Record · live · 30s')+'</span></div>'
+      +posHtml+uniHtml+'</div>';
+  };
+  const loadPosBox=async()=>{
+    const box=document.getElementById('uniPosBox');
+    if(!box)return;
+    const p=await api('/api/signal/positions').catch(()=>null);
+    if(p&&p.ok)box.innerHTML=posCardHtml(p);
+  };
   main.innerHTML=`
+  ${posCardHtml(pos)}
+  ${state.admin?`
   <div class="card">
     <div class="card-title">⚙️ ${T('给单引擎 v4.0 设置','Signal Engine v4.0 Settings')}
       <span style="margin-left:auto">${T('保存后立即生效（每5分钟自动扫描）','Applied immediately (auto-scan every 5min)')}</span></div>
@@ -2195,6 +2259,7 @@ PANELS.signals=async function(){
     </div>
     <div class="form-msg" id="sigMsg"></div>
   </div>
+  `:''}
   <div class="card">
     <div class="card-title">📊 ${T('引擎战绩','Engine Track Record')}</div>
     ${stt}
@@ -2202,6 +2267,7 @@ PANELS.signals=async function(){
   </div>
   <div class="card">
   ${aiCard}
+  ${state.admin?`
   <div class="card">
     <div class="card-title">🎚 ${T('市场体制与策略档案','Regime & Strategy Desk')}
       <span style="margin-left:auto" class="data-ts" id="regTs"></span></div>
@@ -2256,11 +2322,13 @@ PANELS.signals=async function(){
       </div>
     </details>
   </div>
+  `:''}
   <div class="card">
     <div class="card-title">👑 ${T('主流品种单（BTC/ETH）回测','Major Coins (BTC/ETH) Track')}
       <span style="margin-left:auto" class="data-ts">${T('与山寨单隔离统计 · 1000U 本金口径 · 30s 刷新','Isolated from alts · 1000U basis')}</span></div>
     <div id="sigMajorBox" class="empty">加载中…</div>
   </div>
+  ${state.admin?`
   <div class="card">
     <div class="card-title">🔬 ${T('回测系统','Backtest System')}
       <span style="margin-left:auto" class="data-ts">${T('OKX K线 30 天 · 单币/全系统 · 杠杆仓位可调','30d OKX · single/full · lev & pos')}</span></div>
@@ -2309,6 +2377,7 @@ PANELS.signals=async function(){
     </div>
     <div id="btResult" class="empty">${T('选择模式与参数后运行 · 盈亏 = 本金×仓位%×杠杆×涨跌幅 · 首次拉取 OKX 数据 20-60s','Run after choosing mode & params. PnL = capital × pos% × lev × move%.')}</div>
   </div>
+  `:''}
   <div class="card">
     <div class="card-title">📜 ${T('信号历史','Signal History')}</div>
     <div style="overflow-x:auto"><table><thead><tr><th>#</th><th>${T('时间','Time')}</th><th>${T('币种','Coin')}</th><th>${T('策略','Strategy')}</th><th>${T('方向','Dir')}</th><th>${T('入场','Entry')}</th><th>${T('止损','Stop')}</th><th>${T('目标1','T1')}</th><th>${T('盈亏比','RR')}</th><th>${T('仓位','Pos')}</th><th>${T('状态','Status')}</th><th>${T('现价','Price')}</th><th>${T('涨跌%','Move %')}</th><th>${T('浮盈(1000U本金)','PnL @1000U')}</th></tr></thead><tbody id="sigHistBody"><tr><td colspan="12" class="empty">加载中…</td></tr></tbody></table></div>
@@ -2337,7 +2406,7 @@ PANELS.signals=async function(){
       <td class="num ${r.live?(r.live.pnl_usd>=0?'up':'down'):(r.final_pnl_usd!=null?(r.final_pnl_usd>=0?'up':'down'):'')}">${r.live?(r.live.pnl_usd>=0?'+':'')+r.live.pnl_usd+' U':(r.final_pnl_usd!=null?(r.final_pnl_usd>=0?'+':'')+r.final_pnl_usd+' U':'—')}</td>
     </tr>`).join('')||'<tr><td colspan="14" class="empty">暂无信号</td></tr>';
   };
-  if(!state.timers['sigHist']){state.timers['sigHist']=setInterval(()=>{if(state.tab==='signals'){loadHist();loadMajor()}},30000);}
+  if(!state.timers['sigHist']){state.timers['sigHist']=setInterval(()=>{if(state.tab==='signals'){loadHist();loadMajor();loadPosBox()}},30000);}
   const loadMajor=async()=>{
     const box=$('#sigMajorBox');
     if(!box)return;

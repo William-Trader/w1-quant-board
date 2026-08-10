@@ -1,0 +1,30 @@
+const fs = require('fs');
+const path = require('path');
+const ROOT = __dirname;
+const ROUTES = path.join(ROOT, 'lib', 'routes.js');
+let src = fs.readFileSync(ROUTES, 'utf8');
+const anchor = `  app.post('/api/signal/backtest', requireAdmin, wrap(async (req, res) => {`;
+if (src.includes('/api/signal/backtest-v2')) {
+  console.log('backtest-v2 already exists');
+  process.exit(0);
+}
+const injection = `  app.post('/api/signal/backtest-v2', requireAdmin, wrap(async (req, res) => {
+    // v2 引擎: 单策略/组合回测（MOM/RES/CLOUD/R3D/ST/all），8币/50币，1h+日线
+    const bt2 = require('./bt_v2');
+    const opts = Object.assign({ strategy: 'all', symbols: [], days: 41 }, req.body || {});
+    opts.days = Math.min(Math.max(Number(opts.days) || 41, 7), 60);
+    if (Array.isArray(opts.symbols)) opts.symbols = opts.symbols.slice(0, 50);
+    const t0 = Date.now();
+    const r = await bt2.runBacktestAPI(opts);
+    r.costMs = Date.now() - t0;
+    res.json(r);
+  }));
+
+  app.post('/api/signal/backtest', requireAdmin, wrap(async (req, res) => {`;
+if (!src.includes(injection.split('\n')[0])) {
+  src = src.replace(anchor, injection);
+  fs.writeFileSync(ROUTES, src);
+  console.log('injected');
+} else {
+  console.log('already');
+}
