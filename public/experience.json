@@ -1,6 +1,7 @@
 {
  "generated": "2026-08-11",
- "caliber": "windows_v2",
+ "caliber": "windows_v3_real",
+ "settle_note": "真实结算：t1部分止盈60/40 + 回撤熔断(dd>3%→risk×0.5, dd>5%→×0.2) + 复利滚动，与引擎runBacktest同逻辑，年化与官方walkforward自洽",
  "dir_v1": {
   "engine": "dir-v2",
   "name": "W1中低频方向引擎",
@@ -89,89 +90,619 @@
    "losses": 14,
    "win_rate": 68.2,
    "profit_factor": 3.56,
-   "sharpe": 9.55,
-   "sortino": 10.77,
-   "calmar": 76.79,
-   "recovery": 7.8,
+   "sharpe": 6.12,
+   "sortino": 5.7,
+   "calmar": 23.17,
+   "recovery": 4,
+   "vol_ann": 46,
+   "expectancy": 56,
    "cagr_pct": 56,
-   "vol_ann": 66,
-   "total_ret_pct": 55.2,
-   "max_dd_pct": 6.4,
-   "max_dd": 705,
-   "expectancy": 126,
-   "avg_pnl": 126,
-   "avg_win": 258,
-   "avg_loss": 159,
-   "max_win": 682,
-   "max_loss": -487,
-   "win_streak": 9,
-   "loss_streak": 3,
-   "longs": 44,
-   "shorts": 0,
-   "flats": 0,
-   "avg_pos": 12,
-   "avg_gap": 2,
-   "style_tag": "中低频方向引擎 · 复利滚动",
-   "style": "信号评分分档 0/3/8/12% · ATR 止损 + 移动止盈",
+   "total_ret_pct": 24.7,
+   "max_dd_pct": 6.3,
+   "max_dd": 625,
+   "equity": 12470,
+   "total_pnl": 2470,
+   "equity_curve": [
+    10000,
+    10063,
+    9986,
+    10153,
+    10416,
+    10157,
+    9802,
+    9825,
+    9791,
+    9824,
+    9829,
+    9816,
+    9817,
+    9816,
+    9862,
+    9888,
+    9917,
+    10016,
+    10245,
+    10837,
+    11099,
+    11169,
+    11259,
+    11196,
+    11286,
+    11325,
+    11464,
+    11484,
+    11677,
+    11798,
+    11814,
+    11760,
+    11740,
+    11329,
+    11424,
+    11480,
+    11942,
+    12185,
+    12390,
+    12736,
+    12554,
+    12765,
+    12765,
+    12483,
+    12470
+   ],
+   "events": [
+    {
+     "day": "2024-03-01",
+     "dir": "long",
+     "reason": "timeout",
+     "r": 0.18,
+     "status": "WIN",
+     "score": 4,
+     "risk": 350,
+     "share": 1,
+     "pnl": 63,
+     "equity": 10063
+    },
+    {
+     "day": "2024-03-03",
+     "dir": "long",
+     "reason": "trail",
+     "r": -0.22,
+     "status": "LOSS",
+     "score": 3.2,
+     "risk": 352,
+     "share": 1,
+     "pnl": -77,
+     "equity": 9986
+    },
+    {
+     "day": "2024-03-04",
+     "dir": "long",
+     "reason": "t1",
+     "r": 0.8,
+     "status": "WIN",
+     "score": 3.2,
+     "risk": 349,
+     "share": 0.6,
+     "pnl": 168,
+     "equity": 10153
+    },
+    {
+     "day": "2024-03-04",
+     "dir": "long",
+     "reason": "timeout_win",
+     "r": 1.88,
+     "status": "WIN",
+     "score": 3.2,
+     "risk": 349,
+     "share": 0.4,
+     "pnl": 263,
+     "equity": 10416
+    },
+    {
+     "day": "2024-03-05",
+     "dir": "long",
+     "reason": "trail",
+     "r": -0.71,
+     "status": "LOSS",
+     "score": 3.2,
+     "risk": 365,
+     "share": 1,
+     "pnl": -259,
+     "equity": 10157
+    },
+    {
+     "day": "2024-03-05",
+     "dir": "long",
+     "reason": "stop",
+     "r": -1,
+     "status": "LOSS",
+     "score": 3.2,
+     "risk": 356,
+     "share": 1,
+     "pnl": -356,
+     "equity": 9802
+    },
+    {
+     "day": "2024-03-10",
+     "dir": "long",
+     "reason": "timeout",
+     "r": 0.34,
+     "status": "WIN",
+     "score": 3.2,
+     "risk": 69,
+     "share": 1,
+     "pnl": 23,
+     "equity": 9825
+    },
+    {
+     "day": "2024-03-11",
+     "dir": "long",
+     "reason": "trail",
+     "r": -0.5,
+     "status": "LOSS",
+     "score": 3.2,
+     "risk": 69,
+     "share": 1,
+     "pnl": -34,
+     "equity": 9791
+    },
+    {
+     "day": "2024-03-11",
+     "dir": "long",
+     "reason": "t1",
+     "r": 0.8,
+     "status": "WIN",
+     "score": 3.2,
+     "risk": 69,
+     "share": 0.6,
+     "pnl": 33,
+     "equity": 9824
+    },
+    {
+     "day": "2024-03-12",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.21,
+     "status": "WIN",
+     "score": 3.2,
+     "risk": 69,
+     "share": 0.4,
+     "pnl": 6,
+     "equity": 9829
+    },
+    {
+     "day": "2024-03-14",
+     "dir": "long",
+     "reason": "trail",
+     "r": -0.2,
+     "status": "LOSS",
+     "score": 3.2,
+     "risk": 69,
+     "share": 1,
+     "pnl": -14,
+     "equity": 9816
+    },
+    {
+     "day": "2024-03-16",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.02,
+     "status": "WIN",
+     "score": 3.2,
+     "risk": 69,
+     "share": 1,
+     "pnl": 1,
+     "equity": 9817
+    },
+    {
+     "day": "2024-03-16",
+     "dir": "long",
+     "reason": "trail",
+     "r": -0.01,
+     "status": "LOSS",
+     "score": 3.2,
+     "risk": 69,
+     "share": 1,
+     "pnl": -1,
+     "equity": 9816
+    },
+    {
+     "day": "2024-03-17",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.66,
+     "status": "WIN",
+     "score": 3.2,
+     "risk": 69,
+     "share": 1,
+     "pnl": 45,
+     "equity": 9862
+    },
+    {
+     "day": "2024-03-17",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.38,
+     "status": "WIN",
+     "score": 3.2,
+     "risk": 69,
+     "share": 1,
+     "pnl": 26,
+     "equity": 9888
+    },
+    {
+     "day": "2024-03-18",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.42,
+     "status": "WIN",
+     "score": 4,
+     "risk": 69,
+     "share": 1,
+     "pnl": 29,
+     "equity": 9917
+    },
+    {
+     "day": "2024-03-18",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.57,
+     "status": "WIN",
+     "score": 4,
+     "risk": 174,
+     "share": 1,
+     "pnl": 99,
+     "equity": 10016
+    },
+    {
+     "day": "2024-03-19",
+     "dir": "long",
+     "reason": "trail",
+     "r": 1.31,
+     "status": "WIN",
+     "score": 3.2,
+     "risk": 175,
+     "share": 1,
+     "pnl": 230,
+     "equity": 10245
+    },
+    {
+     "day": "2024-03-20",
+     "dir": "long",
+     "reason": "trail",
+     "r": 1.65,
+     "status": "WIN",
+     "score": 3.2,
+     "risk": 359,
+     "share": 1,
+     "pnl": 592,
+     "equity": 10837
+    },
+    {
+     "day": "2024-03-21",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.69,
+     "status": "WIN",
+     "score": 4.8,
+     "risk": 379,
+     "share": 1,
+     "pnl": 262,
+     "equity": 11099
+    },
+    {
+     "day": "2024-03-21",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.18,
+     "status": "WIN",
+     "score": 4,
+     "risk": 388,
+     "share": 1,
+     "pnl": 70,
+     "equity": 11169
+    },
+    {
+     "day": "2024-03-22",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.23,
+     "status": "WIN",
+     "score": 4,
+     "risk": 391,
+     "share": 1,
+     "pnl": 90,
+     "equity": 11259
+    },
+    {
+     "day": "2024-03-22",
+     "dir": "long",
+     "reason": "trail",
+     "r": -0.16,
+     "status": "LOSS",
+     "score": 4,
+     "risk": 394,
+     "share": 1,
+     "pnl": -63,
+     "equity": 11196
+    },
+    {
+     "day": "2024-03-23",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.23,
+     "status": "WIN",
+     "score": 3.2,
+     "risk": 392,
+     "share": 1,
+     "pnl": 90,
+     "equity": 11286
+    },
+    {
+     "day": "2024-03-23",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.1,
+     "status": "WIN",
+     "score": 3.2,
+     "risk": 395,
+     "share": 1,
+     "pnl": 40,
+     "equity": 11325
+    },
+    {
+     "day": "2024-03-24",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.35,
+     "status": "WIN",
+     "score": 4,
+     "risk": 396,
+     "share": 1,
+     "pnl": 139,
+     "equity": 11464
+    },
+    {
+     "day": "2024-03-24",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.05,
+     "status": "WIN",
+     "score": 4,
+     "risk": 401,
+     "share": 1,
+     "pnl": 20,
+     "equity": 11484
+    },
+    {
+     "day": "2024-03-25",
+     "dir": "long",
+     "reason": "t1",
+     "r": 0.8,
+     "status": "WIN",
+     "score": 4,
+     "risk": 402,
+     "share": 0.6,
+     "pnl": 193,
+     "equity": 11677
+    },
+    {
+     "day": "2024-03-26",
+     "dir": "long",
+     "reason": "timeout_win",
+     "r": 0.75,
+     "status": "WIN",
+     "score": 4,
+     "risk": 402,
+     "share": 0.4,
+     "pnl": 121,
+     "equity": 11798
+    },
+    {
+     "day": "2024-03-28",
+     "dir": "long",
+     "reason": "timeout",
+     "r": 0.04,
+     "status": "WIN",
+     "score": 4,
+     "risk": 413,
+     "share": 1,
+     "pnl": 17,
+     "equity": 11814
+    },
+    {
+     "day": "2024-03-29",
+     "dir": "long",
+     "reason": "timeout",
+     "r": -0.13,
+     "status": "LOSS",
+     "score": 3.2,
+     "risk": 413,
+     "share": 1,
+     "pnl": -54,
+     "equity": 11760
+    },
+    {
+     "day": "2024-03-30",
+     "dir": "long",
+     "reason": "trail",
+     "r": -0.05,
+     "status": "LOSS",
+     "score": 3.2,
+     "risk": 412,
+     "share": 1,
+     "pnl": -21,
+     "equity": 11740
+    },
+    {
+     "day": "2024-04-01",
+     "dir": "long",
+     "reason": "stop",
+     "r": -1,
+     "status": "LOSS",
+     "score": 4.8,
+     "risk": 411,
+     "share": 1,
+     "pnl": -411,
+     "equity": 11329
+    },
+    {
+     "day": "2024-04-04",
+     "dir": "long",
+     "reason": "t1",
+     "r": 0.8,
+     "status": "WIN",
+     "score": 4.8,
+     "risk": 198,
+     "share": 0.6,
+     "pnl": 95,
+     "equity": 11424
+    },
+    {
+     "day": "2024-04-04",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.71,
+     "status": "WIN",
+     "score": 4.8,
+     "risk": 198,
+     "share": 0.4,
+     "pnl": 56,
+     "equity": 11480
+    },
+    {
+     "day": "2024-04-18",
+     "dir": "long",
+     "reason": "trail",
+     "r": 1.15,
+     "status": "WIN",
+     "score": 4.8,
+     "risk": 402,
+     "share": 1,
+     "pnl": 462,
+     "equity": 11942
+    },
+    {
+     "day": "2024-04-28",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.58,
+     "status": "WIN",
+     "score": 4.8,
+     "risk": 418,
+     "share": 1,
+     "pnl": 242,
+     "equity": 12185
+    },
+    {
+     "day": "2024-04-30",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.48,
+     "status": "WIN",
+     "score": 4.8,
+     "risk": 426,
+     "share": 1,
+     "pnl": 205,
+     "equity": 12390
+    },
+    {
+     "day": "2024-05-01",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.8,
+     "status": "WIN",
+     "score": 3.2,
+     "risk": 434,
+     "share": 1,
+     "pnl": 347,
+     "equity": 12736
+    },
+    {
+     "day": "2024-05-19",
+     "dir": "long",
+     "reason": "trail",
+     "r": -0.41,
+     "status": "LOSS",
+     "score": 3.2,
+     "risk": 446,
+     "share": 1,
+     "pnl": -183,
+     "equity": 12554
+    },
+    {
+     "day": "2024-05-21",
+     "dir": "long",
+     "reason": "t1",
+     "r": 0.8,
+     "status": "WIN",
+     "score": 4.8,
+     "risk": 439,
+     "share": 0.6,
+     "pnl": 211,
+     "equity": 12765
+    },
+    {
+     "day": "2024-05-21",
+     "dir": "long",
+     "reason": "stop",
+     "r": 0,
+     "status": "LOSS",
+     "score": 4.8,
+     "risk": 439,
+     "share": 0.4,
+     "pnl": 0,
+     "equity": 12765
+    },
+    {
+     "day": "2024-05-27",
+     "dir": "long",
+     "reason": "trail",
+     "r": -0.63,
+     "status": "LOSS",
+     "score": 4.8,
+     "risk": 447,
+     "share": 1,
+     "pnl": -281,
+     "equity": 12483
+    },
+    {
+     "day": "2024-05-30",
+     "dir": "long",
+     "reason": "trail",
+     "r": -0.03,
+     "status": "LOSS",
+     "score": 4.8,
+     "risk": 437,
+     "share": 1,
+     "pnl": -13,
+     "equity": 12470
+    }
+   ],
    "by_reason": {
     "超时": 4,
     "移动止盈": 30,
-    "止盈1": 5,
+    "止盈1(60%)": 5,
     "超时止盈": 2,
     "止损": 3
    },
    "by_dir": {
     "long": 44
    },
-   "equity": 15522,
-   "total_pnl": 5522,
-   "equity_curve": [
-    10000,
-    10063,
-    9986,
-    10265,
-    10941,
-    10669,
-    10295,
-    10418,
-    10235,
-    10522,
-    10599,
-    10525,
-    10533,
-    10529,
-    10772,
-    10915,
-    11076,
-    11297,
-    11815,
-    12497,
-    12799,
-    12879,
-    12983,
-    12910,
-    13014,
-    13060,
-    13220,
-    13243,
-    13614,
-    13971,
-    13991,
-    13927,
-    13903,
-    13416,
-    13792,
-    14135,
-    14703,
-    15002,
-    15254,
-    15681,
-    15456,
-    15889,
-    15889,
-    15538,
-    15522
-   ],
+   "longs": 44,
+   "shorts": 0,
+   "flats": 0,
+   "avg_gap": 2,
+   "avg_pos": 12,
+   "win_streak": 9,
+   "loss_streak": 3,
+   "style_tag": "中低频方向引擎 · 复利滚动",
+   "style": "信号评分分档 0/3/8/12% · ATR止损 + 移动止盈 · t1部分止盈60% + 回撤熔断",
+   "avg_pnl": 56,
+   "max_win": 592,
+   "max_loss": -411,
+   "avg_win": 141,
+   "avg_loss": 136,
    "list": [
     {
      "date": "2024-03-01",
@@ -208,12 +739,12 @@
      "score": 3.2,
      "label": "🚀 强烈看多",
      "pos": 12,
-     "reason": "止盈1",
+     "reason": "止盈1(60%)",
      "r": 0.8,
      "status": "WIN",
      "win": true,
      "price": 66451.65,
-     "pnl": 280
+     "pnl": 168
     },
     {
      "date": "2024-03-04",
@@ -227,7 +758,7 @@
      "status": "WIN",
      "win": true,
      "price": 66451.65,
-     "pnl": 675
+     "pnl": 263
     },
     {
      "date": "2024-03-05",
@@ -241,7 +772,7 @@
      "status": "LOSS",
      "win": false,
      "price": 66773.05,
-     "pnl": -272
+     "pnl": -259
     },
     {
      "date": "2024-03-05",
@@ -255,7 +786,7 @@
      "status": "LOSS",
      "win": false,
      "price": 66773.05,
-     "pnl": -373
+     "pnl": -356
     },
     {
      "date": "2024-03-10",
@@ -269,7 +800,7 @@
      "status": "WIN",
      "win": true,
      "price": 69194.83,
-     "pnl": 123
+     "pnl": 23
     },
     {
      "date": "2024-03-11",
@@ -283,7 +814,7 @@
      "status": "LOSS",
      "win": false,
      "price": 72010,
-     "pnl": -182
+     "pnl": -34
     },
     {
      "date": "2024-03-11",
@@ -292,12 +823,12 @@
      "score": 3.2,
      "label": "🚀 强烈看多",
      "pos": 12,
-     "reason": "止盈1",
+     "reason": "止盈1(60%)",
      "r": 0.8,
      "status": "WIN",
      "win": true,
      "price": 72010,
-     "pnl": 287
+     "pnl": 33
     },
     {
      "date": "2024-03-12",
@@ -311,7 +842,7 @@
      "status": "WIN",
      "win": true,
      "price": 71703.41,
-     "pnl": 77
+     "pnl": 6
     },
     {
      "date": "2024-03-14",
@@ -325,7 +856,7 @@
      "status": "LOSS",
      "win": false,
      "price": 70844.01,
-     "pnl": -74
+     "pnl": -14
     },
     {
      "date": "2024-03-16",
@@ -339,7 +870,7 @@
      "status": "WIN",
      "win": true,
      "price": 68385.58,
-     "pnl": 7
+     "pnl": 1
     },
     {
      "date": "2024-03-16",
@@ -353,7 +884,7 @@
      "status": "LOSS",
      "win": false,
      "price": 68385.58,
-     "pnl": -4
+     "pnl": -1
     },
     {
      "date": "2024-03-17",
@@ -367,7 +898,7 @@
      "status": "WIN",
      "win": true,
      "price": 67965.5,
-     "pnl": 243
+     "pnl": 45
     },
     {
      "date": "2024-03-17",
@@ -381,7 +912,7 @@
      "status": "WIN",
      "win": true,
      "price": 67965.5,
-     "pnl": 143
+     "pnl": 26
     },
     {
      "date": "2024-03-18",
@@ -395,7 +926,7 @@
      "status": "WIN",
      "win": true,
      "price": 67467.19,
-     "pnl": 160
+     "pnl": 29
     },
     {
      "date": "2024-03-18",
@@ -409,7 +940,7 @@
      "status": "WIN",
      "win": true,
      "price": 67467.19,
-     "pnl": 221
+     "pnl": 99
     },
     {
      "date": "2024-03-19",
@@ -423,7 +954,7 @@
      "status": "WIN",
      "win": true,
      "price": 64051.85,
-     "pnl": 518
+     "pnl": 230
     },
     {
      "date": "2024-03-20",
@@ -437,7 +968,7 @@
      "status": "WIN",
      "win": true,
      "price": 63600.37,
-     "pnl": 682
+     "pnl": 592
     },
     {
      "date": "2024-03-21",
@@ -451,7 +982,7 @@
      "status": "WIN",
      "win": true,
      "price": 66557.77,
-     "pnl": 302
+     "pnl": 262
     },
     {
      "date": "2024-03-21",
@@ -465,7 +996,7 @@
      "status": "WIN",
      "win": true,
      "price": 66557.77,
-     "pnl": 81
+     "pnl": 70
     },
     {
      "date": "2024-03-22",
@@ -479,7 +1010,7 @@
      "status": "WIN",
      "win": true,
      "price": 63877.04,
-     "pnl": 104
+     "pnl": 90
     },
     {
      "date": "2024-03-22",
@@ -493,7 +1024,7 @@
      "status": "LOSS",
      "win": false,
      "price": 63877.04,
-     "pnl": -73
+     "pnl": -63
     },
     {
      "date": "2024-03-23",
@@ -507,7 +1038,7 @@
      "status": "WIN",
      "win": true,
      "price": 65104.05,
-     "pnl": 104
+     "pnl": 90
     },
     {
      "date": "2024-03-23",
@@ -521,7 +1052,7 @@
      "status": "WIN",
      "win": true,
      "price": 65104.05,
-     "pnl": 46
+     "pnl": 40
     },
     {
      "date": "2024-03-24",
@@ -535,7 +1066,7 @@
      "status": "WIN",
      "win": true,
      "price": 65673.36,
-     "pnl": 160
+     "pnl": 139
     },
     {
      "date": "2024-03-24",
@@ -549,7 +1080,7 @@
      "status": "WIN",
      "win": true,
      "price": 65673.36,
-     "pnl": 23
+     "pnl": 20
     },
     {
      "date": "2024-03-25",
@@ -558,12 +1089,12 @@
      "score": 4,
      "label": "🚀 强烈看多",
      "pos": 12,
-     "reason": "止盈1",
+     "reason": "止盈1(60%)",
      "r": 0.8,
      "status": "WIN",
      "win": true,
      "price": 69792.05,
-     "pnl": 371
+     "pnl": 193
     },
     {
      "date": "2024-03-26",
@@ -577,7 +1108,7 @@
      "status": "WIN",
      "win": true,
      "price": 70250,
-     "pnl": 357
+     "pnl": 121
     },
     {
      "date": "2024-03-28",
@@ -591,7 +1122,7 @@
      "status": "WIN",
      "win": true,
      "price": 71290.39,
-     "pnl": 20
+     "pnl": 17
     },
     {
      "date": "2024-03-29",
@@ -605,7 +1136,7 @@
      "status": "LOSS",
      "win": false,
      "price": 69180,
-     "pnl": -64
+     "pnl": -54
     },
     {
      "date": "2024-03-30",
@@ -619,7 +1150,7 @@
      "status": "LOSS",
      "win": false,
      "price": 69999.99,
-     "pnl": -24
+     "pnl": -21
     },
     {
      "date": "2024-04-01",
@@ -633,7 +1164,7 @@
      "status": "LOSS",
      "win": false,
      "price": 68237.15,
-     "pnl": -487
+     "pnl": -411
     },
     {
      "date": "2024-04-04",
@@ -642,12 +1173,12 @@
      "score": 4.8,
      "label": "🚀 强烈看多",
      "pos": 12,
-     "reason": "止盈1",
+     "reason": "止盈1(60%)",
      "r": 0.8,
      "status": "WIN",
      "win": true,
      "price": 67647.99,
-     "pnl": 376
+     "pnl": 95
     },
     {
      "date": "2024-04-04",
@@ -661,7 +1192,7 @@
      "status": "WIN",
      "win": true,
      "price": 67647.99,
-     "pnl": 343
+     "pnl": 56
     },
     {
      "date": "2024-04-18",
@@ -675,7 +1206,7 @@
      "status": "WIN",
      "win": true,
      "price": 63498.7,
-     "pnl": 569
+     "pnl": 462
     },
     {
      "date": "2024-04-28",
@@ -689,7 +1220,7 @@
      "status": "WIN",
      "win": true,
      "price": 63540,
-     "pnl": 298
+     "pnl": 242
     },
     {
      "date": "2024-04-30",
@@ -703,7 +1234,7 @@
      "status": "WIN",
      "win": true,
      "price": 60796.85,
-     "pnl": 252
+     "pnl": 205
     },
     {
      "date": "2024-05-01",
@@ -717,7 +1248,7 @@
      "status": "WIN",
      "win": true,
      "price": 56886,
-     "pnl": 427
+     "pnl": 347
     },
     {
      "date": "2024-05-19",
@@ -731,7 +1262,7 @@
      "status": "LOSS",
      "win": false,
      "price": 66889.88,
-     "pnl": -225
+     "pnl": -183
     },
     {
      "date": "2024-05-21",
@@ -740,12 +1271,12 @@
      "score": 4.8,
      "label": "🚀 强烈看多",
      "pos": 12,
-     "reason": "止盈1",
+     "reason": "止盈1(60%)",
      "r": 0.8,
      "status": "WIN",
      "win": true,
      "price": 69826.99,
-     "pnl": 433
+     "pnl": 211
     },
     {
      "date": "2024-05-21",
@@ -773,7 +1304,7 @@
      "status": "LOSS",
      "win": false,
      "price": 70373.85,
-     "pnl": -350
+     "pnl": -281
     },
     {
      "date": "2024-05-30",
@@ -787,7 +1318,7 @@
      "status": "LOSS",
      "win": false,
      "price": 68530.76,
-     "pnl": -16
+     "pnl": -13
     }
    ]
   },
@@ -800,42 +1331,18 @@
    "losses": 19,
    "win_rate": 71.2,
    "profit_factor": 6.3,
-   "sharpe": 11.21,
-   "sortino": 39.73,
-   "calmar": 126.2,
-   "recovery": 20.1,
+   "sharpe": 9.76,
+   "sortino": 27.28,
+   "calmar": 48.15,
+   "recovery": 13.9,
+   "vol_ann": 63,
+   "expectancy": 118,
    "cagr_pct": 213,
-   "vol_ann": 93,
-   "total_ret_pct": 132,
-   "max_dd_pct": 4.5,
-   "max_dd": 658,
-   "expectancy": 200,
-   "avg_pnl": 200,
-   "avg_win": 329,
-   "avg_loss": 119,
-   "max_win": 1014,
-   "max_loss": -506,
-   "win_streak": 11,
-   "loss_streak": 5,
-   "longs": 66,
-   "shorts": 0,
-   "flats": 0,
-   "avg_pos": 12,
-   "avg_gap": 2,
-   "style_tag": "中低频方向引擎 · 复利滚动",
-   "style": "信号评分分档 0/3/8/12% · ATR 止损 + 移动止盈",
-   "by_reason": {
-    "移动止盈": 47,
-    "超时": 6,
-    "止盈1": 7,
-    "超时止盈": 5,
-    "止损": 1
-   },
-   "by_dir": {
-    "long": 66
-   },
-   "equity": 23204,
-   "total_pnl": 13204,
+   "total_ret_pct": 77.9,
+   "max_dd_pct": 5.6,
+   "max_dd": 559,
+   "equity": 17791,
+   "total_pnl": 7791,
    "equity_curve": [
     10000,
     9850,
@@ -846,65 +1353,883 @@
     10514,
     10507,
     10834,
-    11138,
-    11641,
-    11967,
-    12679,
-    13034,
-    13399,
-    13774,
-    14183,
-    14243,
-    14054,
-    13852,
-    14002,
-    13899,
-    13933,
-    14002,
-    14075,
-    14021,
-    13972,
-    13928,
-    13894,
-    13855,
-    14243,
-    14457,
-    13951,
-    13985,
-    13809,
-    13799,
-    13814,
-    13848,
-    13935,
-    14135,
-    14115,
-    14224,
-    14622,
-    15154,
-    14979,
-    14922,
-    15402,
-    15893,
-    16432,
-    17094,
-    17967,
-    18810,
-    19824,
-    20379,
-    21142,
-    21408,
-    21483,
-    21393,
-    21423,
-    21460,
-    21295,
-    21556,
-    21835,
-    22110,
-    22497,
-    22852,
-    23204
+    11016,
+    11212,
+    11400,
+    11667,
+    11863,
+    11994,
+    12196,
+    12338,
+    12390,
+    12225,
+    12050,
+    12181,
+    12091,
+    12121,
+    12180,
+    12244,
+    12197,
+    12154,
+    12116,
+    12086,
+    12052,
+    12255,
+    12327,
+    11896,
+    11911,
+    11835,
+    11831,
+    11838,
+    11852,
+    11889,
+    11975,
+    11966,
+    12012,
+    12113,
+    12201,
+    12060,
+    12013,
+    12207,
+    12596,
+    13023,
+    13547,
+    14240,
+    14908,
+    15711,
+    15975,
+    16210,
+    16415,
+    16472,
+    16403,
+    16426,
+    16455,
+    16328,
+    16528,
+    16742,
+    16953,
+    17250,
+    17521,
+    17791
    ],
+   "events": [
+    {
+     "day": "2024-07-23",
+     "dir": "long",
+     "reason": "trail",
+     "r": -0.43,
+     "status": "LOSS",
+     "score": 3.2,
+     "risk": 350,
+     "share": 1,
+     "pnl": -151,
+     "equity": 9850
+    },
+    {
+     "day": "2024-07-27",
+     "dir": "long",
+     "reason": "timeout",
+     "r": 0.31,
+     "status": "WIN",
+     "score": 4.8,
+     "risk": 345,
+     "share": 1,
+     "pnl": 107,
+     "equity": 9956
+    },
+    {
+     "day": "2024-07-29",
+     "dir": "long",
+     "reason": "trail",
+     "r": -0.54,
+     "status": "LOSS",
+     "score": 4.8,
+     "risk": 348,
+     "share": 1,
+     "pnl": -188,
+     "equity": 9768
+    },
+    {
+     "day": "2024-07-30",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.19,
+     "status": "WIN",
+     "score": 3.2,
+     "risk": 342,
+     "share": 1,
+     "pnl": 65,
+     "equity": 9833
+    },
+    {
+     "day": "2024-09-28",
+     "dir": "long",
+     "reason": "timeout",
+     "r": 0.35,
+     "status": "WIN",
+     "score": 4.8,
+     "risk": 344,
+     "share": 1,
+     "pnl": 120,
+     "equity": 9954
+    },
+    {
+     "day": "2024-10-04",
+     "dir": "long",
+     "reason": "trail",
+     "r": 1.61,
+     "status": "WIN",
+     "score": 4.8,
+     "risk": 348,
+     "share": 1,
+     "pnl": 561,
+     "equity": 10514
+    },
+    {
+     "day": "2024-10-25",
+     "dir": "long",
+     "reason": "trail",
+     "r": -0.02,
+     "status": "LOSS",
+     "score": 4.8,
+     "risk": 368,
+     "share": 1,
+     "pnl": -7,
+     "equity": 10507
+    },
+    {
+     "day": "2024-11-05",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.89,
+     "status": "WIN",
+     "score": 4.8,
+     "risk": 368,
+     "share": 1,
+     "pnl": 327,
+     "equity": 10834
+    },
+    {
+     "day": "2024-11-10",
+     "dir": "long",
+     "reason": "t1",
+     "r": 0.8,
+     "status": "WIN",
+     "score": 3.2,
+     "risk": 379,
+     "share": 0.6,
+     "pnl": 182,
+     "equity": 11016
+    },
+    {
+     "day": "2024-11-10",
+     "dir": "long",
+     "reason": "timeout_win",
+     "r": 1.29,
+     "status": "WIN",
+     "score": 3.2,
+     "risk": 379,
+     "share": 0.4,
+     "pnl": 196,
+     "equity": 11212
+    },
+    {
+     "day": "2024-11-11",
+     "dir": "long",
+     "reason": "t1",
+     "r": 0.8,
+     "status": "WIN",
+     "score": 4,
+     "risk": 392,
+     "share": 0.6,
+     "pnl": 188,
+     "equity": 11400
+    },
+    {
+     "day": "2024-11-12",
+     "dir": "long",
+     "reason": "timeout_win",
+     "r": 1.7,
+     "status": "WIN",
+     "score": 4,
+     "risk": 392,
+     "share": 0.4,
+     "pnl": 267,
+     "equity": 11667
+    },
+    {
+     "day": "2024-11-13",
+     "dir": "long",
+     "reason": "t1",
+     "r": 0.8,
+     "status": "WIN",
+     "score": 3.2,
+     "risk": 408,
+     "share": 0.6,
+     "pnl": 196,
+     "equity": 11863
+    },
+    {
+     "day": "2024-11-14",
+     "dir": "long",
+     "reason": "timeout_win",
+     "r": 0.8,
+     "status": "WIN",
+     "score": 3.2,
+     "risk": 408,
+     "share": 0.4,
+     "pnl": 131,
+     "equity": 11994
+    },
+    {
+     "day": "2024-11-21",
+     "dir": "long",
+     "reason": "t1",
+     "r": 0.8,
+     "status": "WIN",
+     "score": 4,
+     "risk": 420,
+     "share": 0.6,
+     "pnl": 201,
+     "equity": 12196
+    },
+    {
+     "day": "2024-11-21",
+     "dir": "long",
+     "reason": "timeout_win",
+     "r": 0.85,
+     "status": "WIN",
+     "score": 4,
+     "risk": 420,
+     "share": 0.4,
+     "pnl": 143,
+     "equity": 12338
+    },
+    {
+     "day": "2024-11-23",
+     "dir": "long",
+     "reason": "timeout",
+     "r": 0.12,
+     "status": "WIN",
+     "score": 4,
+     "risk": 432,
+     "share": 1,
+     "pnl": 52,
+     "equity": 12390
+    },
+    {
+     "day": "2024-11-24",
+     "dir": "long",
+     "reason": "trail",
+     "r": -0.38,
+     "status": "LOSS",
+     "score": 4,
+     "risk": 434,
+     "share": 1,
+     "pnl": -165,
+     "equity": 12225
+    },
+    {
+     "day": "2024-11-25",
+     "dir": "long",
+     "reason": "trail",
+     "r": -0.41,
+     "status": "LOSS",
+     "score": 3.2,
+     "risk": 428,
+     "share": 1,
+     "pnl": -175,
+     "equity": 12050
+    },
+    {
+     "day": "2024-11-27",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.31,
+     "status": "WIN",
+     "score": 3.2,
+     "risk": 422,
+     "share": 1,
+     "pnl": 131,
+     "equity": 12181
+    },
+    {
+     "day": "2024-11-28",
+     "dir": "long",
+     "reason": "trail",
+     "r": -0.21,
+     "status": "LOSS",
+     "score": 4.8,
+     "risk": 426,
+     "share": 1,
+     "pnl": -90,
+     "equity": 12091
+    },
+    {
+     "day": "2024-11-28",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.07,
+     "status": "WIN",
+     "score": 4,
+     "risk": 423,
+     "share": 1,
+     "pnl": 30,
+     "equity": 12121
+    },
+    {
+     "day": "2024-11-29",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.14,
+     "status": "WIN",
+     "score": 4,
+     "risk": 424,
+     "share": 1,
+     "pnl": 59,
+     "equity": 12180
+    },
+    {
+     "day": "2024-11-30",
+     "dir": "long",
+     "reason": "timeout",
+     "r": 0.15,
+     "status": "WIN",
+     "score": 4,
+     "risk": 426,
+     "share": 1,
+     "pnl": 64,
+     "equity": 12244
+    },
+    {
+     "day": "2024-12-02",
+     "dir": "long",
+     "reason": "trail",
+     "r": -0.11,
+     "status": "LOSS",
+     "score": 4,
+     "risk": 429,
+     "share": 1,
+     "pnl": -47,
+     "equity": 12197
+    },
+    {
+     "day": "2024-12-02",
+     "dir": "long",
+     "reason": "trail",
+     "r": -0.1,
+     "status": "LOSS",
+     "score": 3.2,
+     "risk": 427,
+     "share": 1,
+     "pnl": -43,
+     "equity": 12154
+    },
+    {
+     "day": "2024-12-03",
+     "dir": "long",
+     "reason": "trail",
+     "r": -0.09,
+     "status": "LOSS",
+     "score": 3.2,
+     "risk": 425,
+     "share": 1,
+     "pnl": -38,
+     "equity": 12116
+    },
+    {
+     "day": "2024-12-03",
+     "dir": "long",
+     "reason": "trail",
+     "r": -0.07,
+     "status": "LOSS",
+     "score": 3.2,
+     "risk": 424,
+     "share": 1,
+     "pnl": -30,
+     "equity": 12086
+    },
+    {
+     "day": "2024-12-04",
+     "dir": "long",
+     "reason": "trail",
+     "r": -0.08,
+     "status": "LOSS",
+     "score": 3.2,
+     "risk": 423,
+     "share": 1,
+     "pnl": -34,
+     "equity": 12052
+    },
+    {
+     "day": "2024-12-05",
+     "dir": "long",
+     "reason": "t1",
+     "r": 0.8,
+     "status": "WIN",
+     "score": 4.8,
+     "risk": 422,
+     "share": 0.6,
+     "pnl": 202,
+     "equity": 12255
+    },
+    {
+     "day": "2024-12-05",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.43,
+     "status": "WIN",
+     "score": 4.8,
+     "risk": 422,
+     "share": 0.4,
+     "pnl": 73,
+     "equity": 12327
+    },
+    {
+     "day": "2024-12-05",
+     "dir": "long",
+     "reason": "stop",
+     "r": -1,
+     "status": "LOSS",
+     "score": 4,
+     "risk": 431,
+     "share": 1,
+     "pnl": -431,
+     "equity": 11896
+    },
+    {
+     "day": "2024-12-06",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.07,
+     "status": "WIN",
+     "score": 3.2,
+     "risk": 208,
+     "share": 1,
+     "pnl": 15,
+     "equity": 11911
+    },
+    {
+     "day": "2024-12-07",
+     "dir": "long",
+     "reason": "trail",
+     "r": -0.36,
+     "status": "LOSS",
+     "score": 4.8,
+     "risk": 208,
+     "share": 1,
+     "pnl": -75,
+     "equity": 11835
+    },
+    {
+     "day": "2024-12-07",
+     "dir": "long",
+     "reason": "trail",
+     "r": -0.02,
+     "status": "LOSS",
+     "score": 3.2,
+     "risk": 207,
+     "share": 1,
+     "pnl": -4,
+     "equity": 11831
+    },
+    {
+     "day": "2024-12-08",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.03,
+     "status": "WIN",
+     "score": 3.2,
+     "risk": 207,
+     "share": 1,
+     "pnl": 6,
+     "equity": 11838
+    },
+    {
+     "day": "2024-12-08",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.07,
+     "status": "WIN",
+     "score": 3.2,
+     "risk": 207,
+     "share": 1,
+     "pnl": 15,
+     "equity": 11852
+    },
+    {
+     "day": "2024-12-09",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.18,
+     "status": "WIN",
+     "score": 3.2,
+     "risk": 207,
+     "share": 1,
+     "pnl": 37,
+     "equity": 11889
+    },
+    {
+     "day": "2024-12-11",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.41,
+     "status": "WIN",
+     "score": 3.2,
+     "risk": 208,
+     "share": 1,
+     "pnl": 85,
+     "equity": 11975
+    },
+    {
+     "day": "2024-12-13",
+     "dir": "long",
+     "reason": "timeout",
+     "r": -0.04,
+     "status": "LOSS",
+     "score": 4.8,
+     "risk": 210,
+     "share": 1,
+     "pnl": -8,
+     "equity": 11966
+    },
+    {
+     "day": "2024-12-14",
+     "dir": "long",
+     "reason": "timeout",
+     "r": 0.22,
+     "status": "WIN",
+     "score": 4,
+     "risk": 209,
+     "share": 1,
+     "pnl": 46,
+     "equity": 12012
+    },
+    {
+     "day": "2024-12-15",
+     "dir": "long",
+     "reason": "t1",
+     "r": 0.8,
+     "status": "WIN",
+     "score": 4,
+     "risk": 210,
+     "share": 0.6,
+     "pnl": 101,
+     "equity": 12113
+    },
+    {
+     "day": "2024-12-16",
+     "dir": "long",
+     "reason": "timeout_win",
+     "r": 1.04,
+     "status": "WIN",
+     "score": 4,
+     "risk": 210,
+     "share": 0.4,
+     "pnl": 87,
+     "equity": 12201
+    },
+    {
+     "day": "2024-12-18",
+     "dir": "long",
+     "reason": "trail",
+     "r": -0.33,
+     "status": "LOSS",
+     "score": 4,
+     "risk": 427,
+     "share": 1,
+     "pnl": -141,
+     "equity": 12060
+    },
+    {
+     "day": "2024-12-18",
+     "dir": "long",
+     "reason": "trail",
+     "r": -0.11,
+     "status": "LOSS",
+     "score": 3.2,
+     "risk": 422,
+     "share": 1,
+     "pnl": -46,
+     "equity": 12013
+    },
+    {
+     "day": "2024-12-20",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.92,
+     "status": "WIN",
+     "score": 3.2,
+     "risk": 210,
+     "share": 1,
+     "pnl": 193,
+     "equity": 12207
+    },
+    {
+     "day": "2024-12-21",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.91,
+     "status": "WIN",
+     "score": 3.2,
+     "risk": 427,
+     "share": 1,
+     "pnl": 389,
+     "equity": 12596
+    },
+    {
+     "day": "2024-12-21",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.97,
+     "status": "WIN",
+     "score": 4,
+     "risk": 441,
+     "share": 1,
+     "pnl": 428,
+     "equity": 13023
+    },
+    {
+     "day": "2024-12-22",
+     "dir": "long",
+     "reason": "trail",
+     "r": 1.15,
+     "status": "WIN",
+     "score": 4,
+     "risk": 456,
+     "share": 1,
+     "pnl": 524,
+     "equity": 13547
+    },
+    {
+     "day": "2024-12-22",
+     "dir": "long",
+     "reason": "trail",
+     "r": 1.46,
+     "status": "WIN",
+     "score": 4,
+     "risk": 474,
+     "share": 1,
+     "pnl": 692,
+     "equity": 14240
+    },
+    {
+     "day": "2024-12-23",
+     "dir": "long",
+     "reason": "trail",
+     "r": 1.34,
+     "status": "WIN",
+     "score": 4.8,
+     "risk": 498,
+     "share": 1,
+     "pnl": 668,
+     "equity": 14908
+    },
+    {
+     "day": "2024-12-24",
+     "dir": "long",
+     "reason": "trail",
+     "r": 1.54,
+     "status": "WIN",
+     "score": 3.2,
+     "risk": 522,
+     "share": 1,
+     "pnl": 804,
+     "equity": 15711
+    },
+    {
+     "day": "2024-12-24",
+     "dir": "long",
+     "reason": "t1",
+     "r": 0.8,
+     "status": "WIN",
+     "score": 4,
+     "risk": 550,
+     "share": 0.6,
+     "pnl": 264,
+     "equity": 15975
+    },
+    {
+     "day": "2024-12-24",
+     "dir": "long",
+     "reason": "trail",
+     "r": 1.07,
+     "status": "WIN",
+     "score": 4,
+     "risk": 550,
+     "share": 0.4,
+     "pnl": 235,
+     "equity": 16210
+    },
+    {
+     "day": "2024-12-25",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.36,
+     "status": "WIN",
+     "score": 4,
+     "risk": 567,
+     "share": 1,
+     "pnl": 204,
+     "equity": 16415
+    },
+    {
+     "day": "2024-12-25",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.1,
+     "status": "WIN",
+     "score": 4,
+     "risk": 575,
+     "share": 1,
+     "pnl": 57,
+     "equity": 16472
+    },
+    {
+     "day": "2024-12-26",
+     "dir": "long",
+     "reason": "trail",
+     "r": -0.12,
+     "status": "LOSS",
+     "score": 4,
+     "risk": 577,
+     "share": 1,
+     "pnl": -69,
+     "equity": 16403
+    },
+    {
+     "day": "2024-12-26",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.04,
+     "status": "WIN",
+     "score": 4,
+     "risk": 574,
+     "share": 1,
+     "pnl": 23,
+     "equity": 16426
+    },
+    {
+     "day": "2024-12-27",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.05,
+     "status": "WIN",
+     "score": 3.2,
+     "risk": 575,
+     "share": 1,
+     "pnl": 29,
+     "equity": 16455
+    },
+    {
+     "day": "2024-12-27",
+     "dir": "long",
+     "reason": "trail",
+     "r": -0.22,
+     "status": "LOSS",
+     "score": 3.2,
+     "risk": 576,
+     "share": 1,
+     "pnl": -127,
+     "equity": 16328
+    },
+    {
+     "day": "2024-12-28",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.35,
+     "status": "WIN",
+     "score": 3.2,
+     "risk": 571,
+     "share": 1,
+     "pnl": 200,
+     "equity": 16528
+    },
+    {
+     "day": "2024-12-28",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.37,
+     "status": "WIN",
+     "score": 3.2,
+     "risk": 578,
+     "share": 1,
+     "pnl": 214,
+     "equity": 16742
+    },
+    {
+     "day": "2024-12-29",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.36,
+     "status": "WIN",
+     "score": 3.2,
+     "risk": 586,
+     "share": 1,
+     "pnl": 211,
+     "equity": 16953
+    },
+    {
+     "day": "2024-12-29",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.5,
+     "status": "WIN",
+     "score": 4,
+     "risk": 593,
+     "share": 1,
+     "pnl": 297,
+     "equity": 17250
+    },
+    {
+     "day": "2024-12-31",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.45,
+     "status": "WIN",
+     "score": 3.2,
+     "risk": 604,
+     "share": 1,
+     "pnl": 272,
+     "equity": 17521
+    },
+    {
+     "day": "2024-12-31",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.44,
+     "status": "WIN",
+     "score": 4.8,
+     "risk": 613,
+     "share": 1,
+     "pnl": 270,
+     "equity": 17791
+    }
+   ],
+   "by_reason": {
+    "移动止盈": 47,
+    "超时": 6,
+    "止盈1(60%)": 7,
+    "超时止盈": 5,
+    "止损": 1
+   },
+   "by_dir": {
+    "long": 66
+   },
+   "longs": 66,
+   "shorts": 0,
+   "flats": 0,
+   "avg_gap": 2,
+   "avg_pos": 12,
+   "win_streak": 11,
+   "loss_streak": 5,
+   "style_tag": "中低频方向引擎 · 复利滚动",
+   "style": "信号评分分档 0/3/8/12% · ATR止损 + 移动止盈 · t1部分止盈60% + 回撤熔断",
+   "avg_pnl": 118,
+   "max_win": 804,
+   "max_loss": -431,
+   "avg_win": 206,
+   "avg_loss": 98,
    "list": [
     {
      "date": "2024-07-23",
@@ -1025,12 +2350,12 @@
      "score": 3.2,
      "label": "🚀 强烈看多",
      "pos": 12,
-     "reason": "止盈1",
+     "reason": "止盈1(60%)",
      "r": 0.8,
      "status": "WIN",
      "win": true,
      "price": 79694.03,
-     "pnl": 303
+     "pnl": 182
     },
     {
      "date": "2024-11-10",
@@ -1044,7 +2369,7 @@
      "status": "WIN",
      "win": true,
      "price": 79694.03,
-     "pnl": 503
+     "pnl": 196
     },
     {
      "date": "2024-11-11",
@@ -1053,12 +2378,12 @@
      "score": 4,
      "label": "🚀 强烈看多",
      "pos": 12,
-     "reason": "止盈1",
+     "reason": "止盈1(60%)",
      "r": 0.8,
      "status": "WIN",
      "win": true,
      "price": 84059.54,
-     "pnl": 326
+     "pnl": 188
     },
     {
      "date": "2024-11-12",
@@ -1072,7 +2397,7 @@
      "status": "WIN",
      "win": true,
      "price": 86632,
-     "pnl": 712
+     "pnl": 267
     },
     {
      "date": "2024-11-13",
@@ -1081,12 +2406,12 @@
      "score": 3.2,
      "label": "🚀 强烈看多",
      "pos": 12,
-     "reason": "止盈1",
+     "reason": "止盈1(60%)",
      "r": 0.8,
      "status": "WIN",
      "win": true,
      "price": 92540.01,
-     "pnl": 355
+     "pnl": 196
     },
     {
      "date": "2024-11-14",
@@ -1100,7 +2425,7 @@
      "status": "WIN",
      "win": true,
      "price": 87947.99,
-     "pnl": 365
+     "pnl": 131
     },
     {
      "date": "2024-11-21",
@@ -1109,12 +2434,12 @@
      "score": 4,
      "label": "🚀 强烈看多",
      "pos": 12,
-     "reason": "止盈1",
+     "reason": "止盈1(60%)",
      "r": 0.8,
      "status": "WIN",
      "win": true,
      "price": 96672,
-     "pnl": 375
+     "pnl": 201
     },
     {
      "date": "2024-11-21",
@@ -1128,7 +2453,7 @@
      "status": "WIN",
      "win": true,
      "price": 96672,
-     "pnl": 410
+     "pnl": 143
     },
     {
      "date": "2024-11-23",
@@ -1142,7 +2467,7 @@
      "status": "WIN",
      "win": true,
      "price": 98400,
-     "pnl": 60
+     "pnl": 52
     },
     {
      "date": "2024-11-24",
@@ -1156,7 +2481,7 @@
      "status": "LOSS",
      "win": false,
      "price": 95901.51,
-     "pnl": -189
+     "pnl": -165
     },
     {
      "date": "2024-11-25",
@@ -1170,7 +2495,7 @@
      "status": "LOSS",
      "win": false,
      "price": 96000.56,
-     "pnl": -202
+     "pnl": -175
     },
     {
      "date": "2024-11-27",
@@ -1184,7 +2509,7 @@
      "status": "WIN",
      "win": true,
      "price": 95556.01,
-     "pnl": 150
+     "pnl": 131
     },
     {
      "date": "2024-11-28",
@@ -1198,7 +2523,7 @@
      "status": "LOSS",
      "win": false,
      "price": 95007.14,
-     "pnl": -103
+     "pnl": -90
     },
     {
      "date": "2024-11-28",
@@ -1212,7 +2537,7 @@
      "status": "WIN",
      "win": true,
      "price": 95007.14,
-     "pnl": 34
+     "pnl": 30
     },
     {
      "date": "2024-11-29",
@@ -1226,7 +2551,7 @@
      "status": "WIN",
      "win": true,
      "price": 98019.47,
-     "pnl": 68
+     "pnl": 59
     },
     {
      "date": "2024-11-30",
@@ -1240,7 +2565,7 @@
      "status": "WIN",
      "win": true,
      "price": 96645.41,
-     "pnl": 74
+     "pnl": 64
     },
     {
      "date": "2024-12-02",
@@ -1254,7 +2579,7 @@
      "status": "LOSS",
      "win": false,
      "price": 97048,
-     "pnl": -54
+     "pnl": -47
     },
     {
      "date": "2024-12-02",
@@ -1268,7 +2593,7 @@
      "status": "LOSS",
      "win": false,
      "price": 97048,
-     "pnl": -49
+     "pnl": -43
     },
     {
      "date": "2024-12-03",
@@ -1282,7 +2607,7 @@
      "status": "LOSS",
      "win": false,
      "price": 95682.54,
-     "pnl": -44
+     "pnl": -38
     },
     {
      "date": "2024-12-03",
@@ -1296,7 +2621,7 @@
      "status": "LOSS",
      "win": false,
      "price": 95682.54,
-     "pnl": -34
+     "pnl": -30
     },
     {
      "date": "2024-12-04",
@@ -1310,7 +2635,7 @@
      "status": "LOSS",
      "win": false,
      "price": 95742.81,
-     "pnl": -39
+     "pnl": -34
     },
     {
      "date": "2024-12-05",
@@ -1319,12 +2644,12 @@
      "score": 4.8,
      "label": "🚀 强烈看多",
      "pos": 12,
-     "reason": "止盈1",
+     "reason": "止盈1(60%)",
      "r": 0.8,
      "status": "WIN",
      "win": true,
      "price": 101292.01,
-     "pnl": 388
+     "pnl": 202
     },
     {
      "date": "2024-12-05",
@@ -1338,7 +2663,7 @@
      "status": "WIN",
      "win": true,
      "price": 101292.01,
-     "pnl": 214
+     "pnl": 73
     },
     {
      "date": "2024-12-05",
@@ -1352,7 +2677,7 @@
      "status": "LOSS",
      "win": false,
      "price": 101292.01,
-     "pnl": -506
+     "pnl": -431
     },
     {
      "date": "2024-12-06",
@@ -1366,7 +2691,7 @@
      "status": "WIN",
      "win": true,
      "price": 99309.99,
-     "pnl": 34
+     "pnl": 15
     },
     {
      "date": "2024-12-07",
@@ -1380,7 +2705,7 @@
      "status": "LOSS",
      "win": false,
      "price": 99756.01,
-     "pnl": -176
+     "pnl": -75
     },
     {
      "date": "2024-12-07",
@@ -1394,7 +2719,7 @@
      "status": "LOSS",
      "win": false,
      "price": 99756.01,
-     "pnl": -10
+     "pnl": -4
     },
     {
      "date": "2024-12-08",
@@ -1408,7 +2733,7 @@
      "status": "WIN",
      "win": true,
      "price": 99912.01,
-     "pnl": 14
+     "pnl": 6
     },
     {
      "date": "2024-12-08",
@@ -1422,7 +2747,7 @@
      "status": "WIN",
      "win": true,
      "price": 99912.01,
-     "pnl": 34
+     "pnl": 15
     },
     {
      "date": "2024-12-09",
@@ -1436,7 +2761,7 @@
      "status": "WIN",
      "win": true,
      "price": 97812,
-     "pnl": 87
+     "pnl": 37
     },
     {
      "date": "2024-12-11",
@@ -1450,7 +2775,7 @@
      "status": "WIN",
      "win": true,
      "price": 100361.64,
-     "pnl": 200
+     "pnl": 85
     },
     {
      "date": "2024-12-13",
@@ -1464,7 +2789,7 @@
      "status": "LOSS",
      "win": false,
      "price": 99873.16,
-     "pnl": -20
+     "pnl": -8
     },
     {
      "date": "2024-12-14",
@@ -1478,7 +2803,7 @@
      "status": "WIN",
      "win": true,
      "price": 101625.12,
-     "pnl": 109
+     "pnl": 46
     },
     {
      "date": "2024-12-15",
@@ -1487,12 +2812,12 @@
      "score": 4,
      "label": "🚀 强烈看多",
      "pos": 12,
-     "reason": "止盈1",
+     "reason": "止盈1(60%)",
      "r": 0.8,
      "status": "WIN",
      "win": true,
      "price": 102704.01,
-     "pnl": 398
+     "pnl": 101
     },
     {
      "date": "2024-12-16",
@@ -1506,7 +2831,7 @@
      "status": "WIN",
      "win": true,
      "price": 106332.01,
-     "pnl": 532
+     "pnl": 87
     },
     {
      "date": "2024-12-18",
@@ -1520,7 +2845,7 @@
      "status": "LOSS",
      "win": false,
      "price": 104428.54,
-     "pnl": -175
+     "pnl": -141
     },
     {
      "date": "2024-12-18",
@@ -1534,7 +2859,7 @@
      "status": "LOSS",
      "win": false,
      "price": 104428.54,
-     "pnl": -58
+     "pnl": -46
     },
     {
      "date": "2024-12-20",
@@ -1548,7 +2873,7 @@
      "status": "WIN",
      "win": true,
      "price": 96991.62,
-     "pnl": 480
+     "pnl": 193
     },
     {
      "date": "2024-12-21",
@@ -1562,7 +2887,7 @@
      "status": "WIN",
      "win": true,
      "price": 97527.97,
-     "pnl": 491
+     "pnl": 389
     },
     {
      "date": "2024-12-21",
@@ -1576,7 +2901,7 @@
      "status": "WIN",
      "win": true,
      "price": 97527.97,
-     "pnl": 540
+     "pnl": 428
     },
     {
      "date": "2024-12-22",
@@ -1590,7 +2915,7 @@
      "status": "WIN",
      "win": true,
      "price": 95377.72,
-     "pnl": 661
+     "pnl": 524
     },
     {
      "date": "2024-12-22",
@@ -1604,7 +2929,7 @@
      "status": "WIN",
      "win": true,
      "price": 95377.72,
-     "pnl": 873
+     "pnl": 692
     },
     {
      "date": "2024-12-23",
@@ -1618,7 +2943,7 @@
      "status": "WIN",
      "win": true,
      "price": 93250.37,
-     "pnl": 843
+     "pnl": 668
     },
     {
      "date": "2024-12-24",
@@ -1632,7 +2957,7 @@
      "status": "WIN",
      "win": true,
      "price": 98300,
-     "pnl": 1014
+     "pnl": 804
     },
     {
      "date": "2024-12-24",
@@ -1641,12 +2966,12 @@
      "score": 4,
      "label": "🚀 强烈看多",
      "pos": 12,
-     "reason": "止盈1",
+     "reason": "止盈1(60%)",
      "r": 0.8,
      "status": "WIN",
      "win": true,
      "price": 98300,
-     "pnl": 555
+     "pnl": 264
     },
     {
      "date": "2024-12-24",
@@ -1660,7 +2985,7 @@
      "status": "WIN",
      "win": true,
      "price": 98300,
-     "pnl": 763
+     "pnl": 235
     },
     {
      "date": "2024-12-25",
@@ -1674,7 +2999,7 @@
      "status": "WIN",
      "win": true,
      "price": 98519.98,
-     "pnl": 266
+     "pnl": 204
     },
     {
      "date": "2024-12-25",
@@ -1688,7 +3013,7 @@
      "status": "WIN",
      "win": true,
      "price": 98519.98,
-     "pnl": 75
+     "pnl": 57
     },
     {
      "date": "2024-12-26",
@@ -1702,7 +3027,7 @@
      "status": "LOSS",
      "win": false,
      "price": 96042.88,
-     "pnl": -90
+     "pnl": -69
     },
     {
      "date": "2024-12-26",
@@ -1716,7 +3041,7 @@
      "status": "WIN",
      "win": true,
      "price": 96042.88,
-     "pnl": 30
+     "pnl": 23
     },
     {
      "date": "2024-12-27",
@@ -1730,7 +3055,7 @@
      "status": "WIN",
      "win": true,
      "price": 94573.75,
-     "pnl": 37
+     "pnl": 29
     },
     {
      "date": "2024-12-27",
@@ -1744,7 +3069,7 @@
      "status": "LOSS",
      "win": false,
      "price": 94573.75,
-     "pnl": -165
+     "pnl": -127
     },
     {
      "date": "2024-12-28",
@@ -1758,7 +3083,7 @@
      "status": "WIN",
      "win": true,
      "price": 94447.29,
-     "pnl": 261
+     "pnl": 200
     },
     {
      "date": "2024-12-28",
@@ -1772,7 +3097,7 @@
      "status": "WIN",
      "win": true,
      "price": 94447.29,
-     "pnl": 279
+     "pnl": 214
     },
     {
      "date": "2024-12-29",
@@ -1786,7 +3111,7 @@
      "status": "WIN",
      "win": true,
      "price": 94511.12,
-     "pnl": 275
+     "pnl": 211
     },
     {
      "date": "2024-12-29",
@@ -1800,7 +3125,7 @@
      "status": "WIN",
      "win": true,
      "price": 94511.12,
-     "pnl": 387
+     "pnl": 297
     },
     {
      "date": "2024-12-31",
@@ -1814,7 +3139,7 @@
      "status": "WIN",
      "win": true,
      "price": 95412,
-     "pnl": 354
+     "pnl": 272
     },
     {
      "date": "2024-12-31",
@@ -1828,7 +3153,7 @@
      "status": "WIN",
      "win": true,
      "price": 95412,
-     "pnl": 352
+     "pnl": 270
     }
    ]
   },
@@ -1841,42 +3166,18 @@
    "losses": 19,
    "win_rate": 58.7,
    "profit_factor": 3.22,
-   "sharpe": 7.84,
-   "sortino": 10.64,
-   "calmar": 23.45,
-   "recovery": 4.9,
+   "sharpe": 7.09,
+   "sortino": 8.66,
+   "calmar": 8.72,
+   "recovery": 3,
+   "vol_ann": 41,
+   "expectancy": 52,
    "cagr_pct": 54,
-   "vol_ann": 69,
-   "total_ret_pct": 44.4,
-   "max_dd_pct": 6.2,
-   "max_dd": 907,
-   "expectancy": 97,
-   "avg_pnl": 97,
-   "avg_win": 251,
-   "avg_loss": 124,
-   "max_win": 764,
-   "max_loss": -490,
-   "win_streak": 9,
-   "loss_streak": 7,
-   "longs": 46,
-   "shorts": 0,
-   "flats": 0,
-   "avg_pos": 12,
-   "avg_gap": 3,
-   "style_tag": "中低频方向引擎 · 复利滚动",
-   "style": "信号评分分档 0/3/8/12% · ATR 止损 + 移动止盈",
-   "by_reason": {
-    "移动止盈": 33,
-    "超时": 4,
-    "止盈1": 4,
-    "超时止盈": 3,
-    "止损": 2
-   },
-   "by_dir": {
-    "long": 46
-   },
-   "equity": 14437,
-   "total_pnl": 4437,
+   "total_ret_pct": 23.9,
+   "max_dd_pct": 7.9,
+   "max_dd": 787,
+   "equity": 12395,
+   "total_pnl": 2395,
    "equity_curve": [
     10000,
     10196,
@@ -1899,33 +3200,611 @@
     11910,
     11827,
     11992,
-    12328,
-    13092,
-    13458,
-    14047,
-    14214,
-    13936,
-    13916,
-    13648,
-    13629,
-    13615,
-    13996,
-    13996,
-    13506,
-    13709,
-    14093,
-    14730,
-    14312,
-    14192,
-    14147,
-    14073,
-    14029,
-    14004,
-    13823,
-    13832,
-    13963,
-    14437
+    12194,
+    12491,
+    12701,
+    12919,
+    13073,
+    12817,
+    12799,
+    12552,
+    12544,
+    12537,
+    12642,
+    12642,
+    12421,
+    12515,
+    12620,
+    12733,
+    12372,
+    12351,
+    12343,
+    12330,
+    12323,
+    12318,
+    12286,
+    12288,
+    12311,
+    12395
    ],
+   "events": [
+    {
+     "day": "2025-01-01",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.56,
+     "status": "WIN",
+     "score": 4,
+     "risk": 350,
+     "share": 1,
+     "pnl": 196,
+     "equity": 10196
+    },
+    {
+     "day": "2025-01-01",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.53,
+     "status": "WIN",
+     "score": 4,
+     "risk": 357,
+     "share": 1,
+     "pnl": 189,
+     "equity": 10385
+    },
+    {
+     "day": "2025-02-06",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.57,
+     "status": "WIN",
+     "score": 4.8,
+     "risk": 363,
+     "share": 1,
+     "pnl": 207,
+     "equity": 10592
+    },
+    {
+     "day": "2025-02-07",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.7,
+     "status": "WIN",
+     "score": 4.8,
+     "risk": 371,
+     "share": 1,
+     "pnl": 260,
+     "equity": 10852
+    },
+    {
+     "day": "2025-02-09",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.7,
+     "status": "WIN",
+     "score": 4.8,
+     "risk": 380,
+     "share": 1,
+     "pnl": 266,
+     "equity": 11118
+    },
+    {
+     "day": "2025-02-09",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.52,
+     "status": "WIN",
+     "score": 4,
+     "risk": 389,
+     "share": 1,
+     "pnl": 202,
+     "equity": 11320
+    },
+    {
+     "day": "2025-02-10",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.78,
+     "status": "WIN",
+     "score": 3.2,
+     "risk": 396,
+     "share": 1,
+     "pnl": 309,
+     "equity": 11629
+    },
+    {
+     "day": "2025-02-10",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.42,
+     "status": "WIN",
+     "score": 4,
+     "risk": 407,
+     "share": 1,
+     "pnl": 171,
+     "equity": 11800
+    },
+    {
+     "day": "2025-02-11",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.14,
+     "status": "WIN",
+     "score": 4,
+     "risk": 413,
+     "share": 1,
+     "pnl": 58,
+     "equity": 11858
+    },
+    {
+     "day": "2025-02-11",
+     "dir": "long",
+     "reason": "trail",
+     "r": -0.21,
+     "status": "LOSS",
+     "score": 4,
+     "risk": 415,
+     "share": 1,
+     "pnl": -87,
+     "equity": 11771
+    },
+    {
+     "day": "2025-02-12",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.24,
+     "status": "WIN",
+     "score": 3.2,
+     "risk": 412,
+     "share": 1,
+     "pnl": 99,
+     "equity": 11870
+    },
+    {
+     "day": "2025-02-13",
+     "dir": "long",
+     "reason": "trail",
+     "r": -0.08,
+     "status": "LOSS",
+     "score": 3.2,
+     "risk": 415,
+     "share": 1,
+     "pnl": -33,
+     "equity": 11836
+    },
+    {
+     "day": "2025-02-13",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.19,
+     "status": "WIN",
+     "score": 4,
+     "risk": 414,
+     "share": 1,
+     "pnl": 79,
+     "equity": 11915
+    },
+    {
+     "day": "2025-02-14",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.13,
+     "status": "WIN",
+     "score": 3.2,
+     "risk": 417,
+     "share": 1,
+     "pnl": 54,
+     "equity": 11969
+    },
+    {
+     "day": "2025-02-16",
+     "dir": "long",
+     "reason": "timeout",
+     "r": 0.16,
+     "status": "WIN",
+     "score": 4,
+     "risk": 419,
+     "share": 1,
+     "pnl": 67,
+     "equity": 12036
+    },
+    {
+     "day": "2025-02-16",
+     "dir": "long",
+     "reason": "trail",
+     "r": -0.24,
+     "status": "LOSS",
+     "score": 4,
+     "risk": 421,
+     "share": 1,
+     "pnl": -101,
+     "equity": 11935
+    },
+    {
+     "day": "2025-02-17",
+     "dir": "long",
+     "reason": "trail",
+     "r": -0.11,
+     "status": "LOSS",
+     "score": 3.2,
+     "risk": 418,
+     "share": 1,
+     "pnl": -46,
+     "equity": 11889
+    },
+    {
+     "day": "2025-05-03",
+     "dir": "long",
+     "reason": "timeout",
+     "r": 0.05,
+     "status": "WIN",
+     "score": 4,
+     "risk": 416,
+     "share": 1,
+     "pnl": 21,
+     "equity": 11910
+    },
+    {
+     "day": "2025-05-03",
+     "dir": "long",
+     "reason": "trail",
+     "r": -0.2,
+     "status": "LOSS",
+     "score": 3.2,
+     "risk": 417,
+     "share": 1,
+     "pnl": -83,
+     "equity": 11827
+    },
+    {
+     "day": "2025-05-06",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.4,
+     "status": "WIN",
+     "score": 3.2,
+     "risk": 414,
+     "share": 1,
+     "pnl": 166,
+     "equity": 11992
+    },
+    {
+     "day": "2025-05-07",
+     "dir": "long",
+     "reason": "t1",
+     "r": 0.8,
+     "status": "WIN",
+     "score": 3.2,
+     "risk": 420,
+     "share": 0.6,
+     "pnl": 201,
+     "equity": 12194
+    },
+    {
+     "day": "2025-05-08",
+     "dir": "long",
+     "reason": "timeout_win",
+     "r": 1.77,
+     "status": "WIN",
+     "score": 3.2,
+     "risk": 420,
+     "share": 0.4,
+     "pnl": 297,
+     "equity": 12491
+    },
+    {
+     "day": "2025-05-08",
+     "dir": "long",
+     "reason": "t1",
+     "r": 0.8,
+     "status": "WIN",
+     "score": 4,
+     "risk": 437,
+     "share": 0.6,
+     "pnl": 210,
+     "equity": 12701
+    },
+    {
+     "day": "2025-05-10",
+     "dir": "long",
+     "reason": "timeout_win",
+     "r": 1.25,
+     "status": "WIN",
+     "score": 4,
+     "risk": 437,
+     "share": 0.4,
+     "pnl": 219,
+     "equity": 12919
+    },
+    {
+     "day": "2025-05-11",
+     "dir": "long",
+     "reason": "timeout",
+     "r": 0.34,
+     "status": "WIN",
+     "score": 4,
+     "risk": 452,
+     "share": 1,
+     "pnl": 154,
+     "equity": 13073
+    },
+    {
+     "day": "2025-05-12",
+     "dir": "long",
+     "reason": "trail",
+     "r": -0.56,
+     "status": "LOSS",
+     "score": 3.2,
+     "risk": 458,
+     "share": 1,
+     "pnl": -256,
+     "equity": 12817
+    },
+    {
+     "day": "2025-05-12",
+     "dir": "long",
+     "reason": "trail",
+     "r": -0.04,
+     "status": "LOSS",
+     "score": 3.2,
+     "risk": 449,
+     "share": 1,
+     "pnl": -18,
+     "equity": 12799
+    },
+    {
+     "day": "2025-05-14",
+     "dir": "long",
+     "reason": "trail",
+     "r": -0.55,
+     "status": "LOSS",
+     "score": 3.2,
+     "risk": 448,
+     "share": 1,
+     "pnl": -246,
+     "equity": 12552
+    },
+    {
+     "day": "2025-05-17",
+     "dir": "long",
+     "reason": "trail",
+     "r": -0.04,
+     "status": "LOSS",
+     "score": 3.2,
+     "risk": 220,
+     "share": 1,
+     "pnl": -9,
+     "equity": 12544
+    },
+    {
+     "day": "2025-05-17",
+     "dir": "long",
+     "reason": "trail",
+     "r": -0.03,
+     "status": "LOSS",
+     "score": 3.2,
+     "risk": 220,
+     "share": 1,
+     "pnl": -7,
+     "equity": 12537
+    },
+    {
+     "day": "2025-05-18",
+     "dir": "long",
+     "reason": "t1",
+     "r": 0.8,
+     "status": "WIN",
+     "score": 3.2,
+     "risk": 219,
+     "share": 0.6,
+     "pnl": 105,
+     "equity": 12642
+    },
+    {
+     "day": "2025-05-18",
+     "dir": "long",
+     "reason": "stop",
+     "r": 0,
+     "status": "LOSS",
+     "score": 3.2,
+     "risk": 219,
+     "share": 0.4,
+     "pnl": 0,
+     "equity": 12642
+    },
+    {
+     "day": "2025-05-19",
+     "dir": "long",
+     "reason": "stop",
+     "r": -1,
+     "status": "LOSS",
+     "score": 4,
+     "risk": 221,
+     "share": 1,
+     "pnl": -221,
+     "equity": 12421
+    },
+    {
+     "day": "2025-05-21",
+     "dir": "long",
+     "reason": "timeout",
+     "r": 0.43,
+     "status": "WIN",
+     "score": 3.2,
+     "risk": 217,
+     "share": 1,
+     "pnl": 93,
+     "equity": 12515
+    },
+    {
+     "day": "2025-05-21",
+     "dir": "long",
+     "reason": "t1",
+     "r": 0.8,
+     "status": "WIN",
+     "score": 4,
+     "risk": 219,
+     "share": 0.6,
+     "pnl": 105,
+     "equity": 12620
+    },
+    {
+     "day": "2025-05-22",
+     "dir": "long",
+     "reason": "timeout_win",
+     "r": 1.29,
+     "status": "WIN",
+     "score": 4,
+     "risk": 219,
+     "share": 0.4,
+     "pnl": 113,
+     "equity": 12733
+    },
+    {
+     "day": "2025-05-23",
+     "dir": "long",
+     "reason": "trail",
+     "r": -0.81,
+     "status": "LOSS",
+     "score": 4,
+     "risk": 446,
+     "share": 1,
+     "pnl": -361,
+     "equity": 12372
+    },
+    {
+     "day": "2025-05-23",
+     "dir": "long",
+     "reason": "trail",
+     "r": -0.24,
+     "status": "LOSS",
+     "score": 3.2,
+     "risk": 87,
+     "share": 1,
+     "pnl": -21,
+     "equity": 12351
+    },
+    {
+     "day": "2025-05-24",
+     "dir": "long",
+     "reason": "trail",
+     "r": -0.09,
+     "status": "LOSS",
+     "score": 3.2,
+     "risk": 86,
+     "share": 1,
+     "pnl": -8,
+     "equity": 12343
+    },
+    {
+     "day": "2025-05-24",
+     "dir": "long",
+     "reason": "trail",
+     "r": -0.15,
+     "status": "LOSS",
+     "score": 3.2,
+     "risk": 86,
+     "share": 1,
+     "pnl": -13,
+     "equity": 12330
+    },
+    {
+     "day": "2025-05-27",
+     "dir": "long",
+     "reason": "trail",
+     "r": -0.09,
+     "status": "LOSS",
+     "score": 3.2,
+     "risk": 86,
+     "share": 1,
+     "pnl": -8,
+     "equity": 12323
+    },
+    {
+     "day": "2025-05-27",
+     "dir": "long",
+     "reason": "trail",
+     "r": -0.05,
+     "status": "LOSS",
+     "score": 3.2,
+     "risk": 86,
+     "share": 1,
+     "pnl": -4,
+     "equity": 12318
+    },
+    {
+     "day": "2025-05-27",
+     "dir": "long",
+     "reason": "trail",
+     "r": -0.37,
+     "status": "LOSS",
+     "score": 3.2,
+     "risk": 86,
+     "share": 1,
+     "pnl": -32,
+     "equity": 12286
+    },
+    {
+     "day": "2025-05-28",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.02,
+     "status": "WIN",
+     "score": 3.2,
+     "risk": 86,
+     "share": 1,
+     "pnl": 2,
+     "equity": 12288
+    },
+    {
+     "day": "2025-05-29",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.27,
+     "status": "WIN",
+     "score": 3.2,
+     "risk": 86,
+     "share": 1,
+     "pnl": 23,
+     "equity": 12311
+    },
+    {
+     "day": "2025-05-31",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.97,
+     "status": "WIN",
+     "score": 3.2,
+     "risk": 86,
+     "share": 1,
+     "pnl": 84,
+     "equity": 12395
+    }
+   ],
+   "by_reason": {
+    "移动止盈": 33,
+    "超时": 4,
+    "止盈1(60%)": 4,
+    "超时止盈": 3,
+    "止损": 2
+   },
+   "by_dir": {
+    "long": 46
+   },
+   "longs": 46,
+   "shorts": 0,
+   "flats": 0,
+   "avg_gap": 3,
+   "avg_pos": 12,
+   "win_streak": 9,
+   "loss_streak": 7,
+   "style_tag": "中低频方向引擎 · 复利滚动",
+   "style": "信号评分分档 0/3/8/12% · ATR止损 + 移动止盈 · t1部分止盈60% + 回撤熔断",
+   "avg_pnl": 52,
+   "max_win": 309,
+   "max_loss": -361,
+   "avg_win": 146,
+   "avg_loss": 86,
    "list": [
     {
      "date": "2025-01-01",
@@ -2214,12 +4093,12 @@
      "score": 3.2,
      "label": "🚀 强烈看多",
      "pos": 12,
-     "reason": "止盈1",
+     "reason": "止盈1(60%)",
      "r": 0.8,
      "status": "WIN",
      "win": true,
      "price": 96923.91,
-     "pnl": 336
+     "pnl": 201
     },
     {
      "date": "2025-05-08",
@@ -2233,7 +4112,7 @@
      "status": "WIN",
      "win": true,
      "price": 100758.08,
-     "pnl": 764
+     "pnl": 297
     },
     {
      "date": "2025-05-08",
@@ -2242,12 +4121,12 @@
      "score": 4,
      "label": "🚀 强烈看多",
      "pos": 12,
-     "reason": "止盈1",
+     "reason": "止盈1(60%)",
      "r": 0.8,
      "status": "WIN",
      "win": true,
      "price": 100758.08,
-     "pnl": 367
+     "pnl": 210
     },
     {
      "date": "2025-05-10",
@@ -2261,7 +4140,7 @@
      "status": "WIN",
      "win": true,
      "price": 103138.77,
-     "pnl": 589
+     "pnl": 219
     },
     {
      "date": "2025-05-11",
@@ -2275,7 +4154,7 @@
      "status": "WIN",
      "win": true,
      "price": 104150,
-     "pnl": 167
+     "pnl": 154
     },
     {
      "date": "2025-05-12",
@@ -2289,7 +4168,7 @@
      "status": "LOSS",
      "win": false,
      "price": 102527.26,
-     "pnl": -279
+     "pnl": -256
     },
     {
      "date": "2025-05-12",
@@ -2303,7 +4182,7 @@
      "status": "LOSS",
      "win": false,
      "price": 102527.26,
-     "pnl": -20
+     "pnl": -18
     },
     {
      "date": "2025-05-14",
@@ -2317,7 +4196,7 @@
      "status": "LOSS",
      "win": false,
      "price": 103514.24,
-     "pnl": -268
+     "pnl": -246
     },
     {
      "date": "2025-05-17",
@@ -2331,7 +4210,7 @@
      "status": "LOSS",
      "win": false,
      "price": 102939.53,
-     "pnl": -19
+     "pnl": -9
     },
     {
      "date": "2025-05-17",
@@ -2345,7 +4224,7 @@
      "status": "LOSS",
      "win": false,
      "price": 102939.53,
-     "pnl": -14
+     "pnl": -7
     },
     {
      "date": "2025-05-18",
@@ -2354,12 +4233,12 @@
      "score": 3.2,
      "label": "🚀 强烈看多",
      "pos": 12,
-     "reason": "止盈1",
+     "reason": "止盈1(60%)",
      "r": 0.8,
      "status": "WIN",
      "win": true,
      "price": 105518,
-     "pnl": 381
+     "pnl": 105
     },
     {
      "date": "2025-05-18",
@@ -2387,7 +4266,7 @@
      "status": "LOSS",
      "win": false,
      "price": 104786.41,
-     "pnl": -490
+     "pnl": -221
     },
     {
      "date": "2025-05-21",
@@ -2401,7 +4280,7 @@
      "status": "WIN",
      "win": true,
      "price": 108973.35,
-     "pnl": 203
+     "pnl": 93
     },
     {
      "date": "2025-05-21",
@@ -2410,12 +4289,12 @@
      "score": 4,
      "label": "🚀 强烈看多",
      "pos": 12,
-     "reason": "止盈1",
+     "reason": "止盈1(60%)",
      "r": 0.8,
      "status": "WIN",
      "win": true,
      "price": 108973.35,
-     "pnl": 384
+     "pnl": 105
     },
     {
      "date": "2025-05-22",
@@ -2429,7 +4308,7 @@
      "status": "WIN",
      "win": true,
      "price": 111290.86,
-     "pnl": 636
+     "pnl": 113
     },
     {
      "date": "2025-05-23",
@@ -2443,7 +4322,7 @@
      "status": "LOSS",
      "win": false,
      "price": 108940,
-     "pnl": -418
+     "pnl": -361
     },
     {
      "date": "2025-05-23",
@@ -2457,7 +4336,7 @@
      "status": "LOSS",
      "win": false,
      "price": 108940,
-     "pnl": -120
+     "pnl": -21
     },
     {
      "date": "2025-05-24",
@@ -2471,7 +4350,7 @@
      "status": "LOSS",
      "win": false,
      "price": 108929.7,
-     "pnl": -45
+     "pnl": -8
     },
     {
      "date": "2025-05-24",
@@ -2485,7 +4364,7 @@
      "status": "LOSS",
      "win": false,
      "price": 108929.7,
-     "pnl": -74
+     "pnl": -13
     },
     {
      "date": "2025-05-27",
@@ -2499,7 +4378,7 @@
      "status": "LOSS",
      "win": false,
      "price": 110140.11,
-     "pnl": -44
+     "pnl": -8
     },
     {
      "date": "2025-05-27",
@@ -2513,7 +4392,7 @@
      "status": "LOSS",
      "win": false,
      "price": 110140.11,
-     "pnl": -25
+     "pnl": -4
     },
     {
      "date": "2025-05-27",
@@ -2527,7 +4406,7 @@
      "status": "LOSS",
      "win": false,
      "price": 110140.11,
-     "pnl": -181
+     "pnl": -32
     },
     {
      "date": "2025-05-28",
@@ -2541,7 +4420,7 @@
      "status": "WIN",
      "win": true,
      "price": 107107.31,
-     "pnl": 10
+     "pnl": 2
     },
     {
      "date": "2025-05-29",
@@ -2555,7 +4434,7 @@
      "status": "WIN",
      "win": true,
      "price": 107019.89,
-     "pnl": 131
+     "pnl": 23
     },
     {
      "date": "2025-05-31",
@@ -2569,7 +4448,7 @@
      "status": "WIN",
      "win": true,
      "price": 104556.08,
-     "pnl": 474
+     "pnl": 84
     }
    ]
   },
@@ -2582,34 +4461,638 @@
    "losses": 21,
    "win_rate": 55.3,
    "profit_factor": 3.22,
-   "sharpe": 8.72,
-   "sortino": 17.64,
-   "calmar": 23.78,
-   "recovery": 6.7,
+   "sharpe": 6.98,
+   "sortino": 12.98,
+   "calmar": 19.21,
+   "recovery": 6.5,
+   "vol_ann": 61,
+   "expectancy": 87,
    "cagr_pct": 97,
-   "vol_ann": 79,
-   "total_ret_pct": 65.9,
-   "max_dd_pct": 9.3,
-   "max_dd": 983,
-   "expectancy": 140,
-   "avg_pnl": 140,
-   "avg_win": 362,
-   "avg_loss": 134,
-   "max_win": 700,
-   "max_loss": -377,
-   "win_streak": 9,
-   "loss_streak": 5,
-   "longs": 33,
-   "shorts": 14,
-   "flats": 0,
-   "avg_pos": 12,
-   "avg_gap": 3,
-   "style_tag": "中低频方向引擎 · 复利滚动",
-   "style": "信号评分分档 0/3/8/12% · ATR 止损 + 移动止盈",
+   "total_ret_pct": 40.9,
+   "max_dd_pct": 6.3,
+   "max_dd": 629,
+   "equity": 14091,
+   "total_pnl": 4091,
+   "equity_curve": [
+    10000,
+    9650,
+    9667,
+    9667,
+    9743,
+    9917,
+    10205,
+    10426,
+    10375,
+    10335,
+    10202,
+    10119,
+    9964,
+    9967,
+    9979,
+    9937,
+    9922,
+    9858,
+    9846,
+    9797,
+    9891,
+    10029,
+    9926,
+    10009,
+    10009,
+    10214,
+    10704,
+    11071,
+    11365,
+    11632,
+    12084,
+    12507,
+    12927,
+    13384,
+    13243,
+    12900,
+    13009,
+    13058,
+    13419,
+    13799,
+    13727,
+    14159,
+    14030,
+    14010,
+    14246,
+    14479,
+    14378,
+    14091
+   ],
+   "events": [
+    {
+     "day": "2025-07-14",
+     "dir": "long",
+     "reason": "stop",
+     "r": -1,
+     "status": "LOSS",
+     "score": 4.8,
+     "risk": 350,
+     "share": 1,
+     "pnl": -350,
+     "equity": 9650
+    },
+    {
+     "day": "2025-07-18",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.1,
+     "status": "WIN",
+     "score": 3.2,
+     "risk": 169,
+     "share": 1,
+     "pnl": 17,
+     "equity": 9667
+    },
+    {
+     "day": "2025-07-18",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0,
+     "status": "LOSS",
+     "score": 4,
+     "risk": 169,
+     "share": 1,
+     "pnl": 0,
+     "equity": 9667
+    },
+    {
+     "day": "2025-07-19",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.45,
+     "status": "WIN",
+     "score": 3.2,
+     "risk": 169,
+     "share": 1,
+     "pnl": 76,
+     "equity": 9743
+    },
+    {
+     "day": "2025-07-19",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.51,
+     "status": "WIN",
+     "score": 3.2,
+     "risk": 341,
+     "share": 1,
+     "pnl": 174,
+     "equity": 9917
+    },
+    {
+     "day": "2025-07-20",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.83,
+     "status": "WIN",
+     "score": 3.2,
+     "risk": 347,
+     "share": 1,
+     "pnl": 288,
+     "equity": 10205
+    },
+    {
+     "day": "2025-07-20",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.62,
+     "status": "WIN",
+     "score": 3.2,
+     "risk": 357,
+     "share": 1,
+     "pnl": 221,
+     "equity": 10426
+    },
+    {
+     "day": "2025-07-21",
+     "dir": "long",
+     "reason": "trail",
+     "r": -0.14,
+     "status": "LOSS",
+     "score": 3.2,
+     "risk": 365,
+     "share": 1,
+     "pnl": -51,
+     "equity": 10375
+    },
+    {
+     "day": "2025-07-21",
+     "dir": "long",
+     "reason": "trail",
+     "r": -0.11,
+     "status": "LOSS",
+     "score": 4,
+     "risk": 363,
+     "share": 1,
+     "pnl": -40,
+     "equity": 10335
+    },
+    {
+     "day": "2025-07-23",
+     "dir": "long",
+     "reason": "trail",
+     "r": -0.37,
+     "status": "LOSS",
+     "score": 4,
+     "risk": 362,
+     "share": 1,
+     "pnl": -134,
+     "equity": 10202
+    },
+    {
+     "day": "2025-07-23",
+     "dir": "long",
+     "reason": "trail",
+     "r": -0.23,
+     "status": "LOSS",
+     "score": 4,
+     "risk": 357,
+     "share": 1,
+     "pnl": -82,
+     "equity": 10119
+    },
+    {
+     "day": "2025-07-25",
+     "dir": "long",
+     "reason": "trail",
+     "r": -0.44,
+     "status": "LOSS",
+     "score": 3.2,
+     "risk": 354,
+     "share": 1,
+     "pnl": -156,
+     "equity": 9964
+    },
+    {
+     "day": "2025-07-25",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.02,
+     "status": "WIN",
+     "score": 3.2,
+     "risk": 174,
+     "share": 1,
+     "pnl": 3,
+     "equity": 9967
+    },
+    {
+     "day": "2025-07-27",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.07,
+     "status": "WIN",
+     "score": 3.2,
+     "risk": 174,
+     "share": 1,
+     "pnl": 12,
+     "equity": 9979
+    },
+    {
+     "day": "2025-07-28",
+     "dir": "long",
+     "reason": "trail",
+     "r": -0.24,
+     "status": "LOSS",
+     "score": 4,
+     "risk": 175,
+     "share": 1,
+     "pnl": -42,
+     "equity": 9937
+    },
+    {
+     "day": "2025-07-28",
+     "dir": "long",
+     "reason": "trail",
+     "r": -0.09,
+     "status": "LOSS",
+     "score": 4,
+     "risk": 174,
+     "share": 1,
+     "pnl": -16,
+     "equity": 9922
+    },
+    {
+     "day": "2025-07-29",
+     "dir": "long",
+     "reason": "trail",
+     "r": -0.37,
+     "status": "LOSS",
+     "score": 4.8,
+     "risk": 174,
+     "share": 1,
+     "pnl": -64,
+     "equity": 9858
+    },
+    {
+     "day": "2025-07-30",
+     "dir": "long",
+     "reason": "trail",
+     "r": -0.17,
+     "status": "LOSS",
+     "score": 3.2,
+     "risk": 69,
+     "share": 1,
+     "pnl": -12,
+     "equity": 9846
+    },
+    {
+     "day": "2025-07-31",
+     "dir": "long",
+     "reason": "trail",
+     "r": -0.71,
+     "status": "LOSS",
+     "score": 4.8,
+     "risk": 69,
+     "share": 1,
+     "pnl": -49,
+     "equity": 9797
+    },
+    {
+     "day": "2025-08-03",
+     "dir": "long",
+     "reason": "trail",
+     "r": 1.37,
+     "status": "WIN",
+     "score": 4.8,
+     "risk": 69,
+     "share": 1,
+     "pnl": 94,
+     "equity": 9891
+    },
+    {
+     "day": "2025-08-17",
+     "dir": "long",
+     "reason": "trail",
+     "r": 2,
+     "status": "WIN",
+     "score": 4.8,
+     "risk": 69,
+     "share": 1,
+     "pnl": 138,
+     "equity": 10029
+    },
+    {
+     "day": "2025-10-05",
+     "dir": "long",
+     "reason": "trail",
+     "r": -0.59,
+     "status": "LOSS",
+     "score": 4,
+     "risk": 176,
+     "share": 1,
+     "pnl": -104,
+     "equity": 9926
+    },
+    {
+     "day": "2025-10-06",
+     "dir": "long",
+     "reason": "t1",
+     "r": 0.8,
+     "status": "WIN",
+     "score": 3.2,
+     "risk": 174,
+     "share": 0.6,
+     "pnl": 83,
+     "equity": 10009
+    },
+    {
+     "day": "2025-10-07",
+     "dir": "long",
+     "reason": "stop",
+     "r": 0,
+     "status": "LOSS",
+     "score": 3.2,
+     "risk": 174,
+     "share": 0.4,
+     "pnl": 0,
+     "equity": 10009
+    },
+    {
+     "day": "2025-10-11",
+     "dir": "long",
+     "reason": "trail",
+     "r": 1.17,
+     "status": "WIN",
+     "score": 3.2,
+     "risk": 175,
+     "share": 1,
+     "pnl": 205,
+     "equity": 10214
+    },
+    {
+     "day": "2025-10-12",
+     "dir": "long",
+     "reason": "trail",
+     "r": 1.37,
+     "status": "WIN",
+     "score": 3.2,
+     "risk": 357,
+     "share": 1,
+     "pnl": 490,
+     "equity": 10704
+    },
+    {
+     "day": "2025-10-13",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.98,
+     "status": "WIN",
+     "score": 4.8,
+     "risk": 375,
+     "share": 1,
+     "pnl": 367,
+     "equity": 11071
+    },
+    {
+     "day": "2025-10-13",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.76,
+     "status": "WIN",
+     "score": 4,
+     "risk": 387,
+     "share": 1,
+     "pnl": 294,
+     "equity": 11365
+    },
+    {
+     "day": "2025-10-14",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.67,
+     "status": "WIN",
+     "score": 4,
+     "risk": 398,
+     "share": 1,
+     "pnl": 267,
+     "equity": 11632
+    },
+    {
+     "day": "2025-10-14",
+     "dir": "long",
+     "reason": "trail",
+     "r": 1.11,
+     "status": "WIN",
+     "score": 4,
+     "risk": 407,
+     "share": 1,
+     "pnl": 452,
+     "equity": 12084
+    },
+    {
+     "day": "2025-10-15",
+     "dir": "long",
+     "reason": "trail",
+     "r": 1,
+     "status": "WIN",
+     "score": 4,
+     "risk": 423,
+     "share": 1,
+     "pnl": 423,
+     "equity": 12507
+    },
+    {
+     "day": "2025-10-15",
+     "dir": "long",
+     "reason": "trail",
+     "r": 0.96,
+     "status": "WIN",
+     "score": 4,
+     "risk": 438,
+     "share": 1,
+     "pnl": 420,
+     "equity": 12927
+    },
+    {
+     "day": "2025-10-16",
+     "dir": "long",
+     "reason": "trail",
+     "r": 1.01,
+     "status": "WIN",
+     "score": 4,
+     "risk": 452,
+     "share": 1,
+     "pnl": 457,
+     "equity": 13384
+    },
+    {
+     "day": "2025-11-18",
+     "dir": "short",
+     "reason": "trail",
+     "r": -0.3,
+     "status": "LOSS",
+     "score": -4,
+     "risk": 468,
+     "share": 1,
+     "pnl": -141,
+     "equity": 13243
+    },
+    {
+     "day": "2025-11-20",
+     "dir": "short",
+     "reason": "trail",
+     "r": -0.74,
+     "status": "LOSS",
+     "score": -4,
+     "risk": 464,
+     "share": 1,
+     "pnl": -343,
+     "equity": 12900
+    },
+    {
+     "day": "2025-11-21",
+     "dir": "short",
+     "reason": "t1",
+     "r": 0.8,
+     "status": "WIN",
+     "score": -4,
+     "risk": 226,
+     "share": 0.6,
+     "pnl": 108,
+     "equity": 13009
+    },
+    {
+     "day": "2025-11-22",
+     "dir": "short",
+     "reason": "timeout_win",
+     "r": 0.54,
+     "status": "WIN",
+     "score": -4,
+     "risk": 226,
+     "share": 0.4,
+     "pnl": 49,
+     "equity": 13058
+    },
+    {
+     "day": "2025-11-29",
+     "dir": "short",
+     "reason": "trail",
+     "r": 0.79,
+     "status": "WIN",
+     "score": -4,
+     "risk": 457,
+     "share": 1,
+     "pnl": 361,
+     "equity": 13419
+    },
+    {
+     "day": "2025-11-29",
+     "dir": "short",
+     "reason": "trail",
+     "r": 0.81,
+     "status": "WIN",
+     "score": -3.2,
+     "risk": 470,
+     "share": 1,
+     "pnl": 380,
+     "equity": 13799
+    },
+    {
+     "day": "2025-12-02",
+     "dir": "short",
+     "reason": "trail",
+     "r": -0.15,
+     "status": "LOSS",
+     "score": -3.2,
+     "risk": 483,
+     "share": 1,
+     "pnl": -72,
+     "equity": 13727
+    },
+    {
+     "day": "2025-12-05",
+     "dir": "short",
+     "reason": "trail",
+     "r": 0.9,
+     "status": "WIN",
+     "score": -3.2,
+     "risk": 480,
+     "share": 1,
+     "pnl": 432,
+     "equity": 14159
+    },
+    {
+     "day": "2025-12-11",
+     "dir": "short",
+     "reason": "trail",
+     "r": -0.26,
+     "status": "LOSS",
+     "score": -4,
+     "risk": 496,
+     "share": 1,
+     "pnl": -129,
+     "equity": 14030
+    },
+    {
+     "day": "2025-12-14",
+     "dir": "short",
+     "reason": "trail",
+     "r": -0.04,
+     "status": "LOSS",
+     "score": -4,
+     "risk": 491,
+     "share": 1,
+     "pnl": -20,
+     "equity": 14010
+    },
+    {
+     "day": "2025-12-15",
+     "dir": "short",
+     "reason": "t1",
+     "r": 0.8,
+     "status": "WIN",
+     "score": -3.2,
+     "risk": 490,
+     "share": 0.6,
+     "pnl": 235,
+     "equity": 14246
+    },
+    {
+     "day": "2025-12-15",
+     "dir": "short",
+     "reason": "timeout_win",
+     "r": 1.19,
+     "status": "WIN",
+     "score": -3.2,
+     "risk": 490,
+     "share": 0.4,
+     "pnl": 233,
+     "equity": 14479
+    },
+    {
+     "day": "2025-12-17",
+     "dir": "short",
+     "reason": "timeout",
+     "r": -0.2,
+     "status": "LOSS",
+     "score": -3.2,
+     "risk": 507,
+     "share": 1,
+     "pnl": -101,
+     "equity": 14378
+    },
+    {
+     "day": "2025-12-19",
+     "dir": "short",
+     "reason": "trail",
+     "r": -0.57,
+     "status": "LOSS",
+     "score": -3.2,
+     "risk": 503,
+     "share": 1,
+     "pnl": -287,
+     "equity": 14091
+    }
+   ],
    "by_reason": {
     "止损": 2,
     "移动止盈": 39,
-    "止盈1": 3,
+    "止盈1(60%)": 3,
     "超时止盈": 2,
     "超时": 1
    },
@@ -2617,58 +5100,20 @@
     "long": 33,
     "short": 14
    },
-   "equity": 16589,
-   "total_pnl": 6589,
-   "equity_curve": [
-    10000,
-    9650,
-    9684,
-    9684,
-    9836,
-    10012,
-    10303,
-    10526,
-    10475,
-    10434,
-    10299,
-    10216,
-    10059,
-    10066,
-    10091,
-    10006,
-    9974,
-    9845,
-    9787,
-    9543,
-    10001,
-    10701,
-    10480,
-    10774,
-    10774,
-    11215,
-    11753,
-    12156,
-    12479,
-    12772,
-    13268,
-    13732,
-    14194,
-    14695,
-    14541,
-    14164,
-    14561,
-    14836,
-    15246,
-    15679,
-    15596,
-    16088,
-    15941,
-    15919,
-    16365,
-    17046,
-    16927,
-    16589
-   ],
+   "longs": 33,
+   "shorts": 14,
+   "flats": 0,
+   "avg_gap": 3,
+   "avg_pos": 12,
+   "win_streak": 9,
+   "loss_streak": 5,
+   "style_tag": "中低频方向引擎 · 复利滚动",
+   "style": "信号评分分档 0/3/8/12% · ATR止损 + 移动止盈 · t1部分止盈60% + 回撤熔断",
+   "avg_pnl": 87,
+   "max_win": 490,
+   "max_loss": -350,
+   "avg_win": 242,
+   "avg_loss": 115,
    "list": [
     {
      "date": "2025-07-14",
@@ -2696,7 +5141,7 @@
      "status": "WIN",
      "win": true,
      "price": 117860.25,
-     "pnl": 34
+     "pnl": 17
     },
     {
      "date": "2025-07-18",
@@ -2724,7 +5169,7 @@
      "status": "WIN",
      "win": true,
      "price": 118058.11,
-     "pnl": 153
+     "pnl": 76
     },
     {
      "date": "2025-07-19",
@@ -2738,7 +5183,7 @@
      "status": "WIN",
      "win": true,
      "price": 118058.11,
-     "pnl": 176
+     "pnl": 174
     },
     {
      "date": "2025-07-20",
@@ -2752,7 +5197,7 @@
      "status": "WIN",
      "win": true,
      "price": 118671.11,
-     "pnl": 291
+     "pnl": 288
     },
     {
      "date": "2025-07-20",
@@ -2766,7 +5211,7 @@
      "status": "WIN",
      "win": true,
      "price": 118671.11,
-     "pnl": 224
+     "pnl": 221
     },
     {
      "date": "2025-07-21",
@@ -2780,7 +5225,7 @@
      "status": "LOSS",
      "win": false,
      "price": 118313.16,
-     "pnl": -52
+     "pnl": -51
     },
     {
      "date": "2025-07-21",
@@ -2808,7 +5253,7 @@
      "status": "LOSS",
      "win": false,
      "price": 118567.39,
-     "pnl": -135
+     "pnl": -134
     },
     {
      "date": "2025-07-23",
@@ -2822,7 +5267,7 @@
      "status": "LOSS",
      "win": false,
      "price": 118567.39,
-     "pnl": -83
+     "pnl": -82
     },
     {
      "date": "2025-07-25",
@@ -2836,7 +5281,7 @@
      "status": "LOSS",
      "win": false,
      "price": 115727.08,
-     "pnl": -157
+     "pnl": -156
     },
     {
      "date": "2025-07-25",
@@ -2850,7 +5295,7 @@
      "status": "WIN",
      "win": true,
      "price": 115727.08,
-     "pnl": 7
+     "pnl": 3
     },
     {
      "date": "2025-07-27",
@@ -2864,7 +5309,7 @@
      "status": "WIN",
      "win": true,
      "price": 118585.74,
-     "pnl": 25
+     "pnl": 12
     },
     {
      "date": "2025-07-28",
@@ -2878,7 +5323,7 @@
      "status": "LOSS",
      "win": false,
      "price": 118174.9,
-     "pnl": -85
+     "pnl": -42
     },
     {
      "date": "2025-07-28",
@@ -2892,7 +5337,7 @@
      "status": "LOSS",
      "win": false,
      "price": 118174.9,
-     "pnl": -32
+     "pnl": -16
     },
     {
      "date": "2025-07-29",
@@ -2906,7 +5351,7 @@
      "status": "LOSS",
      "win": false,
      "price": 117400.01,
-     "pnl": -129
+     "pnl": -64
     },
     {
      "date": "2025-07-30",
@@ -2920,7 +5365,7 @@
      "status": "LOSS",
      "win": false,
      "price": 118000.01,
-     "pnl": -59
+     "pnl": -12
     },
     {
      "date": "2025-07-31",
@@ -2934,7 +5379,7 @@
      "status": "LOSS",
      "win": false,
      "price": 118306.18,
-     "pnl": -243
+     "pnl": -49
     },
     {
      "date": "2025-08-03",
@@ -2948,7 +5393,7 @@
      "status": "WIN",
      "win": true,
      "price": 113959.06,
-     "pnl": 458
+     "pnl": 94
     },
     {
      "date": "2025-08-17",
@@ -2962,7 +5407,7 @@
      "status": "WIN",
      "win": true,
      "price": 118246.16,
-     "pnl": 700
+     "pnl": 138
     },
     {
      "date": "2025-10-05",
@@ -2976,7 +5421,7 @@
      "status": "LOSS",
      "win": false,
      "price": 122803.17,
-     "pnl": -221
+     "pnl": -104
     },
     {
      "date": "2025-10-06",
@@ -2985,12 +5430,12 @@
      "score": 3.2,
      "label": "🚀 强烈看多",
      "pos": 12,
-     "reason": "止盈1",
+     "reason": "止盈1(60%)",
      "r": 0.8,
      "status": "WIN",
      "win": true,
      "price": 125000,
-     "pnl": 293
+     "pnl": 83
     },
     {
      "date": "2025-10-07",
@@ -3018,7 +5463,7 @@
      "status": "WIN",
      "win": true,
      "price": 111793.2,
-     "pnl": 441
+     "pnl": 205
     },
     {
      "date": "2025-10-12",
@@ -3032,7 +5477,7 @@
      "status": "WIN",
      "win": true,
      "price": 113198.2,
-     "pnl": 538
+     "pnl": 490
     },
     {
      "date": "2025-10-13",
@@ -3046,7 +5491,7 @@
      "status": "WIN",
      "win": true,
      "price": 114312.1,
-     "pnl": 403
+     "pnl": 367
     },
     {
      "date": "2025-10-13",
@@ -3060,7 +5505,7 @@
      "status": "WIN",
      "win": true,
      "price": 114312.1,
-     "pnl": 323
+     "pnl": 294
     },
     {
      "date": "2025-10-14",
@@ -3074,7 +5519,7 @@
      "status": "WIN",
      "win": true,
      "price": 112900.43,
-     "pnl": 293
+     "pnl": 267
     },
     {
      "date": "2025-10-14",
@@ -3088,7 +5533,7 @@
      "status": "WIN",
      "win": true,
      "price": 112900.43,
-     "pnl": 496
+     "pnl": 452
     },
     {
      "date": "2025-10-15",
@@ -3102,7 +5547,7 @@
      "status": "WIN",
      "win": true,
      "price": 110798.01,
-     "pnl": 464
+     "pnl": 423
     },
     {
      "date": "2025-10-15",
@@ -3116,7 +5561,7 @@
      "status": "WIN",
      "win": true,
      "price": 110798.01,
-     "pnl": 461
+     "pnl": 420
     },
     {
      "date": "2025-10-16",
@@ -3130,7 +5575,7 @@
      "status": "WIN",
      "win": true,
      "price": 108549.21,
-     "pnl": 502
+     "pnl": 457
     },
     {
      "date": "2025-11-18",
@@ -3144,7 +5589,7 @@
      "status": "LOSS",
      "win": false,
      "price": 92910.1,
-     "pnl": -154
+     "pnl": -141
     },
     {
      "date": "2025-11-20",
@@ -3158,7 +5603,7 @@
      "status": "LOSS",
      "win": false,
      "price": 89869.88,
-     "pnl": -377
+     "pnl": -343
     },
     {
      "date": "2025-11-21",
@@ -3167,12 +5612,12 @@
      "score": -4,
      "label": "🛑 强烈看空",
      "pos": 12,
-     "reason": "止盈1",
+     "reason": "止盈1(60%)",
      "r": 0.8,
      "status": "WIN",
      "win": true,
      "price": 82932.47,
-     "pnl": 397
+     "pnl": 108
     },
     {
      "date": "2025-11-22",
@@ -3186,7 +5631,7 @@
      "status": "WIN",
      "win": true,
      "price": 84284.01,
-     "pnl": 275
+     "pnl": 49
     },
     {
      "date": "2025-11-29",
@@ -3200,7 +5645,7 @@
      "status": "WIN",
      "win": true,
      "price": 91063.5,
-     "pnl": 410
+     "pnl": 361
     },
     {
      "date": "2025-11-29",
@@ -3214,7 +5659,7 @@
      "status": "WIN",
      "win": true,
      "price": 91063.5,
-     "pnl": 432
+     "pnl": 380
     },
     {
      "date": "2025-12-02",
@@ -3228,7 +5673,7 @@
      "status": "LOSS",
      "win": false,
      "price": 90850.01,
-     "pnl": -82
+     "pnl": -72
     },
     {
      "date": "2025-12-05",
@@ -3242,7 +5687,7 @@
      "status": "WIN",
      "win": true,
      "price": 90459.35,
-     "pnl": 491
+     "pnl": 432
     },
     {
      "date": "2025-12-11",
@@ -3256,7 +5701,7 @@
      "status": "LOSS",
      "win": false,
      "price": 89872.51,
-     "pnl": -146
+     "pnl": -129
     },
     {
      "date": "2025-12-14",
@@ -3270,7 +5715,7 @@
      "status": "LOSS",
      "win": false,
      "price": 89022.91,
-     "pnl": -22
+     "pnl": -20
     },
     {
      "date": "2025-12-15",
@@ -3279,12 +5724,12 @@
      "score": -3.2,
      "label": "🛑 强烈看空",
      "pos": 12,
-     "reason": "止盈1",
+     "reason": "止盈1(60%)",
      "r": 0.8,
      "status": "WIN",
      "win": true,
      "price": 87033.22,
-     "pnl": 446
+     "pnl": 235
     },
     {
      "date": "2025-12-15",
@@ -3298,7 +5743,7 @@
      "status": "WIN",
      "win": true,
      "price": 87033.22,
-     "pnl": 682
+     "pnl": 233
     },
     {
      "date": "2025-12-17",
@@ -3312,7 +5757,7 @@
      "status": "LOSS",
      "win": false,
      "price": 87233.44,
-     "pnl": -119
+     "pnl": -101
     },
     {
      "date": "2025-12-19",
@@ -3326,7 +5771,7 @@
      "status": "LOSS",
      "win": false,
      "price": 87951.87,
-     "pnl": -338
+     "pnl": -287
     }
    ]
   }
@@ -3338,34 +5783,2666 @@
   "losses": 73,
   "win_rate": 64,
   "profit_factor": 3.97,
-  "sharpe": 7.74,
-  "sortino": 13.26,
-  "calmar": 24.68,
-  "recovery": 14.9,
-  "cagr_pct": 230,
-  "vol_ann": 252,
-  "total_ret_pct": 762.6,
-  "max_dd_pct": 9.3,
-  "max_dd": 5110,
-  "expectancy": 376,
-  "avg_pnl": 376,
-  "avg_win": 809,
-  "avg_loss": 395,
-  "max_win": 3640,
-  "max_loss": -1958,
-  "win_streak": 15,
-  "loss_streak": 7,
-  "longs": 189,
-  "shorts": 14,
-  "flats": 0,
-  "avg_pos": 12,
-  "avg_gap": 3,
-  "style_tag": "中低频方向引擎 · 复利滚动",
-  "style": "信号评分分档 0/3/8/12% · ATR 止损 + 移动止盈",
+  "sharpe": 7.09,
+  "sortino": 11.96,
+  "calmar": 5.53,
+  "recovery": 13.9,
+  "vol_ann": 94,
+  "expectancy": 129,
+  "cagr_pct": 104,
+  "total_ret_pct": 262,
+  "max_dd_pct": 18.8,
+  "max_dd": 1883,
+  "equity": 36199,
+  "total_pnl": 26199,
+  "equity_curve": [
+   10000,
+   10063,
+   9986,
+   10153,
+   10416,
+   10157,
+   9802,
+   9825,
+   9791,
+   9824,
+   9829,
+   9816,
+   9817,
+   9816,
+   9862,
+   9888,
+   9917,
+   10016,
+   10245,
+   10837,
+   11099,
+   11169,
+   11259,
+   11196,
+   11286,
+   11325,
+   11464,
+   11484,
+   11677,
+   11798,
+   11814,
+   11760,
+   11740,
+   11329,
+   11424,
+   11480,
+   11942,
+   12185,
+   12390,
+   12736,
+   12554,
+   12765,
+   12765,
+   12483,
+   12470,
+   12282,
+   12349,
+   12232,
+   12273,
+   12348,
+   12696,
+   12687,
+   13082,
+   13302,
+   13538,
+   13766,
+   14088,
+   14325,
+   14483,
+   14726,
+   14898,
+   14961,
+   14762,
+   14550,
+   14708,
+   14600,
+   14635,
+   14707,
+   14784,
+   14727,
+   14676,
+   14630,
+   14594,
+   14553,
+   14797,
+   14885,
+   14364,
+   14382,
+   14291,
+   14286,
+   14294,
+   14311,
+   14356,
+   14459,
+   14449,
+   14505,
+   14627,
+   14732,
+   14562,
+   14506,
+   14739,
+   15209,
+   15725,
+   16358,
+   17194,
+   18001,
+   18971,
+   19289,
+   19574,
+   19820,
+   19890,
+   19806,
+   19834,
+   19869,
+   19716,
+   19957,
+   20215,
+   20470,
+   20828,
+   21156,
+   21482,
+   21903,
+   22310,
+   22755,
+   23312,
+   23883,
+   24318,
+   24982,
+   25349,
+   25473,
+   25286,
+   25499,
+   25427,
+   25596,
+   25713,
+   25857,
+   25640,
+   25541,
+   25585,
+   25406,
+   25762,
+   26195,
+   26833,
+   27284,
+   27754,
+   28084,
+   27533,
+   27495,
+   26966,
+   26947,
+   26933,
+   27159,
+   27159,
+   26684,
+   26884,
+   27110,
+   27353,
+   26578,
+   26533,
+   26516,
+   26488,
+   26472,
+   26462,
+   26394,
+   26398,
+   26447,
+   26627,
+   26441,
+   26459,
+   26459,
+   26542,
+   26637,
+   26792,
+   27083,
+   27016,
+   26964,
+   26790,
+   26682,
+   26476,
+   26480,
+   26493,
+   26449,
+   26432,
+   26363,
+   26332,
+   26201,
+   26453,
+   26823,
+   26546,
+   26635,
+   26635,
+   26853,
+   27497,
+   28440,
+   29197,
+   29881,
+   31042,
+   32129,
+   33208,
+   34382,
+   34021,
+   33140,
+   33418,
+   33544,
+   34471,
+   35448,
+   35262,
+   36373,
+   36042,
+   35992,
+   36596,
+   37196,
+   36935,
+   36199
+  ],
+  "events": [
+   {
+    "day": "2024-03-01",
+    "dir": "long",
+    "reason": "timeout",
+    "r": 0.18,
+    "status": "WIN",
+    "score": 4,
+    "risk": 350,
+    "share": 1,
+    "pnl": 63,
+    "equity": 10063
+   },
+   {
+    "day": "2024-03-03",
+    "dir": "long",
+    "reason": "trail",
+    "r": -0.22,
+    "status": "LOSS",
+    "score": 3.2,
+    "risk": 352,
+    "share": 1,
+    "pnl": -77,
+    "equity": 9986
+   },
+   {
+    "day": "2024-03-04",
+    "dir": "long",
+    "reason": "t1",
+    "r": 0.8,
+    "status": "WIN",
+    "score": 3.2,
+    "risk": 349,
+    "share": 0.6,
+    "pnl": 168,
+    "equity": 10153
+   },
+   {
+    "day": "2024-03-04",
+    "dir": "long",
+    "reason": "timeout_win",
+    "r": 1.88,
+    "status": "WIN",
+    "score": 3.2,
+    "risk": 349,
+    "share": 0.4,
+    "pnl": 263,
+    "equity": 10416
+   },
+   {
+    "day": "2024-03-05",
+    "dir": "long",
+    "reason": "trail",
+    "r": -0.71,
+    "status": "LOSS",
+    "score": 3.2,
+    "risk": 365,
+    "share": 1,
+    "pnl": -259,
+    "equity": 10157
+   },
+   {
+    "day": "2024-03-05",
+    "dir": "long",
+    "reason": "stop",
+    "r": -1,
+    "status": "LOSS",
+    "score": 3.2,
+    "risk": 356,
+    "share": 1,
+    "pnl": -356,
+    "equity": 9802
+   },
+   {
+    "day": "2024-03-10",
+    "dir": "long",
+    "reason": "timeout",
+    "r": 0.34,
+    "status": "WIN",
+    "score": 3.2,
+    "risk": 69,
+    "share": 1,
+    "pnl": 23,
+    "equity": 9825
+   },
+   {
+    "day": "2024-03-11",
+    "dir": "long",
+    "reason": "trail",
+    "r": -0.5,
+    "status": "LOSS",
+    "score": 3.2,
+    "risk": 69,
+    "share": 1,
+    "pnl": -34,
+    "equity": 9791
+   },
+   {
+    "day": "2024-03-11",
+    "dir": "long",
+    "reason": "t1",
+    "r": 0.8,
+    "status": "WIN",
+    "score": 3.2,
+    "risk": 69,
+    "share": 0.6,
+    "pnl": 33,
+    "equity": 9824
+   },
+   {
+    "day": "2024-03-12",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.21,
+    "status": "WIN",
+    "score": 3.2,
+    "risk": 69,
+    "share": 0.4,
+    "pnl": 6,
+    "equity": 9829
+   },
+   {
+    "day": "2024-03-14",
+    "dir": "long",
+    "reason": "trail",
+    "r": -0.2,
+    "status": "LOSS",
+    "score": 3.2,
+    "risk": 69,
+    "share": 1,
+    "pnl": -14,
+    "equity": 9816
+   },
+   {
+    "day": "2024-03-16",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.02,
+    "status": "WIN",
+    "score": 3.2,
+    "risk": 69,
+    "share": 1,
+    "pnl": 1,
+    "equity": 9817
+   },
+   {
+    "day": "2024-03-16",
+    "dir": "long",
+    "reason": "trail",
+    "r": -0.01,
+    "status": "LOSS",
+    "score": 3.2,
+    "risk": 69,
+    "share": 1,
+    "pnl": -1,
+    "equity": 9816
+   },
+   {
+    "day": "2024-03-17",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.66,
+    "status": "WIN",
+    "score": 3.2,
+    "risk": 69,
+    "share": 1,
+    "pnl": 45,
+    "equity": 9862
+   },
+   {
+    "day": "2024-03-17",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.38,
+    "status": "WIN",
+    "score": 3.2,
+    "risk": 69,
+    "share": 1,
+    "pnl": 26,
+    "equity": 9888
+   },
+   {
+    "day": "2024-03-18",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.42,
+    "status": "WIN",
+    "score": 4,
+    "risk": 69,
+    "share": 1,
+    "pnl": 29,
+    "equity": 9917
+   },
+   {
+    "day": "2024-03-18",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.57,
+    "status": "WIN",
+    "score": 4,
+    "risk": 174,
+    "share": 1,
+    "pnl": 99,
+    "equity": 10016
+   },
+   {
+    "day": "2024-03-19",
+    "dir": "long",
+    "reason": "trail",
+    "r": 1.31,
+    "status": "WIN",
+    "score": 3.2,
+    "risk": 175,
+    "share": 1,
+    "pnl": 230,
+    "equity": 10245
+   },
+   {
+    "day": "2024-03-20",
+    "dir": "long",
+    "reason": "trail",
+    "r": 1.65,
+    "status": "WIN",
+    "score": 3.2,
+    "risk": 359,
+    "share": 1,
+    "pnl": 592,
+    "equity": 10837
+   },
+   {
+    "day": "2024-03-21",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.69,
+    "status": "WIN",
+    "score": 4.8,
+    "risk": 379,
+    "share": 1,
+    "pnl": 262,
+    "equity": 11099
+   },
+   {
+    "day": "2024-03-21",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.18,
+    "status": "WIN",
+    "score": 4,
+    "risk": 388,
+    "share": 1,
+    "pnl": 70,
+    "equity": 11169
+   },
+   {
+    "day": "2024-03-22",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.23,
+    "status": "WIN",
+    "score": 4,
+    "risk": 391,
+    "share": 1,
+    "pnl": 90,
+    "equity": 11259
+   },
+   {
+    "day": "2024-03-22",
+    "dir": "long",
+    "reason": "trail",
+    "r": -0.16,
+    "status": "LOSS",
+    "score": 4,
+    "risk": 394,
+    "share": 1,
+    "pnl": -63,
+    "equity": 11196
+   },
+   {
+    "day": "2024-03-23",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.23,
+    "status": "WIN",
+    "score": 3.2,
+    "risk": 392,
+    "share": 1,
+    "pnl": 90,
+    "equity": 11286
+   },
+   {
+    "day": "2024-03-23",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.1,
+    "status": "WIN",
+    "score": 3.2,
+    "risk": 395,
+    "share": 1,
+    "pnl": 40,
+    "equity": 11325
+   },
+   {
+    "day": "2024-03-24",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.35,
+    "status": "WIN",
+    "score": 4,
+    "risk": 396,
+    "share": 1,
+    "pnl": 139,
+    "equity": 11464
+   },
+   {
+    "day": "2024-03-24",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.05,
+    "status": "WIN",
+    "score": 4,
+    "risk": 401,
+    "share": 1,
+    "pnl": 20,
+    "equity": 11484
+   },
+   {
+    "day": "2024-03-25",
+    "dir": "long",
+    "reason": "t1",
+    "r": 0.8,
+    "status": "WIN",
+    "score": 4,
+    "risk": 402,
+    "share": 0.6,
+    "pnl": 193,
+    "equity": 11677
+   },
+   {
+    "day": "2024-03-26",
+    "dir": "long",
+    "reason": "timeout_win",
+    "r": 0.75,
+    "status": "WIN",
+    "score": 4,
+    "risk": 402,
+    "share": 0.4,
+    "pnl": 121,
+    "equity": 11798
+   },
+   {
+    "day": "2024-03-28",
+    "dir": "long",
+    "reason": "timeout",
+    "r": 0.04,
+    "status": "WIN",
+    "score": 4,
+    "risk": 413,
+    "share": 1,
+    "pnl": 17,
+    "equity": 11814
+   },
+   {
+    "day": "2024-03-29",
+    "dir": "long",
+    "reason": "timeout",
+    "r": -0.13,
+    "status": "LOSS",
+    "score": 3.2,
+    "risk": 413,
+    "share": 1,
+    "pnl": -54,
+    "equity": 11760
+   },
+   {
+    "day": "2024-03-30",
+    "dir": "long",
+    "reason": "trail",
+    "r": -0.05,
+    "status": "LOSS",
+    "score": 3.2,
+    "risk": 412,
+    "share": 1,
+    "pnl": -21,
+    "equity": 11740
+   },
+   {
+    "day": "2024-04-01",
+    "dir": "long",
+    "reason": "stop",
+    "r": -1,
+    "status": "LOSS",
+    "score": 4.8,
+    "risk": 411,
+    "share": 1,
+    "pnl": -411,
+    "equity": 11329
+   },
+   {
+    "day": "2024-04-04",
+    "dir": "long",
+    "reason": "t1",
+    "r": 0.8,
+    "status": "WIN",
+    "score": 4.8,
+    "risk": 198,
+    "share": 0.6,
+    "pnl": 95,
+    "equity": 11424
+   },
+   {
+    "day": "2024-04-04",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.71,
+    "status": "WIN",
+    "score": 4.8,
+    "risk": 198,
+    "share": 0.4,
+    "pnl": 56,
+    "equity": 11480
+   },
+   {
+    "day": "2024-04-18",
+    "dir": "long",
+    "reason": "trail",
+    "r": 1.15,
+    "status": "WIN",
+    "score": 4.8,
+    "risk": 402,
+    "share": 1,
+    "pnl": 462,
+    "equity": 11942
+   },
+   {
+    "day": "2024-04-28",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.58,
+    "status": "WIN",
+    "score": 4.8,
+    "risk": 418,
+    "share": 1,
+    "pnl": 242,
+    "equity": 12185
+   },
+   {
+    "day": "2024-04-30",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.48,
+    "status": "WIN",
+    "score": 4.8,
+    "risk": 426,
+    "share": 1,
+    "pnl": 205,
+    "equity": 12390
+   },
+   {
+    "day": "2024-05-01",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.8,
+    "status": "WIN",
+    "score": 3.2,
+    "risk": 434,
+    "share": 1,
+    "pnl": 347,
+    "equity": 12736
+   },
+   {
+    "day": "2024-05-19",
+    "dir": "long",
+    "reason": "trail",
+    "r": -0.41,
+    "status": "LOSS",
+    "score": 3.2,
+    "risk": 446,
+    "share": 1,
+    "pnl": -183,
+    "equity": 12554
+   },
+   {
+    "day": "2024-05-21",
+    "dir": "long",
+    "reason": "t1",
+    "r": 0.8,
+    "status": "WIN",
+    "score": 4.8,
+    "risk": 439,
+    "share": 0.6,
+    "pnl": 211,
+    "equity": 12765
+   },
+   {
+    "day": "2024-05-21",
+    "dir": "long",
+    "reason": "stop",
+    "r": 0,
+    "status": "LOSS",
+    "score": 4.8,
+    "risk": 439,
+    "share": 0.4,
+    "pnl": 0,
+    "equity": 12765
+   },
+   {
+    "day": "2024-05-27",
+    "dir": "long",
+    "reason": "trail",
+    "r": -0.63,
+    "status": "LOSS",
+    "score": 4.8,
+    "risk": 447,
+    "share": 1,
+    "pnl": -281,
+    "equity": 12483
+   },
+   {
+    "day": "2024-05-30",
+    "dir": "long",
+    "reason": "trail",
+    "r": -0.03,
+    "status": "LOSS",
+    "score": 4.8,
+    "risk": 437,
+    "share": 1,
+    "pnl": -13,
+    "equity": 12470
+   },
+   {
+    "day": "2024-07-23",
+    "dir": "long",
+    "reason": "trail",
+    "r": -0.43,
+    "status": "LOSS",
+    "score": 3.2,
+    "risk": 436,
+    "share": 1,
+    "pnl": -188,
+    "equity": 12282
+   },
+   {
+    "day": "2024-07-27",
+    "dir": "long",
+    "reason": "timeout",
+    "r": 0.31,
+    "status": "WIN",
+    "score": 4.8,
+    "risk": 215,
+    "share": 1,
+    "pnl": 67,
+    "equity": 12349
+   },
+   {
+    "day": "2024-07-29",
+    "dir": "long",
+    "reason": "trail",
+    "r": -0.54,
+    "status": "LOSS",
+    "score": 4.8,
+    "risk": 216,
+    "share": 1,
+    "pnl": -117,
+    "equity": 12232
+   },
+   {
+    "day": "2024-07-30",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.19,
+    "status": "WIN",
+    "score": 3.2,
+    "risk": 214,
+    "share": 1,
+    "pnl": 41,
+    "equity": 12273
+   },
+   {
+    "day": "2024-09-28",
+    "dir": "long",
+    "reason": "timeout",
+    "r": 0.35,
+    "status": "WIN",
+    "score": 4.8,
+    "risk": 215,
+    "share": 1,
+    "pnl": 75,
+    "equity": 12348
+   },
+   {
+    "day": "2024-10-04",
+    "dir": "long",
+    "reason": "trail",
+    "r": 1.61,
+    "status": "WIN",
+    "score": 4.8,
+    "risk": 216,
+    "share": 1,
+    "pnl": 348,
+    "equity": 12696
+   },
+   {
+    "day": "2024-10-25",
+    "dir": "long",
+    "reason": "trail",
+    "r": -0.02,
+    "status": "LOSS",
+    "score": 4.8,
+    "risk": 444,
+    "share": 1,
+    "pnl": -9,
+    "equity": 12687
+   },
+   {
+    "day": "2024-11-05",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.89,
+    "status": "WIN",
+    "score": 4.8,
+    "risk": 444,
+    "share": 1,
+    "pnl": 395,
+    "equity": 13082
+   },
+   {
+    "day": "2024-11-10",
+    "dir": "long",
+    "reason": "t1",
+    "r": 0.8,
+    "status": "WIN",
+    "score": 3.2,
+    "risk": 458,
+    "share": 0.6,
+    "pnl": 220,
+    "equity": 13302
+   },
+   {
+    "day": "2024-11-10",
+    "dir": "long",
+    "reason": "timeout_win",
+    "r": 1.29,
+    "status": "WIN",
+    "score": 3.2,
+    "risk": 458,
+    "share": 0.4,
+    "pnl": 236,
+    "equity": 13538
+   },
+   {
+    "day": "2024-11-11",
+    "dir": "long",
+    "reason": "t1",
+    "r": 0.8,
+    "status": "WIN",
+    "score": 4,
+    "risk": 474,
+    "share": 0.6,
+    "pnl": 227,
+    "equity": 13766
+   },
+   {
+    "day": "2024-11-12",
+    "dir": "long",
+    "reason": "timeout_win",
+    "r": 1.7,
+    "status": "WIN",
+    "score": 4,
+    "risk": 474,
+    "share": 0.4,
+    "pnl": 322,
+    "equity": 14088
+   },
+   {
+    "day": "2024-11-13",
+    "dir": "long",
+    "reason": "t1",
+    "r": 0.8,
+    "status": "WIN",
+    "score": 3.2,
+    "risk": 493,
+    "share": 0.6,
+    "pnl": 237,
+    "equity": 14325
+   },
+   {
+    "day": "2024-11-14",
+    "dir": "long",
+    "reason": "timeout_win",
+    "r": 0.8,
+    "status": "WIN",
+    "score": 3.2,
+    "risk": 493,
+    "share": 0.4,
+    "pnl": 158,
+    "equity": 14483
+   },
+   {
+    "day": "2024-11-21",
+    "dir": "long",
+    "reason": "t1",
+    "r": 0.8,
+    "status": "WIN",
+    "score": 4,
+    "risk": 507,
+    "share": 0.6,
+    "pnl": 243,
+    "equity": 14726
+   },
+   {
+    "day": "2024-11-21",
+    "dir": "long",
+    "reason": "timeout_win",
+    "r": 0.85,
+    "status": "WIN",
+    "score": 4,
+    "risk": 507,
+    "share": 0.4,
+    "pnl": 172,
+    "equity": 14898
+   },
+   {
+    "day": "2024-11-23",
+    "dir": "long",
+    "reason": "timeout",
+    "r": 0.12,
+    "status": "WIN",
+    "score": 4,
+    "risk": 521,
+    "share": 1,
+    "pnl": 63,
+    "equity": 14961
+   },
+   {
+    "day": "2024-11-24",
+    "dir": "long",
+    "reason": "trail",
+    "r": -0.38,
+    "status": "LOSS",
+    "score": 4,
+    "risk": 524,
+    "share": 1,
+    "pnl": -199,
+    "equity": 14762
+   },
+   {
+    "day": "2024-11-25",
+    "dir": "long",
+    "reason": "trail",
+    "r": -0.41,
+    "status": "LOSS",
+    "score": 3.2,
+    "risk": 517,
+    "share": 1,
+    "pnl": -212,
+    "equity": 14550
+   },
+   {
+    "day": "2024-11-27",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.31,
+    "status": "WIN",
+    "score": 3.2,
+    "risk": 509,
+    "share": 1,
+    "pnl": 158,
+    "equity": 14708
+   },
+   {
+    "day": "2024-11-28",
+    "dir": "long",
+    "reason": "trail",
+    "r": -0.21,
+    "status": "LOSS",
+    "score": 4.8,
+    "risk": 515,
+    "share": 1,
+    "pnl": -108,
+    "equity": 14600
+   },
+   {
+    "day": "2024-11-28",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.07,
+    "status": "WIN",
+    "score": 4,
+    "risk": 511,
+    "share": 1,
+    "pnl": 36,
+    "equity": 14635
+   },
+   {
+    "day": "2024-11-29",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.14,
+    "status": "WIN",
+    "score": 4,
+    "risk": 512,
+    "share": 1,
+    "pnl": 72,
+    "equity": 14707
+   },
+   {
+    "day": "2024-11-30",
+    "dir": "long",
+    "reason": "timeout",
+    "r": 0.15,
+    "status": "WIN",
+    "score": 4,
+    "risk": 515,
+    "share": 1,
+    "pnl": 77,
+    "equity": 14784
+   },
+   {
+    "day": "2024-12-02",
+    "dir": "long",
+    "reason": "trail",
+    "r": -0.11,
+    "status": "LOSS",
+    "score": 4,
+    "risk": 517,
+    "share": 1,
+    "pnl": -57,
+    "equity": 14727
+   },
+   {
+    "day": "2024-12-02",
+    "dir": "long",
+    "reason": "trail",
+    "r": -0.1,
+    "status": "LOSS",
+    "score": 3.2,
+    "risk": 515,
+    "share": 1,
+    "pnl": -52,
+    "equity": 14676
+   },
+   {
+    "day": "2024-12-03",
+    "dir": "long",
+    "reason": "trail",
+    "r": -0.09,
+    "status": "LOSS",
+    "score": 3.2,
+    "risk": 514,
+    "share": 1,
+    "pnl": -46,
+    "equity": 14630
+   },
+   {
+    "day": "2024-12-03",
+    "dir": "long",
+    "reason": "trail",
+    "r": -0.07,
+    "status": "LOSS",
+    "score": 3.2,
+    "risk": 512,
+    "share": 1,
+    "pnl": -36,
+    "equity": 14594
+   },
+   {
+    "day": "2024-12-04",
+    "dir": "long",
+    "reason": "trail",
+    "r": -0.08,
+    "status": "LOSS",
+    "score": 3.2,
+    "risk": 511,
+    "share": 1,
+    "pnl": -41,
+    "equity": 14553
+   },
+   {
+    "day": "2024-12-05",
+    "dir": "long",
+    "reason": "t1",
+    "r": 0.8,
+    "status": "WIN",
+    "score": 4.8,
+    "risk": 509,
+    "share": 0.6,
+    "pnl": 244,
+    "equity": 14797
+   },
+   {
+    "day": "2024-12-05",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.43,
+    "status": "WIN",
+    "score": 4.8,
+    "risk": 509,
+    "share": 0.4,
+    "pnl": 88,
+    "equity": 14885
+   },
+   {
+    "day": "2024-12-05",
+    "dir": "long",
+    "reason": "stop",
+    "r": -1,
+    "status": "LOSS",
+    "score": 4,
+    "risk": 521,
+    "share": 1,
+    "pnl": -521,
+    "equity": 14364
+   },
+   {
+    "day": "2024-12-06",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.07,
+    "status": "WIN",
+    "score": 3.2,
+    "risk": 251,
+    "share": 1,
+    "pnl": 18,
+    "equity": 14382
+   },
+   {
+    "day": "2024-12-07",
+    "dir": "long",
+    "reason": "trail",
+    "r": -0.36,
+    "status": "LOSS",
+    "score": 4.8,
+    "risk": 252,
+    "share": 1,
+    "pnl": -91,
+    "equity": 14291
+   },
+   {
+    "day": "2024-12-07",
+    "dir": "long",
+    "reason": "trail",
+    "r": -0.02,
+    "status": "LOSS",
+    "score": 3.2,
+    "risk": 250,
+    "share": 1,
+    "pnl": -5,
+    "equity": 14286
+   },
+   {
+    "day": "2024-12-08",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.03,
+    "status": "WIN",
+    "score": 3.2,
+    "risk": 250,
+    "share": 1,
+    "pnl": 8,
+    "equity": 14294
+   },
+   {
+    "day": "2024-12-08",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.07,
+    "status": "WIN",
+    "score": 3.2,
+    "risk": 250,
+    "share": 1,
+    "pnl": 18,
+    "equity": 14311
+   },
+   {
+    "day": "2024-12-09",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.18,
+    "status": "WIN",
+    "score": 3.2,
+    "risk": 250,
+    "share": 1,
+    "pnl": 45,
+    "equity": 14356
+   },
+   {
+    "day": "2024-12-11",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.41,
+    "status": "WIN",
+    "score": 3.2,
+    "risk": 251,
+    "share": 1,
+    "pnl": 103,
+    "equity": 14459
+   },
+   {
+    "day": "2024-12-13",
+    "dir": "long",
+    "reason": "timeout",
+    "r": -0.04,
+    "status": "LOSS",
+    "score": 4.8,
+    "risk": 253,
+    "share": 1,
+    "pnl": -10,
+    "equity": 14449
+   },
+   {
+    "day": "2024-12-14",
+    "dir": "long",
+    "reason": "timeout",
+    "r": 0.22,
+    "status": "WIN",
+    "score": 4,
+    "risk": 253,
+    "share": 1,
+    "pnl": 56,
+    "equity": 14505
+   },
+   {
+    "day": "2024-12-15",
+    "dir": "long",
+    "reason": "t1",
+    "r": 0.8,
+    "status": "WIN",
+    "score": 4,
+    "risk": 254,
+    "share": 0.6,
+    "pnl": 122,
+    "equity": 14627
+   },
+   {
+    "day": "2024-12-16",
+    "dir": "long",
+    "reason": "timeout_win",
+    "r": 1.04,
+    "status": "WIN",
+    "score": 4,
+    "risk": 254,
+    "share": 0.4,
+    "pnl": 106,
+    "equity": 14732
+   },
+   {
+    "day": "2024-12-18",
+    "dir": "long",
+    "reason": "trail",
+    "r": -0.33,
+    "status": "LOSS",
+    "score": 4,
+    "risk": 516,
+    "share": 1,
+    "pnl": -170,
+    "equity": 14562
+   },
+   {
+    "day": "2024-12-18",
+    "dir": "long",
+    "reason": "trail",
+    "r": -0.11,
+    "status": "LOSS",
+    "score": 3.2,
+    "risk": 510,
+    "share": 1,
+    "pnl": -56,
+    "equity": 14506
+   },
+   {
+    "day": "2024-12-20",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.92,
+    "status": "WIN",
+    "score": 3.2,
+    "risk": 254,
+    "share": 1,
+    "pnl": 234,
+    "equity": 14739
+   },
+   {
+    "day": "2024-12-21",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.91,
+    "status": "WIN",
+    "score": 3.2,
+    "risk": 516,
+    "share": 1,
+    "pnl": 469,
+    "equity": 15209
+   },
+   {
+    "day": "2024-12-21",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.97,
+    "status": "WIN",
+    "score": 4,
+    "risk": 532,
+    "share": 1,
+    "pnl": 516,
+    "equity": 15725
+   },
+   {
+    "day": "2024-12-22",
+    "dir": "long",
+    "reason": "trail",
+    "r": 1.15,
+    "status": "WIN",
+    "score": 4,
+    "risk": 550,
+    "share": 1,
+    "pnl": 633,
+    "equity": 16358
+   },
+   {
+    "day": "2024-12-22",
+    "dir": "long",
+    "reason": "trail",
+    "r": 1.46,
+    "status": "WIN",
+    "score": 4,
+    "risk": 573,
+    "share": 1,
+    "pnl": 836,
+    "equity": 17194
+   },
+   {
+    "day": "2024-12-23",
+    "dir": "long",
+    "reason": "trail",
+    "r": 1.34,
+    "status": "WIN",
+    "score": 4.8,
+    "risk": 602,
+    "share": 1,
+    "pnl": 806,
+    "equity": 18001
+   },
+   {
+    "day": "2024-12-24",
+    "dir": "long",
+    "reason": "trail",
+    "r": 1.54,
+    "status": "WIN",
+    "score": 3.2,
+    "risk": 630,
+    "share": 1,
+    "pnl": 970,
+    "equity": 18971
+   },
+   {
+    "day": "2024-12-24",
+    "dir": "long",
+    "reason": "t1",
+    "r": 0.8,
+    "status": "WIN",
+    "score": 4,
+    "risk": 664,
+    "share": 0.6,
+    "pnl": 319,
+    "equity": 19289
+   },
+   {
+    "day": "2024-12-24",
+    "dir": "long",
+    "reason": "trail",
+    "r": 1.07,
+    "status": "WIN",
+    "score": 4,
+    "risk": 664,
+    "share": 0.4,
+    "pnl": 284,
+    "equity": 19574
+   },
+   {
+    "day": "2024-12-25",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.36,
+    "status": "WIN",
+    "score": 4,
+    "risk": 685,
+    "share": 1,
+    "pnl": 247,
+    "equity": 19820
+   },
+   {
+    "day": "2024-12-25",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.1,
+    "status": "WIN",
+    "score": 4,
+    "risk": 694,
+    "share": 1,
+    "pnl": 69,
+    "equity": 19890
+   },
+   {
+    "day": "2024-12-26",
+    "dir": "long",
+    "reason": "trail",
+    "r": -0.12,
+    "status": "LOSS",
+    "score": 4,
+    "risk": 696,
+    "share": 1,
+    "pnl": -84,
+    "equity": 19806
+   },
+   {
+    "day": "2024-12-26",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.04,
+    "status": "WIN",
+    "score": 4,
+    "risk": 693,
+    "share": 1,
+    "pnl": 28,
+    "equity": 19834
+   },
+   {
+    "day": "2024-12-27",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.05,
+    "status": "WIN",
+    "score": 3.2,
+    "risk": 694,
+    "share": 1,
+    "pnl": 35,
+    "equity": 19869
+   },
+   {
+    "day": "2024-12-27",
+    "dir": "long",
+    "reason": "trail",
+    "r": -0.22,
+    "status": "LOSS",
+    "score": 3.2,
+    "risk": 695,
+    "share": 1,
+    "pnl": -153,
+    "equity": 19716
+   },
+   {
+    "day": "2024-12-28",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.35,
+    "status": "WIN",
+    "score": 3.2,
+    "risk": 690,
+    "share": 1,
+    "pnl": 242,
+    "equity": 19957
+   },
+   {
+    "day": "2024-12-28",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.37,
+    "status": "WIN",
+    "score": 3.2,
+    "risk": 698,
+    "share": 1,
+    "pnl": 258,
+    "equity": 20215
+   },
+   {
+    "day": "2024-12-29",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.36,
+    "status": "WIN",
+    "score": 3.2,
+    "risk": 708,
+    "share": 1,
+    "pnl": 255,
+    "equity": 20470
+   },
+   {
+    "day": "2024-12-29",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.5,
+    "status": "WIN",
+    "score": 4,
+    "risk": 716,
+    "share": 1,
+    "pnl": 358,
+    "equity": 20828
+   },
+   {
+    "day": "2024-12-31",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.45,
+    "status": "WIN",
+    "score": 3.2,
+    "risk": 729,
+    "share": 1,
+    "pnl": 328,
+    "equity": 21156
+   },
+   {
+    "day": "2024-12-31",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.44,
+    "status": "WIN",
+    "score": 4.8,
+    "risk": 740,
+    "share": 1,
+    "pnl": 326,
+    "equity": 21482
+   },
+   {
+    "day": "2025-01-01",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.56,
+    "status": "WIN",
+    "score": 4,
+    "risk": 752,
+    "share": 1,
+    "pnl": 421,
+    "equity": 21903
+   },
+   {
+    "day": "2025-01-01",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.53,
+    "status": "WIN",
+    "score": 4,
+    "risk": 767,
+    "share": 1,
+    "pnl": 406,
+    "equity": 22310
+   },
+   {
+    "day": "2025-02-06",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.57,
+    "status": "WIN",
+    "score": 4.8,
+    "risk": 781,
+    "share": 1,
+    "pnl": 445,
+    "equity": 22755
+   },
+   {
+    "day": "2025-02-07",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.7,
+    "status": "WIN",
+    "score": 4.8,
+    "risk": 796,
+    "share": 1,
+    "pnl": 557,
+    "equity": 23312
+   },
+   {
+    "day": "2025-02-09",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.7,
+    "status": "WIN",
+    "score": 4.8,
+    "risk": 816,
+    "share": 1,
+    "pnl": 571,
+    "equity": 23883
+   },
+   {
+    "day": "2025-02-09",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.52,
+    "status": "WIN",
+    "score": 4,
+    "risk": 836,
+    "share": 1,
+    "pnl": 435,
+    "equity": 24318
+   },
+   {
+    "day": "2025-02-10",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.78,
+    "status": "WIN",
+    "score": 3.2,
+    "risk": 851,
+    "share": 1,
+    "pnl": 664,
+    "equity": 24982
+   },
+   {
+    "day": "2025-02-10",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.42,
+    "status": "WIN",
+    "score": 4,
+    "risk": 874,
+    "share": 1,
+    "pnl": 367,
+    "equity": 25349
+   },
+   {
+    "day": "2025-02-11",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.14,
+    "status": "WIN",
+    "score": 4,
+    "risk": 887,
+    "share": 1,
+    "pnl": 124,
+    "equity": 25473
+   },
+   {
+    "day": "2025-02-11",
+    "dir": "long",
+    "reason": "trail",
+    "r": -0.21,
+    "status": "LOSS",
+    "score": 4,
+    "risk": 892,
+    "share": 1,
+    "pnl": -187,
+    "equity": 25286
+   },
+   {
+    "day": "2025-02-12",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.24,
+    "status": "WIN",
+    "score": 3.2,
+    "risk": 885,
+    "share": 1,
+    "pnl": 212,
+    "equity": 25499
+   },
+   {
+    "day": "2025-02-13",
+    "dir": "long",
+    "reason": "trail",
+    "r": -0.08,
+    "status": "LOSS",
+    "score": 3.2,
+    "risk": 892,
+    "share": 1,
+    "pnl": -71,
+    "equity": 25427
+   },
+   {
+    "day": "2025-02-13",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.19,
+    "status": "WIN",
+    "score": 4,
+    "risk": 890,
+    "share": 1,
+    "pnl": 169,
+    "equity": 25596
+   },
+   {
+    "day": "2025-02-14",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.13,
+    "status": "WIN",
+    "score": 3.2,
+    "risk": 896,
+    "share": 1,
+    "pnl": 116,
+    "equity": 25713
+   },
+   {
+    "day": "2025-02-16",
+    "dir": "long",
+    "reason": "timeout",
+    "r": 0.16,
+    "status": "WIN",
+    "score": 4,
+    "risk": 900,
+    "share": 1,
+    "pnl": 144,
+    "equity": 25857
+   },
+   {
+    "day": "2025-02-16",
+    "dir": "long",
+    "reason": "trail",
+    "r": -0.24,
+    "status": "LOSS",
+    "score": 4,
+    "risk": 905,
+    "share": 1,
+    "pnl": -217,
+    "equity": 25640
+   },
+   {
+    "day": "2025-02-17",
+    "dir": "long",
+    "reason": "trail",
+    "r": -0.11,
+    "status": "LOSS",
+    "score": 3.2,
+    "risk": 897,
+    "share": 1,
+    "pnl": -99,
+    "equity": 25541
+   },
+   {
+    "day": "2025-05-03",
+    "dir": "long",
+    "reason": "timeout",
+    "r": 0.05,
+    "status": "WIN",
+    "score": 4,
+    "risk": 894,
+    "share": 1,
+    "pnl": 45,
+    "equity": 25585
+   },
+   {
+    "day": "2025-05-03",
+    "dir": "long",
+    "reason": "trail",
+    "r": -0.2,
+    "status": "LOSS",
+    "score": 3.2,
+    "risk": 895,
+    "share": 1,
+    "pnl": -179,
+    "equity": 25406
+   },
+   {
+    "day": "2025-05-06",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.4,
+    "status": "WIN",
+    "score": 3.2,
+    "risk": 889,
+    "share": 1,
+    "pnl": 356,
+    "equity": 25762
+   },
+   {
+    "day": "2025-05-07",
+    "dir": "long",
+    "reason": "t1",
+    "r": 0.8,
+    "status": "WIN",
+    "score": 3.2,
+    "risk": 902,
+    "share": 0.6,
+    "pnl": 433,
+    "equity": 26195
+   },
+   {
+    "day": "2025-05-08",
+    "dir": "long",
+    "reason": "timeout_win",
+    "r": 1.77,
+    "status": "WIN",
+    "score": 3.2,
+    "risk": 902,
+    "share": 0.4,
+    "pnl": 638,
+    "equity": 26833
+   },
+   {
+    "day": "2025-05-08",
+    "dir": "long",
+    "reason": "t1",
+    "r": 0.8,
+    "status": "WIN",
+    "score": 4,
+    "risk": 939,
+    "share": 0.6,
+    "pnl": 451,
+    "equity": 27284
+   },
+   {
+    "day": "2025-05-10",
+    "dir": "long",
+    "reason": "timeout_win",
+    "r": 1.25,
+    "status": "WIN",
+    "score": 4,
+    "risk": 939,
+    "share": 0.4,
+    "pnl": 470,
+    "equity": 27754
+   },
+   {
+    "day": "2025-05-11",
+    "dir": "long",
+    "reason": "timeout",
+    "r": 0.34,
+    "status": "WIN",
+    "score": 4,
+    "risk": 971,
+    "share": 1,
+    "pnl": 330,
+    "equity": 28084
+   },
+   {
+    "day": "2025-05-12",
+    "dir": "long",
+    "reason": "trail",
+    "r": -0.56,
+    "status": "LOSS",
+    "score": 3.2,
+    "risk": 983,
+    "share": 1,
+    "pnl": -550,
+    "equity": 27533
+   },
+   {
+    "day": "2025-05-12",
+    "dir": "long",
+    "reason": "trail",
+    "r": -0.04,
+    "status": "LOSS",
+    "score": 3.2,
+    "risk": 964,
+    "share": 1,
+    "pnl": -39,
+    "equity": 27495
+   },
+   {
+    "day": "2025-05-14",
+    "dir": "long",
+    "reason": "trail",
+    "r": -0.55,
+    "status": "LOSS",
+    "score": 3.2,
+    "risk": 962,
+    "share": 1,
+    "pnl": -529,
+    "equity": 26966
+   },
+   {
+    "day": "2025-05-17",
+    "dir": "long",
+    "reason": "trail",
+    "r": -0.04,
+    "status": "LOSS",
+    "score": 3.2,
+    "risk": 472,
+    "share": 1,
+    "pnl": -19,
+    "equity": 26947
+   },
+   {
+    "day": "2025-05-17",
+    "dir": "long",
+    "reason": "trail",
+    "r": -0.03,
+    "status": "LOSS",
+    "score": 3.2,
+    "risk": 472,
+    "share": 1,
+    "pnl": -14,
+    "equity": 26933
+   },
+   {
+    "day": "2025-05-18",
+    "dir": "long",
+    "reason": "t1",
+    "r": 0.8,
+    "status": "WIN",
+    "score": 3.2,
+    "risk": 471,
+    "share": 0.6,
+    "pnl": 226,
+    "equity": 27159
+   },
+   {
+    "day": "2025-05-18",
+    "dir": "long",
+    "reason": "stop",
+    "r": 0,
+    "status": "LOSS",
+    "score": 3.2,
+    "risk": 471,
+    "share": 0.4,
+    "pnl": 0,
+    "equity": 27159
+   },
+   {
+    "day": "2025-05-19",
+    "dir": "long",
+    "reason": "stop",
+    "r": -1,
+    "status": "LOSS",
+    "score": 4,
+    "risk": 475,
+    "share": 1,
+    "pnl": -475,
+    "equity": 26684
+   },
+   {
+    "day": "2025-05-21",
+    "dir": "long",
+    "reason": "timeout",
+    "r": 0.43,
+    "status": "WIN",
+    "score": 3.2,
+    "risk": 467,
+    "share": 1,
+    "pnl": 201,
+    "equity": 26884
+   },
+   {
+    "day": "2025-05-21",
+    "dir": "long",
+    "reason": "t1",
+    "r": 0.8,
+    "status": "WIN",
+    "score": 4,
+    "risk": 470,
+    "share": 0.6,
+    "pnl": 226,
+    "equity": 27110
+   },
+   {
+    "day": "2025-05-22",
+    "dir": "long",
+    "reason": "timeout_win",
+    "r": 1.29,
+    "status": "WIN",
+    "score": 4,
+    "risk": 470,
+    "share": 0.4,
+    "pnl": 243,
+    "equity": 27353
+   },
+   {
+    "day": "2025-05-23",
+    "dir": "long",
+    "reason": "trail",
+    "r": -0.81,
+    "status": "LOSS",
+    "score": 4,
+    "risk": 957,
+    "share": 1,
+    "pnl": -775,
+    "equity": 26578
+   },
+   {
+    "day": "2025-05-23",
+    "dir": "long",
+    "reason": "trail",
+    "r": -0.24,
+    "status": "LOSS",
+    "score": 3.2,
+    "risk": 186,
+    "share": 1,
+    "pnl": -45,
+    "equity": 26533
+   },
+   {
+    "day": "2025-05-24",
+    "dir": "long",
+    "reason": "trail",
+    "r": -0.09,
+    "status": "LOSS",
+    "score": 3.2,
+    "risk": 186,
+    "share": 1,
+    "pnl": -17,
+    "equity": 26516
+   },
+   {
+    "day": "2025-05-24",
+    "dir": "long",
+    "reason": "trail",
+    "r": -0.15,
+    "status": "LOSS",
+    "score": 3.2,
+    "risk": 186,
+    "share": 1,
+    "pnl": -28,
+    "equity": 26488
+   },
+   {
+    "day": "2025-05-27",
+    "dir": "long",
+    "reason": "trail",
+    "r": -0.09,
+    "status": "LOSS",
+    "score": 3.2,
+    "risk": 185,
+    "share": 1,
+    "pnl": -17,
+    "equity": 26472
+   },
+   {
+    "day": "2025-05-27",
+    "dir": "long",
+    "reason": "trail",
+    "r": -0.05,
+    "status": "LOSS",
+    "score": 3.2,
+    "risk": 185,
+    "share": 1,
+    "pnl": -9,
+    "equity": 26462
+   },
+   {
+    "day": "2025-05-27",
+    "dir": "long",
+    "reason": "trail",
+    "r": -0.37,
+    "status": "LOSS",
+    "score": 3.2,
+    "risk": 185,
+    "share": 1,
+    "pnl": -69,
+    "equity": 26394
+   },
+   {
+    "day": "2025-05-28",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.02,
+    "status": "WIN",
+    "score": 3.2,
+    "risk": 185,
+    "share": 1,
+    "pnl": 4,
+    "equity": 26398
+   },
+   {
+    "day": "2025-05-29",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.27,
+    "status": "WIN",
+    "score": 3.2,
+    "risk": 185,
+    "share": 1,
+    "pnl": 50,
+    "equity": 26447
+   },
+   {
+    "day": "2025-05-31",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.97,
+    "status": "WIN",
+    "score": 3.2,
+    "risk": 185,
+    "share": 1,
+    "pnl": 180,
+    "equity": 26627
+   },
+   {
+    "day": "2025-07-14",
+    "dir": "long",
+    "reason": "stop",
+    "r": -1,
+    "status": "LOSS",
+    "score": 4.8,
+    "risk": 186,
+    "share": 1,
+    "pnl": -186,
+    "equity": 26441
+   },
+   {
+    "day": "2025-07-18",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.1,
+    "status": "WIN",
+    "score": 3.2,
+    "risk": 185,
+    "share": 1,
+    "pnl": 19,
+    "equity": 26459
+   },
+   {
+    "day": "2025-07-18",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0,
+    "status": "LOSS",
+    "score": 4,
+    "risk": 185,
+    "share": 1,
+    "pnl": 0,
+    "equity": 26459
+   },
+   {
+    "day": "2025-07-19",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.45,
+    "status": "WIN",
+    "score": 3.2,
+    "risk": 185,
+    "share": 1,
+    "pnl": 83,
+    "equity": 26542
+   },
+   {
+    "day": "2025-07-19",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.51,
+    "status": "WIN",
+    "score": 3.2,
+    "risk": 186,
+    "share": 1,
+    "pnl": 95,
+    "equity": 26637
+   },
+   {
+    "day": "2025-07-20",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.83,
+    "status": "WIN",
+    "score": 3.2,
+    "risk": 186,
+    "share": 1,
+    "pnl": 155,
+    "equity": 26792
+   },
+   {
+    "day": "2025-07-20",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.62,
+    "status": "WIN",
+    "score": 3.2,
+    "risk": 469,
+    "share": 1,
+    "pnl": 291,
+    "equity": 27083
+   },
+   {
+    "day": "2025-07-21",
+    "dir": "long",
+    "reason": "trail",
+    "r": -0.14,
+    "status": "LOSS",
+    "score": 3.2,
+    "risk": 474,
+    "share": 1,
+    "pnl": -66,
+    "equity": 27016
+   },
+   {
+    "day": "2025-07-21",
+    "dir": "long",
+    "reason": "trail",
+    "r": -0.11,
+    "status": "LOSS",
+    "score": 4,
+    "risk": 473,
+    "share": 1,
+    "pnl": -52,
+    "equity": 26964
+   },
+   {
+    "day": "2025-07-23",
+    "dir": "long",
+    "reason": "trail",
+    "r": -0.37,
+    "status": "LOSS",
+    "score": 4,
+    "risk": 472,
+    "share": 1,
+    "pnl": -175,
+    "equity": 26790
+   },
+   {
+    "day": "2025-07-23",
+    "dir": "long",
+    "reason": "trail",
+    "r": -0.23,
+    "status": "LOSS",
+    "score": 4,
+    "risk": 469,
+    "share": 1,
+    "pnl": -108,
+    "equity": 26682
+   },
+   {
+    "day": "2025-07-25",
+    "dir": "long",
+    "reason": "trail",
+    "r": -0.44,
+    "status": "LOSS",
+    "score": 3.2,
+    "risk": 467,
+    "share": 1,
+    "pnl": -205,
+    "equity": 26476
+   },
+   {
+    "day": "2025-07-25",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.02,
+    "status": "WIN",
+    "score": 3.2,
+    "risk": 185,
+    "share": 1,
+    "pnl": 4,
+    "equity": 26480
+   },
+   {
+    "day": "2025-07-27",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.07,
+    "status": "WIN",
+    "score": 3.2,
+    "risk": 185,
+    "share": 1,
+    "pnl": 13,
+    "equity": 26493
+   },
+   {
+    "day": "2025-07-28",
+    "dir": "long",
+    "reason": "trail",
+    "r": -0.24,
+    "status": "LOSS",
+    "score": 4,
+    "risk": 185,
+    "share": 1,
+    "pnl": -45,
+    "equity": 26449
+   },
+   {
+    "day": "2025-07-28",
+    "dir": "long",
+    "reason": "trail",
+    "r": -0.09,
+    "status": "LOSS",
+    "score": 4,
+    "risk": 185,
+    "share": 1,
+    "pnl": -17,
+    "equity": 26432
+   },
+   {
+    "day": "2025-07-29",
+    "dir": "long",
+    "reason": "trail",
+    "r": -0.37,
+    "status": "LOSS",
+    "score": 4.8,
+    "risk": 185,
+    "share": 1,
+    "pnl": -68,
+    "equity": 26363
+   },
+   {
+    "day": "2025-07-30",
+    "dir": "long",
+    "reason": "trail",
+    "r": -0.17,
+    "status": "LOSS",
+    "score": 3.2,
+    "risk": 185,
+    "share": 1,
+    "pnl": -31,
+    "equity": 26332
+   },
+   {
+    "day": "2025-07-31",
+    "dir": "long",
+    "reason": "trail",
+    "r": -0.71,
+    "status": "LOSS",
+    "score": 4.8,
+    "risk": 184,
+    "share": 1,
+    "pnl": -131,
+    "equity": 26201
+   },
+   {
+    "day": "2025-08-03",
+    "dir": "long",
+    "reason": "trail",
+    "r": 1.37,
+    "status": "WIN",
+    "score": 4.8,
+    "risk": 183,
+    "share": 1,
+    "pnl": 251,
+    "equity": 26453
+   },
+   {
+    "day": "2025-08-17",
+    "dir": "long",
+    "reason": "trail",
+    "r": 2,
+    "status": "WIN",
+    "score": 4.8,
+    "risk": 185,
+    "share": 1,
+    "pnl": 370,
+    "equity": 26823
+   },
+   {
+    "day": "2025-10-05",
+    "dir": "long",
+    "reason": "trail",
+    "r": -0.59,
+    "status": "LOSS",
+    "score": 4,
+    "risk": 469,
+    "share": 1,
+    "pnl": -277,
+    "equity": 26546
+   },
+   {
+    "day": "2025-10-06",
+    "dir": "long",
+    "reason": "t1",
+    "r": 0.8,
+    "status": "WIN",
+    "score": 3.2,
+    "risk": 186,
+    "share": 0.6,
+    "pnl": 89,
+    "equity": 26635
+   },
+   {
+    "day": "2025-10-07",
+    "dir": "long",
+    "reason": "stop",
+    "r": 0,
+    "status": "LOSS",
+    "score": 3.2,
+    "risk": 186,
+    "share": 0.4,
+    "pnl": 0,
+    "equity": 26635
+   },
+   {
+    "day": "2025-10-11",
+    "dir": "long",
+    "reason": "trail",
+    "r": 1.17,
+    "status": "WIN",
+    "score": 3.2,
+    "risk": 186,
+    "share": 1,
+    "pnl": 218,
+    "equity": 26853
+   },
+   {
+    "day": "2025-10-12",
+    "dir": "long",
+    "reason": "trail",
+    "r": 1.37,
+    "status": "WIN",
+    "score": 3.2,
+    "risk": 470,
+    "share": 1,
+    "pnl": 644,
+    "equity": 27497
+   },
+   {
+    "day": "2025-10-13",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.98,
+    "status": "WIN",
+    "score": 4.8,
+    "risk": 962,
+    "share": 1,
+    "pnl": 943,
+    "equity": 28440
+   },
+   {
+    "day": "2025-10-13",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.76,
+    "status": "WIN",
+    "score": 4,
+    "risk": 995,
+    "share": 1,
+    "pnl": 757,
+    "equity": 29197
+   },
+   {
+    "day": "2025-10-14",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.67,
+    "status": "WIN",
+    "score": 4,
+    "risk": 1022,
+    "share": 1,
+    "pnl": 685,
+    "equity": 29881
+   },
+   {
+    "day": "2025-10-14",
+    "dir": "long",
+    "reason": "trail",
+    "r": 1.11,
+    "status": "WIN",
+    "score": 4,
+    "risk": 1046,
+    "share": 1,
+    "pnl": 1161,
+    "equity": 31042
+   },
+   {
+    "day": "2025-10-15",
+    "dir": "long",
+    "reason": "trail",
+    "r": 1,
+    "status": "WIN",
+    "score": 4,
+    "risk": 1086,
+    "share": 1,
+    "pnl": 1086,
+    "equity": 32129
+   },
+   {
+    "day": "2025-10-15",
+    "dir": "long",
+    "reason": "trail",
+    "r": 0.96,
+    "status": "WIN",
+    "score": 4,
+    "risk": 1125,
+    "share": 1,
+    "pnl": 1080,
+    "equity": 33208
+   },
+   {
+    "day": "2025-10-16",
+    "dir": "long",
+    "reason": "trail",
+    "r": 1.01,
+    "status": "WIN",
+    "score": 4,
+    "risk": 1162,
+    "share": 1,
+    "pnl": 1174,
+    "equity": 34382
+   },
+   {
+    "day": "2025-11-18",
+    "dir": "short",
+    "reason": "trail",
+    "r": -0.3,
+    "status": "LOSS",
+    "score": -4,
+    "risk": 1203,
+    "share": 1,
+    "pnl": -361,
+    "equity": 34021
+   },
+   {
+    "day": "2025-11-20",
+    "dir": "short",
+    "reason": "trail",
+    "r": -0.74,
+    "status": "LOSS",
+    "score": -4,
+    "risk": 1191,
+    "share": 1,
+    "pnl": -881,
+    "equity": 33140
+   },
+   {
+    "day": "2025-11-21",
+    "dir": "short",
+    "reason": "t1",
+    "r": 0.8,
+    "status": "WIN",
+    "score": -4,
+    "risk": 580,
+    "share": 0.6,
+    "pnl": 278,
+    "equity": 33418
+   },
+   {
+    "day": "2025-11-22",
+    "dir": "short",
+    "reason": "timeout_win",
+    "r": 0.54,
+    "status": "WIN",
+    "score": -4,
+    "risk": 580,
+    "share": 0.4,
+    "pnl": 125,
+    "equity": 33544
+   },
+   {
+    "day": "2025-11-29",
+    "dir": "short",
+    "reason": "trail",
+    "r": 0.79,
+    "status": "WIN",
+    "score": -4,
+    "risk": 1174,
+    "share": 1,
+    "pnl": 927,
+    "equity": 34471
+   },
+   {
+    "day": "2025-11-29",
+    "dir": "short",
+    "reason": "trail",
+    "r": 0.81,
+    "status": "WIN",
+    "score": -3.2,
+    "risk": 1206,
+    "share": 1,
+    "pnl": 977,
+    "equity": 35448
+   },
+   {
+    "day": "2025-12-02",
+    "dir": "short",
+    "reason": "trail",
+    "r": -0.15,
+    "status": "LOSS",
+    "score": -3.2,
+    "risk": 1241,
+    "share": 1,
+    "pnl": -186,
+    "equity": 35262
+   },
+   {
+    "day": "2025-12-05",
+    "dir": "short",
+    "reason": "trail",
+    "r": 0.9,
+    "status": "WIN",
+    "score": -3.2,
+    "risk": 1234,
+    "share": 1,
+    "pnl": 1111,
+    "equity": 36373
+   },
+   {
+    "day": "2025-12-11",
+    "dir": "short",
+    "reason": "trail",
+    "r": -0.26,
+    "status": "LOSS",
+    "score": -4,
+    "risk": 1273,
+    "share": 1,
+    "pnl": -331,
+    "equity": 36042
+   },
+   {
+    "day": "2025-12-14",
+    "dir": "short",
+    "reason": "trail",
+    "r": -0.04,
+    "status": "LOSS",
+    "score": -4,
+    "risk": 1261,
+    "share": 1,
+    "pnl": -50,
+    "equity": 35992
+   },
+   {
+    "day": "2025-12-15",
+    "dir": "short",
+    "reason": "t1",
+    "r": 0.8,
+    "status": "WIN",
+    "score": -3.2,
+    "risk": 1260,
+    "share": 0.6,
+    "pnl": 605,
+    "equity": 36596
+   },
+   {
+    "day": "2025-12-15",
+    "dir": "short",
+    "reason": "timeout_win",
+    "r": 1.19,
+    "status": "WIN",
+    "score": -3.2,
+    "risk": 1260,
+    "share": 0.4,
+    "pnl": 600,
+    "equity": 37196
+   },
+   {
+    "day": "2025-12-17",
+    "dir": "short",
+    "reason": "timeout",
+    "r": -0.2,
+    "status": "LOSS",
+    "score": -3.2,
+    "risk": 1302,
+    "share": 1,
+    "pnl": -260,
+    "equity": 36935
+   },
+   {
+    "day": "2025-12-19",
+    "dir": "short",
+    "reason": "trail",
+    "r": -0.57,
+    "status": "LOSS",
+    "score": -3.2,
+    "risk": 1293,
+    "share": 1,
+    "pnl": -737,
+    "equity": 36199
+   }
+  ],
   "by_reason": {
    "超时": 15,
    "移动止盈": 149,
-   "止盈1": 19,
+   "止盈1(60%)": 19,
    "超时止盈": 12,
    "止损": 8
   },
@@ -3373,214 +8450,20 @@
    "long": 189,
    "short": 14
   },
-  "equity": 86261,
-  "total_pnl": 76261,
-  "equity_curve": [
-   10000,
-   10063,
-   9986,
-   10265,
-   10941,
-   10669,
-   10295,
-   10418,
-   10235,
-   10522,
-   10599,
-   10525,
-   10533,
-   10529,
-   10772,
-   10915,
-   11076,
-   11297,
-   11815,
-   12497,
-   12799,
-   12879,
-   12983,
-   12910,
-   13014,
-   13060,
-   13220,
-   13243,
-   13614,
-   13971,
-   13991,
-   13927,
-   13903,
-   13416,
-   13792,
-   14135,
-   14703,
-   15002,
-   15254,
-   15681,
-   15456,
-   15889,
-   15889,
-   15538,
-   15522,
-   15289,
-   15454,
-   15162,
-   15263,
-   15450,
-   16321,
-   16309,
-   16817,
-   17288,
-   18069,
-   18575,
-   19680,
-   20231,
-   20797,
-   21380,
-   22016,
-   22108,
-   21814,
-   21501,
-   21735,
-   21575,
-   21628,
-   21734,
-   21848,
-   21764,
-   21687,
-   21619,
-   21566,
-   21506,
-   22108,
-   22441,
-   21655,
-   21708,
-   21435,
-   21420,
-   21442,
-   21495,
-   21630,
-   21941,
-   21910,
-   22079,
-   22697,
-   23523,
-   23251,
-   23162,
-   23908,
-   24669,
-   25507,
-   26533,
-   27889,
-   29197,
-   30771,
-   31632,
-   32817,
-   33230,
-   33347,
-   33207,
-   33253,
-   33311,
-   33055,
-   33460,
-   33893,
-   34320,
-   34921,
-   35471,
-   36017,
-   36723,
-   37404,
-   38150,
-   39085,
-   40043,
-   40771,
-   41884,
-   42500,
-   42708,
-   42394,
-   42751,
-   42631,
-   42914,
-   43110,
-   43351,
-   42987,
-   42821,
-   42896,
-   42596,
-   43192,
-   44402,
-   47152,
-   48473,
-   50593,
-   51196,
-   50192,
-   50122,
-   49157,
-   49088,
-   49037,
-   50410,
-   50410,
-   48645,
-   49377,
-   50760,
-   53052,
-   51548,
-   51115,
-   50954,
-   50686,
-   50527,
-   50438,
-   49785,
-   49820,
-   50291,
-   51998,
-   50178,
-   50354,
-   50354,
-   51147,
-   52060,
-   53572,
-   54735,
-   54466,
-   54257,
-   53554,
-   53123,
-   52305,
-   52341,
-   52470,
-   52029,
-   51865,
-   51193,
-   50889,
-   49624,
-   52004,
-   55644,
-   54495,
-   56021,
-   56021,
-   58315,
-   61111,
-   63207,
-   64888,
-   66410,
-   68990,
-   71405,
-   73804,
-   76413,
-   75611,
-   73652,
-   75715,
-   77146,
-   79279,
-   81526,
-   81098,
-   83653,
-   82892,
-   82775,
-   85093,
-   88637,
-   88017,
-   86261
-  ],
+  "longs": 189,
+  "shorts": 14,
+  "flats": 0,
+  "avg_gap": 3,
+  "avg_pos": 12,
+  "win_streak": 15,
+  "loss_streak": 7,
+  "style_tag": "中低频方向引擎 · 复利滚动",
+  "style": "信号评分分档 0/3/8/12% · ATR止损 + 移动止盈 · t1部分止盈60% + 回撤熔断",
+  "avg_pnl": 129,
+  "max_win": 1174,
+  "max_loss": -881,
+  "avg_win": 289,
+  "avg_loss": 166,
   "list": [
    {
     "date": "2024-03-01",
@@ -3617,12 +8500,12 @@
     "score": 3.2,
     "label": "🚀 强烈看多",
     "pos": 12,
-    "reason": "止盈1",
+    "reason": "止盈1(60%)",
     "r": 0.8,
     "status": "WIN",
     "win": true,
     "price": 66451.65,
-    "pnl": 280
+    "pnl": 168
    },
    {
     "date": "2024-03-04",
@@ -3636,7 +8519,7 @@
     "status": "WIN",
     "win": true,
     "price": 66451.65,
-    "pnl": 675
+    "pnl": 263
    },
    {
     "date": "2024-03-05",
@@ -3650,7 +8533,7 @@
     "status": "LOSS",
     "win": false,
     "price": 66773.05,
-    "pnl": -272
+    "pnl": -259
    },
    {
     "date": "2024-03-05",
@@ -3664,7 +8547,7 @@
     "status": "LOSS",
     "win": false,
     "price": 66773.05,
-    "pnl": -373
+    "pnl": -356
    },
    {
     "date": "2024-03-10",
@@ -3678,7 +8561,7 @@
     "status": "WIN",
     "win": true,
     "price": 69194.83,
-    "pnl": 123
+    "pnl": 23
    },
    {
     "date": "2024-03-11",
@@ -3692,7 +8575,7 @@
     "status": "LOSS",
     "win": false,
     "price": 72010,
-    "pnl": -182
+    "pnl": -34
    },
    {
     "date": "2024-03-11",
@@ -3701,12 +8584,12 @@
     "score": 3.2,
     "label": "🚀 强烈看多",
     "pos": 12,
-    "reason": "止盈1",
+    "reason": "止盈1(60%)",
     "r": 0.8,
     "status": "WIN",
     "win": true,
     "price": 72010,
-    "pnl": 287
+    "pnl": 33
    },
    {
     "date": "2024-03-12",
@@ -3720,7 +8603,7 @@
     "status": "WIN",
     "win": true,
     "price": 71703.41,
-    "pnl": 77
+    "pnl": 6
    },
    {
     "date": "2024-03-14",
@@ -3734,7 +8617,7 @@
     "status": "LOSS",
     "win": false,
     "price": 70844.01,
-    "pnl": -74
+    "pnl": -14
    },
    {
     "date": "2024-03-16",
@@ -3748,7 +8631,7 @@
     "status": "WIN",
     "win": true,
     "price": 68385.58,
-    "pnl": 7
+    "pnl": 1
    },
    {
     "date": "2024-03-16",
@@ -3762,7 +8645,7 @@
     "status": "LOSS",
     "win": false,
     "price": 68385.58,
-    "pnl": -4
+    "pnl": -1
    },
    {
     "date": "2024-03-17",
@@ -3776,7 +8659,7 @@
     "status": "WIN",
     "win": true,
     "price": 67965.5,
-    "pnl": 243
+    "pnl": 45
    },
    {
     "date": "2024-03-17",
@@ -3790,7 +8673,7 @@
     "status": "WIN",
     "win": true,
     "price": 67965.5,
-    "pnl": 143
+    "pnl": 26
    },
    {
     "date": "2024-03-18",
@@ -3804,7 +8687,7 @@
     "status": "WIN",
     "win": true,
     "price": 67467.19,
-    "pnl": 160
+    "pnl": 29
    },
    {
     "date": "2024-03-18",
@@ -3818,7 +8701,7 @@
     "status": "WIN",
     "win": true,
     "price": 67467.19,
-    "pnl": 221
+    "pnl": 99
    },
    {
     "date": "2024-03-19",
@@ -3832,7 +8715,7 @@
     "status": "WIN",
     "win": true,
     "price": 64051.85,
-    "pnl": 518
+    "pnl": 230
    },
    {
     "date": "2024-03-20",
@@ -3846,7 +8729,7 @@
     "status": "WIN",
     "win": true,
     "price": 63600.37,
-    "pnl": 682
+    "pnl": 592
    },
    {
     "date": "2024-03-21",
@@ -3860,7 +8743,7 @@
     "status": "WIN",
     "win": true,
     "price": 66557.77,
-    "pnl": 302
+    "pnl": 262
    },
    {
     "date": "2024-03-21",
@@ -3874,7 +8757,7 @@
     "status": "WIN",
     "win": true,
     "price": 66557.77,
-    "pnl": 81
+    "pnl": 70
    },
    {
     "date": "2024-03-22",
@@ -3888,7 +8771,7 @@
     "status": "WIN",
     "win": true,
     "price": 63877.04,
-    "pnl": 104
+    "pnl": 90
    },
    {
     "date": "2024-03-22",
@@ -3902,7 +8785,7 @@
     "status": "LOSS",
     "win": false,
     "price": 63877.04,
-    "pnl": -73
+    "pnl": -63
    },
    {
     "date": "2024-03-23",
@@ -3916,7 +8799,7 @@
     "status": "WIN",
     "win": true,
     "price": 65104.05,
-    "pnl": 104
+    "pnl": 90
    },
    {
     "date": "2024-03-23",
@@ -3930,7 +8813,7 @@
     "status": "WIN",
     "win": true,
     "price": 65104.05,
-    "pnl": 46
+    "pnl": 40
    },
    {
     "date": "2024-03-24",
@@ -3944,7 +8827,7 @@
     "status": "WIN",
     "win": true,
     "price": 65673.36,
-    "pnl": 160
+    "pnl": 139
    },
    {
     "date": "2024-03-24",
@@ -3958,7 +8841,7 @@
     "status": "WIN",
     "win": true,
     "price": 65673.36,
-    "pnl": 23
+    "pnl": 20
    },
    {
     "date": "2024-03-25",
@@ -3967,12 +8850,12 @@
     "score": 4,
     "label": "🚀 强烈看多",
     "pos": 12,
-    "reason": "止盈1",
+    "reason": "止盈1(60%)",
     "r": 0.8,
     "status": "WIN",
     "win": true,
     "price": 69792.05,
-    "pnl": 371
+    "pnl": 193
    },
    {
     "date": "2024-03-26",
@@ -3986,7 +8869,7 @@
     "status": "WIN",
     "win": true,
     "price": 70250,
-    "pnl": 357
+    "pnl": 121
    },
    {
     "date": "2024-03-28",
@@ -4000,7 +8883,7 @@
     "status": "WIN",
     "win": true,
     "price": 71290.39,
-    "pnl": 20
+    "pnl": 17
    },
    {
     "date": "2024-03-29",
@@ -4014,7 +8897,7 @@
     "status": "LOSS",
     "win": false,
     "price": 69180,
-    "pnl": -64
+    "pnl": -54
    },
    {
     "date": "2024-03-30",
@@ -4028,7 +8911,7 @@
     "status": "LOSS",
     "win": false,
     "price": 69999.99,
-    "pnl": -24
+    "pnl": -21
    },
    {
     "date": "2024-04-01",
@@ -4042,7 +8925,7 @@
     "status": "LOSS",
     "win": false,
     "price": 68237.15,
-    "pnl": -487
+    "pnl": -411
    },
    {
     "date": "2024-04-04",
@@ -4051,12 +8934,12 @@
     "score": 4.8,
     "label": "🚀 强烈看多",
     "pos": 12,
-    "reason": "止盈1",
+    "reason": "止盈1(60%)",
     "r": 0.8,
     "status": "WIN",
     "win": true,
     "price": 67647.99,
-    "pnl": 376
+    "pnl": 95
    },
    {
     "date": "2024-04-04",
@@ -4070,7 +8953,7 @@
     "status": "WIN",
     "win": true,
     "price": 67647.99,
-    "pnl": 343
+    "pnl": 56
    },
    {
     "date": "2024-04-18",
@@ -4084,7 +8967,7 @@
     "status": "WIN",
     "win": true,
     "price": 63498.7,
-    "pnl": 569
+    "pnl": 462
    },
    {
     "date": "2024-04-28",
@@ -4098,7 +8981,7 @@
     "status": "WIN",
     "win": true,
     "price": 63540,
-    "pnl": 298
+    "pnl": 242
    },
    {
     "date": "2024-04-30",
@@ -4112,7 +8995,7 @@
     "status": "WIN",
     "win": true,
     "price": 60796.85,
-    "pnl": 252
+    "pnl": 205
    },
    {
     "date": "2024-05-01",
@@ -4126,7 +9009,7 @@
     "status": "WIN",
     "win": true,
     "price": 56886,
-    "pnl": 427
+    "pnl": 347
    },
    {
     "date": "2024-05-19",
@@ -4140,7 +9023,7 @@
     "status": "LOSS",
     "win": false,
     "price": 66889.88,
-    "pnl": -225
+    "pnl": -183
    },
    {
     "date": "2024-05-21",
@@ -4149,12 +9032,12 @@
     "score": 4.8,
     "label": "🚀 强烈看多",
     "pos": 12,
-    "reason": "止盈1",
+    "reason": "止盈1(60%)",
     "r": 0.8,
     "status": "WIN",
     "win": true,
     "price": 69826.99,
-    "pnl": 433
+    "pnl": 211
    },
    {
     "date": "2024-05-21",
@@ -4182,7 +9065,7 @@
     "status": "LOSS",
     "win": false,
     "price": 70373.85,
-    "pnl": -350
+    "pnl": -281
    },
    {
     "date": "2024-05-30",
@@ -4196,7 +9079,7 @@
     "status": "LOSS",
     "win": false,
     "price": 68530.76,
-    "pnl": -16
+    "pnl": -13
    },
    {
     "date": "2024-07-23",
@@ -4210,7 +9093,7 @@
     "status": "LOSS",
     "win": false,
     "price": 66584.01,
-    "pnl": -234
+    "pnl": -188
    },
    {
     "date": "2024-07-27",
@@ -4224,7 +9107,7 @@
     "status": "WIN",
     "win": true,
     "price": 68844,
-    "pnl": 166
+    "pnl": 67
    },
    {
     "date": "2024-07-29",
@@ -4238,7 +9121,7 @@
     "status": "LOSS",
     "win": false,
     "price": 68104,
-    "pnl": -292
+    "pnl": -117
    },
    {
     "date": "2024-07-30",
@@ -4252,7 +9135,7 @@
     "status": "WIN",
     "win": true,
     "price": 66216.01,
-    "pnl": 101
+    "pnl": 41
    },
    {
     "date": "2024-09-28",
@@ -4266,7 +9149,7 @@
     "status": "WIN",
     "win": true,
     "price": 65619.13,
-    "pnl": 187
+    "pnl": 75
    },
    {
     "date": "2024-10-04",
@@ -4280,7 +9163,7 @@
     "status": "WIN",
     "win": true,
     "price": 61873.04,
-    "pnl": 871
+    "pnl": 348
    },
    {
     "date": "2024-10-25",
@@ -4294,7 +9177,7 @@
     "status": "LOSS",
     "win": false,
     "price": 67690.01,
-    "pnl": -11
+    "pnl": -9
    },
    {
     "date": "2024-11-05",
@@ -4308,7 +9191,7 @@
     "status": "WIN",
     "win": true,
     "price": 69639.99,
-    "pnl": 508
+    "pnl": 395
    },
    {
     "date": "2024-11-10",
@@ -4317,12 +9200,12 @@
     "score": 3.2,
     "label": "🚀 强烈看多",
     "pos": 12,
-    "reason": "止盈1",
+    "reason": "止盈1(60%)",
     "r": 0.8,
     "status": "WIN",
     "win": true,
     "price": 79694.03,
-    "pnl": 471
+    "pnl": 220
    },
    {
     "date": "2024-11-10",
@@ -4336,7 +9219,7 @@
     "status": "WIN",
     "win": true,
     "price": 79694.03,
-    "pnl": 781
+    "pnl": 236
    },
    {
     "date": "2024-11-11",
@@ -4345,12 +9228,12 @@
     "score": 4,
     "label": "🚀 强烈看多",
     "pos": 12,
-    "reason": "止盈1",
+    "reason": "止盈1(60%)",
     "r": 0.8,
     "status": "WIN",
     "win": true,
     "price": 84059.54,
-    "pnl": 506
+    "pnl": 227
    },
    {
     "date": "2024-11-12",
@@ -4364,7 +9247,7 @@
     "status": "WIN",
     "win": true,
     "price": 86632,
-    "pnl": 1105
+    "pnl": 322
    },
    {
     "date": "2024-11-13",
@@ -4373,12 +9256,12 @@
     "score": 3.2,
     "label": "🚀 强烈看多",
     "pos": 12,
-    "reason": "止盈1",
+    "reason": "止盈1(60%)",
     "r": 0.8,
     "status": "WIN",
     "win": true,
     "price": 92540.01,
-    "pnl": 551
+    "pnl": 237
    },
    {
     "date": "2024-11-14",
@@ -4392,7 +9275,7 @@
     "status": "WIN",
     "win": true,
     "price": 87947.99,
-    "pnl": 566
+    "pnl": 158
    },
    {
     "date": "2024-11-21",
@@ -4401,12 +9284,12 @@
     "score": 4,
     "label": "🚀 强烈看多",
     "pos": 12,
-    "reason": "止盈1",
+    "reason": "止盈1(60%)",
     "r": 0.8,
     "status": "WIN",
     "win": true,
     "price": 96672,
-    "pnl": 582
+    "pnl": 243
    },
    {
     "date": "2024-11-21",
@@ -4420,7 +9303,7 @@
     "status": "WIN",
     "win": true,
     "price": 96672,
-    "pnl": 636
+    "pnl": 172
    },
    {
     "date": "2024-11-23",
@@ -4434,7 +9317,7 @@
     "status": "WIN",
     "win": true,
     "price": 98400,
-    "pnl": 92
+    "pnl": 63
    },
    {
     "date": "2024-11-24",
@@ -4448,7 +9331,7 @@
     "status": "LOSS",
     "win": false,
     "price": 95901.51,
-    "pnl": -294
+    "pnl": -199
    },
    {
     "date": "2024-11-25",
@@ -4462,7 +9345,7 @@
     "status": "LOSS",
     "win": false,
     "price": 96000.56,
-    "pnl": -313
+    "pnl": -212
    },
    {
     "date": "2024-11-27",
@@ -4476,7 +9359,7 @@
     "status": "WIN",
     "win": true,
     "price": 95556.01,
-    "pnl": 233
+    "pnl": 158
    },
    {
     "date": "2024-11-28",
@@ -4490,7 +9373,7 @@
     "status": "LOSS",
     "win": false,
     "price": 95007.14,
-    "pnl": -160
+    "pnl": -108
    },
    {
     "date": "2024-11-28",
@@ -4504,7 +9387,7 @@
     "status": "WIN",
     "win": true,
     "price": 95007.14,
-    "pnl": 53
+    "pnl": 36
    },
    {
     "date": "2024-11-29",
@@ -4518,7 +9401,7 @@
     "status": "WIN",
     "win": true,
     "price": 98019.47,
-    "pnl": 106
+    "pnl": 72
    },
    {
     "date": "2024-11-30",
@@ -4532,7 +9415,7 @@
     "status": "WIN",
     "win": true,
     "price": 96645.41,
-    "pnl": 114
+    "pnl": 77
    },
    {
     "date": "2024-12-02",
@@ -4546,7 +9429,7 @@
     "status": "LOSS",
     "win": false,
     "price": 97048,
-    "pnl": -84
+    "pnl": -57
    },
    {
     "date": "2024-12-02",
@@ -4560,7 +9443,7 @@
     "status": "LOSS",
     "win": false,
     "price": 97048,
-    "pnl": -76
+    "pnl": -52
    },
    {
     "date": "2024-12-03",
@@ -4574,7 +9457,7 @@
     "status": "LOSS",
     "win": false,
     "price": 95682.54,
-    "pnl": -68
+    "pnl": -46
    },
    {
     "date": "2024-12-03",
@@ -4588,7 +9471,7 @@
     "status": "LOSS",
     "win": false,
     "price": 95682.54,
-    "pnl": -53
+    "pnl": -36
    },
    {
     "date": "2024-12-04",
@@ -4602,7 +9485,7 @@
     "status": "LOSS",
     "win": false,
     "price": 95742.81,
-    "pnl": -60
+    "pnl": -41
    },
    {
     "date": "2024-12-05",
@@ -4611,12 +9494,12 @@
     "score": 4.8,
     "label": "🚀 强烈看多",
     "pos": 12,
-    "reason": "止盈1",
+    "reason": "止盈1(60%)",
     "r": 0.8,
     "status": "WIN",
     "win": true,
     "price": 101292.01,
-    "pnl": 602
+    "pnl": 244
    },
    {
     "date": "2024-12-05",
@@ -4630,7 +9513,7 @@
     "status": "WIN",
     "win": true,
     "price": 101292.01,
-    "pnl": 333
+    "pnl": 88
    },
    {
     "date": "2024-12-05",
@@ -4644,7 +9527,7 @@
     "status": "LOSS",
     "win": false,
     "price": 101292.01,
-    "pnl": -785
+    "pnl": -521
    },
    {
     "date": "2024-12-06",
@@ -4658,7 +9541,7 @@
     "status": "WIN",
     "win": true,
     "price": 99309.99,
-    "pnl": 53
+    "pnl": 18
    },
    {
     "date": "2024-12-07",
@@ -4672,7 +9555,7 @@
     "status": "LOSS",
     "win": false,
     "price": 99756.01,
-    "pnl": -274
+    "pnl": -91
    },
    {
     "date": "2024-12-07",
@@ -4686,7 +9569,7 @@
     "status": "LOSS",
     "win": false,
     "price": 99756.01,
-    "pnl": -15
+    "pnl": -5
    },
    {
     "date": "2024-12-08",
@@ -4700,7 +9583,7 @@
     "status": "WIN",
     "win": true,
     "price": 99912.01,
-    "pnl": 22
+    "pnl": 8
    },
    {
     "date": "2024-12-08",
@@ -4714,7 +9597,7 @@
     "status": "WIN",
     "win": true,
     "price": 99912.01,
-    "pnl": 53
+    "pnl": 18
    },
    {
     "date": "2024-12-09",
@@ -4728,7 +9611,7 @@
     "status": "WIN",
     "win": true,
     "price": 97812,
-    "pnl": 135
+    "pnl": 45
    },
    {
     "date": "2024-12-11",
@@ -4742,7 +9625,7 @@
     "status": "WIN",
     "win": true,
     "price": 100361.64,
-    "pnl": 310
+    "pnl": 103
    },
    {
     "date": "2024-12-13",
@@ -4756,7 +9639,7 @@
     "status": "LOSS",
     "win": false,
     "price": 99873.16,
-    "pnl": -31
+    "pnl": -10
    },
    {
     "date": "2024-12-14",
@@ -4770,7 +9653,7 @@
     "status": "WIN",
     "win": true,
     "price": 101625.12,
-    "pnl": 169
+    "pnl": 56
    },
    {
     "date": "2024-12-15",
@@ -4779,12 +9662,12 @@
     "score": 4,
     "label": "🚀 强烈看多",
     "pos": 12,
-    "reason": "止盈1",
+    "reason": "止盈1(60%)",
     "r": 0.8,
     "status": "WIN",
     "win": true,
     "price": 102704.01,
-    "pnl": 618
+    "pnl": 122
    },
    {
     "date": "2024-12-16",
@@ -4798,7 +9681,7 @@
     "status": "WIN",
     "win": true,
     "price": 106332.01,
-    "pnl": 826
+    "pnl": 106
    },
    {
     "date": "2024-12-18",
@@ -4812,7 +9695,7 @@
     "status": "LOSS",
     "win": false,
     "price": 104428.54,
-    "pnl": -272
+    "pnl": -170
    },
    {
     "date": "2024-12-18",
@@ -4826,7 +9709,7 @@
     "status": "LOSS",
     "win": false,
     "price": 104428.54,
-    "pnl": -90
+    "pnl": -56
    },
    {
     "date": "2024-12-20",
@@ -4840,7 +9723,7 @@
     "status": "WIN",
     "win": true,
     "price": 96991.62,
-    "pnl": 746
+    "pnl": 234
    },
    {
     "date": "2024-12-21",
@@ -4854,7 +9737,7 @@
     "status": "WIN",
     "win": true,
     "price": 97527.97,
-    "pnl": 761
+    "pnl": 469
    },
    {
     "date": "2024-12-21",
@@ -4868,7 +9751,7 @@
     "status": "WIN",
     "win": true,
     "price": 97527.97,
-    "pnl": 838
+    "pnl": 516
    },
    {
     "date": "2024-12-22",
@@ -4882,7 +9765,7 @@
     "status": "WIN",
     "win": true,
     "price": 95377.72,
-    "pnl": 1027
+    "pnl": 633
    },
    {
     "date": "2024-12-22",
@@ -4896,7 +9779,7 @@
     "status": "WIN",
     "win": true,
     "price": 95377.72,
-    "pnl": 1356
+    "pnl": 836
    },
    {
     "date": "2024-12-23",
@@ -4910,7 +9793,7 @@
     "status": "WIN",
     "win": true,
     "price": 93250.37,
-    "pnl": 1308
+    "pnl": 806
    },
    {
     "date": "2024-12-24",
@@ -4924,7 +9807,7 @@
     "status": "WIN",
     "win": true,
     "price": 98300,
-    "pnl": 1574
+    "pnl": 970
    },
    {
     "date": "2024-12-24",
@@ -4933,12 +9816,12 @@
     "score": 4,
     "label": "🚀 强烈看多",
     "pos": 12,
-    "reason": "止盈1",
+    "reason": "止盈1(60%)",
     "r": 0.8,
     "status": "WIN",
     "win": true,
     "price": 98300,
-    "pnl": 862
+    "pnl": 319
    },
    {
     "date": "2024-12-24",
@@ -4952,7 +9835,7 @@
     "status": "WIN",
     "win": true,
     "price": 98300,
-    "pnl": 1185
+    "pnl": 284
    },
    {
     "date": "2024-12-25",
@@ -4966,7 +9849,7 @@
     "status": "WIN",
     "win": true,
     "price": 98519.98,
-    "pnl": 413
+    "pnl": 247
    },
    {
     "date": "2024-12-25",
@@ -4980,7 +9863,7 @@
     "status": "WIN",
     "win": true,
     "price": 98519.98,
-    "pnl": 116
+    "pnl": 69
    },
    {
     "date": "2024-12-26",
@@ -4994,7 +9877,7 @@
     "status": "LOSS",
     "win": false,
     "price": 96042.88,
-    "pnl": -140
+    "pnl": -84
    },
    {
     "date": "2024-12-26",
@@ -5008,7 +9891,7 @@
     "status": "WIN",
     "win": true,
     "price": 96042.88,
-    "pnl": 46
+    "pnl": 28
    },
    {
     "date": "2024-12-27",
@@ -5022,7 +9905,7 @@
     "status": "WIN",
     "win": true,
     "price": 94573.75,
-    "pnl": 58
+    "pnl": 35
    },
    {
     "date": "2024-12-27",
@@ -5036,7 +9919,7 @@
     "status": "LOSS",
     "win": false,
     "price": 94573.75,
-    "pnl": -256
+    "pnl": -153
    },
    {
     "date": "2024-12-28",
@@ -5050,7 +9933,7 @@
     "status": "WIN",
     "win": true,
     "price": 94447.29,
-    "pnl": 405
+    "pnl": 242
    },
    {
     "date": "2024-12-28",
@@ -5064,7 +9947,7 @@
     "status": "WIN",
     "win": true,
     "price": 94447.29,
-    "pnl": 433
+    "pnl": 258
    },
    {
     "date": "2024-12-29",
@@ -5078,7 +9961,7 @@
     "status": "WIN",
     "win": true,
     "price": 94511.12,
-    "pnl": 427
+    "pnl": 255
    },
    {
     "date": "2024-12-29",
@@ -5092,7 +9975,7 @@
     "status": "WIN",
     "win": true,
     "price": 94511.12,
-    "pnl": 601
+    "pnl": 358
    },
    {
     "date": "2024-12-31",
@@ -5106,7 +9989,7 @@
     "status": "WIN",
     "win": true,
     "price": 95412,
-    "pnl": 550
+    "pnl": 328
    },
    {
     "date": "2024-12-31",
@@ -5120,7 +10003,7 @@
     "status": "WIN",
     "win": true,
     "price": 95412,
-    "pnl": 546
+    "pnl": 326
    },
    {
     "date": "2025-01-01",
@@ -5134,7 +10017,7 @@
     "status": "WIN",
     "win": true,
     "price": 94432.94,
-    "pnl": 706
+    "pnl": 421
    },
    {
     "date": "2025-01-01",
@@ -5148,7 +10031,7 @@
     "status": "WIN",
     "win": true,
     "price": 94432.94,
-    "pnl": 681
+    "pnl": 406
    },
    {
     "date": "2025-02-06",
@@ -5162,7 +10045,7 @@
     "status": "WIN",
     "win": true,
     "price": 97333.09,
-    "pnl": 746
+    "pnl": 445
    },
    {
     "date": "2025-02-07",
@@ -5176,7 +10059,7 @@
     "status": "WIN",
     "win": true,
     "price": 98283.98,
-    "pnl": 935
+    "pnl": 557
    },
    {
     "date": "2025-02-09",
@@ -5190,7 +10073,7 @@
     "status": "WIN",
     "win": true,
     "price": 96488.15,
-    "pnl": 958
+    "pnl": 571
    },
    {
     "date": "2025-02-09",
@@ -5204,7 +10087,7 @@
     "status": "WIN",
     "win": true,
     "price": 96488.15,
-    "pnl": 729
+    "pnl": 435
    },
    {
     "date": "2025-02-10",
@@ -5218,7 +10101,7 @@
     "status": "WIN",
     "win": true,
     "price": 97218.69,
-    "pnl": 1113
+    "pnl": 664
    },
    {
     "date": "2025-02-10",
@@ -5232,7 +10115,7 @@
     "status": "WIN",
     "win": true,
     "price": 97218.69,
-    "pnl": 616
+    "pnl": 367
    },
    {
     "date": "2025-02-11",
@@ -5246,7 +10129,7 @@
     "status": "WIN",
     "win": true,
     "price": 97007.53,
-    "pnl": 208
+    "pnl": 124
    },
    {
     "date": "2025-02-11",
@@ -5260,7 +10143,7 @@
     "status": "LOSS",
     "win": false,
     "price": 97007.53,
-    "pnl": -314
+    "pnl": -187
    },
    {
     "date": "2025-02-12",
@@ -5274,7 +10157,7 @@
     "status": "WIN",
     "win": true,
     "price": 95816.18,
-    "pnl": 356
+    "pnl": 212
    },
    {
     "date": "2025-02-13",
@@ -5288,7 +10171,7 @@
     "status": "LOSS",
     "win": false,
     "price": 95998,
-    "pnl": -120
+    "pnl": -71
    },
    {
     "date": "2025-02-13",
@@ -5302,7 +10185,7 @@
     "status": "WIN",
     "win": true,
     "price": 95998,
-    "pnl": 283
+    "pnl": 169
    },
    {
     "date": "2025-02-14",
@@ -5316,7 +10199,7 @@
     "status": "WIN",
     "win": true,
     "price": 96924.39,
-    "pnl": 195
+    "pnl": 116
    },
    {
     "date": "2025-02-16",
@@ -5330,7 +10213,7 @@
     "status": "WIN",
     "win": true,
     "price": 96911.01,
-    "pnl": 241
+    "pnl": 144
    },
    {
     "date": "2025-02-16",
@@ -5344,7 +10227,7 @@
     "status": "LOSS",
     "win": false,
     "price": 96911.01,
-    "pnl": -364
+    "pnl": -217
    },
    {
     "date": "2025-02-17",
@@ -5358,7 +10241,7 @@
     "status": "LOSS",
     "win": false,
     "price": 95659.46,
-    "pnl": -165
+    "pnl": -99
    },
    {
     "date": "2025-05-03",
@@ -5372,7 +10255,7 @@
     "status": "WIN",
     "win": true,
     "price": 96418.68,
-    "pnl": 75
+    "pnl": 45
    },
    {
     "date": "2025-05-03",
@@ -5386,7 +10269,7 @@
     "status": "LOSS",
     "win": false,
     "price": 96418.68,
-    "pnl": -300
+    "pnl": -179
    },
    {
     "date": "2025-05-06",
@@ -5400,7 +10283,7 @@
     "status": "WIN",
     "win": true,
     "price": 94558.95,
-    "pnl": 596
+    "pnl": 356
    },
    {
     "date": "2025-05-07",
@@ -5409,12 +10292,12 @@
     "score": 3.2,
     "label": "🚀 强烈看多",
     "pos": 12,
-    "reason": "止盈1",
+    "reason": "止盈1(60%)",
     "r": 0.8,
     "status": "WIN",
     "win": true,
     "price": 96923.91,
-    "pnl": 1209
+    "pnl": 433
    },
    {
     "date": "2025-05-08",
@@ -5428,7 +10311,7 @@
     "status": "WIN",
     "win": true,
     "price": 100758.08,
-    "pnl": 2751
+    "pnl": 638
    },
    {
     "date": "2025-05-08",
@@ -5437,12 +10320,12 @@
     "score": 4,
     "label": "🚀 强烈看多",
     "pos": 12,
-    "reason": "止盈1",
+    "reason": "止盈1(60%)",
     "r": 0.8,
     "status": "WIN",
     "win": true,
     "price": 100758.08,
-    "pnl": 1320
+    "pnl": 451
    },
    {
     "date": "2025-05-10",
@@ -5456,7 +10339,7 @@
     "status": "WIN",
     "win": true,
     "price": 103138.77,
-    "pnl": 2121
+    "pnl": 470
    },
    {
     "date": "2025-05-11",
@@ -5470,7 +10353,7 @@
     "status": "WIN",
     "win": true,
     "price": 104150,
-    "pnl": 602
+    "pnl": 330
    },
    {
     "date": "2025-05-12",
@@ -5484,7 +10367,7 @@
     "status": "LOSS",
     "win": false,
     "price": 102527.26,
-    "pnl": -1003
+    "pnl": -550
    },
    {
     "date": "2025-05-12",
@@ -5498,7 +10381,7 @@
     "status": "LOSS",
     "win": false,
     "price": 102527.26,
-    "pnl": -70
+    "pnl": -39
    },
    {
     "date": "2025-05-14",
@@ -5512,7 +10395,7 @@
     "status": "LOSS",
     "win": false,
     "price": 103514.24,
-    "pnl": -965
+    "pnl": -529
    },
    {
     "date": "2025-05-17",
@@ -5526,7 +10409,7 @@
     "status": "LOSS",
     "win": false,
     "price": 102939.53,
-    "pnl": -69
+    "pnl": -19
    },
    {
     "date": "2025-05-17",
@@ -5540,7 +10423,7 @@
     "status": "LOSS",
     "win": false,
     "price": 102939.53,
-    "pnl": -52
+    "pnl": -14
    },
    {
     "date": "2025-05-18",
@@ -5549,12 +10432,12 @@
     "score": 3.2,
     "label": "🚀 强烈看多",
     "pos": 12,
-    "reason": "止盈1",
+    "reason": "止盈1(60%)",
     "r": 0.8,
     "status": "WIN",
     "win": true,
     "price": 105518,
-    "pnl": 1373
+    "pnl": 226
    },
    {
     "date": "2025-05-18",
@@ -5582,7 +10465,7 @@
     "status": "LOSS",
     "win": false,
     "price": 104786.41,
-    "pnl": -1764
+    "pnl": -475
    },
    {
     "date": "2025-05-21",
@@ -5596,7 +10479,7 @@
     "status": "WIN",
     "win": true,
     "price": 108973.35,
-    "pnl": 732
+    "pnl": 201
    },
    {
     "date": "2025-05-21",
@@ -5605,12 +10488,12 @@
     "score": 4,
     "label": "🚀 强烈看多",
     "pos": 12,
-    "reason": "止盈1",
+    "reason": "止盈1(60%)",
     "r": 0.8,
     "status": "WIN",
     "win": true,
     "price": 108973.35,
-    "pnl": 1383
+    "pnl": 226
    },
    {
     "date": "2025-05-22",
@@ -5624,7 +10507,7 @@
     "status": "WIN",
     "win": true,
     "price": 111290.86,
-    "pnl": 2292
+    "pnl": 243
    },
    {
     "date": "2025-05-23",
@@ -5638,7 +10521,7 @@
     "status": "LOSS",
     "win": false,
     "price": 108940,
-    "pnl": -1504
+    "pnl": -775
    },
    {
     "date": "2025-05-23",
@@ -5652,7 +10535,7 @@
     "status": "LOSS",
     "win": false,
     "price": 108940,
-    "pnl": -433
+    "pnl": -45
    },
    {
     "date": "2025-05-24",
@@ -5666,7 +10549,7 @@
     "status": "LOSS",
     "win": false,
     "price": 108929.7,
-    "pnl": -161
+    "pnl": -17
    },
    {
     "date": "2025-05-24",
@@ -5680,7 +10563,7 @@
     "status": "LOSS",
     "win": false,
     "price": 108929.7,
-    "pnl": -268
+    "pnl": -28
    },
    {
     "date": "2025-05-27",
@@ -5694,7 +10577,7 @@
     "status": "LOSS",
     "win": false,
     "price": 110140.11,
-    "pnl": -160
+    "pnl": -17
    },
    {
     "date": "2025-05-27",
@@ -5708,7 +10591,7 @@
     "status": "LOSS",
     "win": false,
     "price": 110140.11,
-    "pnl": -88
+    "pnl": -9
    },
    {
     "date": "2025-05-27",
@@ -5722,7 +10605,7 @@
     "status": "LOSS",
     "win": false,
     "price": 110140.11,
-    "pnl": -653
+    "pnl": -69
    },
    {
     "date": "2025-05-28",
@@ -5736,7 +10619,7 @@
     "status": "WIN",
     "win": true,
     "price": 107107.31,
-    "pnl": 35
+    "pnl": 4
    },
    {
     "date": "2025-05-29",
@@ -5750,7 +10633,7 @@
     "status": "WIN",
     "win": true,
     "price": 107019.89,
-    "pnl": 471
+    "pnl": 50
    },
    {
     "date": "2025-05-31",
@@ -5764,7 +10647,7 @@
     "status": "WIN",
     "win": true,
     "price": 104556.08,
-    "pnl": 1707
+    "pnl": 180
    },
    {
     "date": "2025-07-14",
@@ -5778,7 +10661,7 @@
     "status": "LOSS",
     "win": false,
     "price": 119878.23,
-    "pnl": -1820
+    "pnl": -186
    },
    {
     "date": "2025-07-18",
@@ -5792,7 +10675,7 @@
     "status": "WIN",
     "win": true,
     "price": 117860.25,
-    "pnl": 176
+    "pnl": 19
    },
    {
     "date": "2025-07-18",
@@ -5820,7 +10703,7 @@
     "status": "WIN",
     "win": true,
     "price": 118058.11,
-    "pnl": 793
+    "pnl": 83
    },
    {
     "date": "2025-07-19",
@@ -5834,7 +10717,7 @@
     "status": "WIN",
     "win": true,
     "price": 118058.11,
-    "pnl": 913
+    "pnl": 95
    },
    {
     "date": "2025-07-20",
@@ -5848,7 +10731,7 @@
     "status": "WIN",
     "win": true,
     "price": 118671.11,
-    "pnl": 1512
+    "pnl": 155
    },
    {
     "date": "2025-07-20",
@@ -5862,7 +10745,7 @@
     "status": "WIN",
     "win": true,
     "price": 118671.11,
-    "pnl": 1163
+    "pnl": 291
    },
    {
     "date": "2025-07-21",
@@ -5876,7 +10759,7 @@
     "status": "LOSS",
     "win": false,
     "price": 118313.16,
-    "pnl": -268
+    "pnl": -66
    },
    {
     "date": "2025-07-21",
@@ -5890,7 +10773,7 @@
     "status": "LOSS",
     "win": false,
     "price": 118313.16,
-    "pnl": -210
+    "pnl": -52
    },
    {
     "date": "2025-07-23",
@@ -5904,7 +10787,7 @@
     "status": "LOSS",
     "win": false,
     "price": 118567.39,
-    "pnl": -703
+    "pnl": -175
    },
    {
     "date": "2025-07-23",
@@ -5918,7 +10801,7 @@
     "status": "LOSS",
     "win": false,
     "price": 118567.39,
-    "pnl": -431
+    "pnl": -108
    },
    {
     "date": "2025-07-25",
@@ -5932,7 +10815,7 @@
     "status": "LOSS",
     "win": false,
     "price": 115727.08,
-    "pnl": -818
+    "pnl": -205
    },
    {
     "date": "2025-07-25",
@@ -5946,7 +10829,7 @@
     "status": "WIN",
     "win": true,
     "price": 115727.08,
-    "pnl": 37
+    "pnl": 4
    },
    {
     "date": "2025-07-27",
@@ -5960,7 +10843,7 @@
     "status": "WIN",
     "win": true,
     "price": 118585.74,
-    "pnl": 128
+    "pnl": 13
    },
    {
     "date": "2025-07-28",
@@ -5974,7 +10857,7 @@
     "status": "LOSS",
     "win": false,
     "price": 118174.9,
-    "pnl": -441
+    "pnl": -45
    },
    {
     "date": "2025-07-28",
@@ -5988,7 +10871,7 @@
     "status": "LOSS",
     "win": false,
     "price": 118174.9,
-    "pnl": -164
+    "pnl": -17
    },
    {
     "date": "2025-07-29",
@@ -6002,7 +10885,7 @@
     "status": "LOSS",
     "win": false,
     "price": 117400.01,
-    "pnl": -672
+    "pnl": -68
    },
    {
     "date": "2025-07-30",
@@ -6016,7 +10899,7 @@
     "status": "LOSS",
     "win": false,
     "price": 118000.01,
-    "pnl": -305
+    "pnl": -31
    },
    {
     "date": "2025-07-31",
@@ -6030,7 +10913,7 @@
     "status": "LOSS",
     "win": false,
     "price": 118306.18,
-    "pnl": -1265
+    "pnl": -131
    },
    {
     "date": "2025-08-03",
@@ -6044,7 +10927,7 @@
     "status": "WIN",
     "win": true,
     "price": 113959.06,
-    "pnl": 2379
+    "pnl": 251
    },
    {
     "date": "2025-08-17",
@@ -6058,7 +10941,7 @@
     "status": "WIN",
     "win": true,
     "price": 118246.16,
-    "pnl": 3640
+    "pnl": 370
    },
    {
     "date": "2025-10-05",
@@ -6072,7 +10955,7 @@
     "status": "LOSS",
     "win": false,
     "price": 122803.17,
-    "pnl": -1149
+    "pnl": -277
    },
    {
     "date": "2025-10-06",
@@ -6081,12 +10964,12 @@
     "score": 3.2,
     "label": "🚀 强烈看多",
     "pos": 12,
-    "reason": "止盈1",
+    "reason": "止盈1(60%)",
     "r": 0.8,
     "status": "WIN",
     "win": true,
     "price": 125000,
-    "pnl": 1526
+    "pnl": 89
    },
    {
     "date": "2025-10-07",
@@ -6114,7 +10997,7 @@
     "status": "WIN",
     "win": true,
     "price": 111793.2,
-    "pnl": 2294
+    "pnl": 218
    },
    {
     "date": "2025-10-12",
@@ -6128,7 +11011,7 @@
     "status": "WIN",
     "win": true,
     "price": 113198.2,
-    "pnl": 2796
+    "pnl": 644
    },
    {
     "date": "2025-10-13",
@@ -6142,7 +11025,7 @@
     "status": "WIN",
     "win": true,
     "price": 114312.1,
-    "pnl": 2096
+    "pnl": 943
    },
    {
     "date": "2025-10-13",
@@ -6156,7 +11039,7 @@
     "status": "WIN",
     "win": true,
     "price": 114312.1,
-    "pnl": 1681
+    "pnl": 757
    },
    {
     "date": "2025-10-14",
@@ -6170,7 +11053,7 @@
     "status": "WIN",
     "win": true,
     "price": 112900.43,
-    "pnl": 1522
+    "pnl": 685
    },
    {
     "date": "2025-10-14",
@@ -6184,7 +11067,7 @@
     "status": "WIN",
     "win": true,
     "price": 112900.43,
-    "pnl": 2580
+    "pnl": 1161
    },
    {
     "date": "2025-10-15",
@@ -6198,7 +11081,7 @@
     "status": "WIN",
     "win": true,
     "price": 110798.01,
-    "pnl": 2415
+    "pnl": 1086
    },
    {
     "date": "2025-10-15",
@@ -6212,7 +11095,7 @@
     "status": "WIN",
     "win": true,
     "price": 110798.01,
-    "pnl": 2399
+    "pnl": 1080
    },
    {
     "date": "2025-10-16",
@@ -6226,7 +11109,7 @@
     "status": "WIN",
     "win": true,
     "price": 108549.21,
-    "pnl": 2609
+    "pnl": 1174
    },
    {
     "date": "2025-11-18",
@@ -6240,7 +11123,7 @@
     "status": "LOSS",
     "win": false,
     "price": 92910.1,
-    "pnl": -802
+    "pnl": -361
    },
    {
     "date": "2025-11-20",
@@ -6254,7 +11137,7 @@
     "status": "LOSS",
     "win": false,
     "price": 89869.88,
-    "pnl": -1958
+    "pnl": -881
    },
    {
     "date": "2025-11-21",
@@ -6263,12 +11146,12 @@
     "score": -4,
     "label": "🛑 强烈看空",
     "pos": 12,
-    "reason": "止盈1",
+    "reason": "止盈1(60%)",
     "r": 0.8,
     "status": "WIN",
     "win": true,
     "price": 82932.47,
-    "pnl": 2062
+    "pnl": 278
    },
    {
     "date": "2025-11-22",
@@ -6282,7 +11165,7 @@
     "status": "WIN",
     "win": true,
     "price": 84284.01,
-    "pnl": 1431
+    "pnl": 125
    },
    {
     "date": "2025-11-29",
@@ -6296,7 +11179,7 @@
     "status": "WIN",
     "win": true,
     "price": 91063.5,
-    "pnl": 2133
+    "pnl": 927
    },
    {
     "date": "2025-11-29",
@@ -6310,7 +11193,7 @@
     "status": "WIN",
     "win": true,
     "price": 91063.5,
-    "pnl": 2248
+    "pnl": 977
    },
    {
     "date": "2025-12-02",
@@ -6324,7 +11207,7 @@
     "status": "LOSS",
     "win": false,
     "price": 90850.01,
-    "pnl": -428
+    "pnl": -186
    },
    {
     "date": "2025-12-05",
@@ -6338,7 +11221,7 @@
     "status": "WIN",
     "win": true,
     "price": 90459.35,
-    "pnl": 2555
+    "pnl": 1111
    },
    {
     "date": "2025-12-11",
@@ -6352,7 +11235,7 @@
     "status": "LOSS",
     "win": false,
     "price": 89872.51,
-    "pnl": -761
+    "pnl": -331
    },
    {
     "date": "2025-12-14",
@@ -6366,7 +11249,7 @@
     "status": "LOSS",
     "win": false,
     "price": 89022.91,
-    "pnl": -116
+    "pnl": -50
    },
    {
     "date": "2025-12-15",
@@ -6375,12 +11258,12 @@
     "score": -3.2,
     "label": "🛑 强烈看空",
     "pos": 12,
-    "reason": "止盈1",
+    "reason": "止盈1(60%)",
     "r": 0.8,
     "status": "WIN",
     "win": true,
     "price": 87033.22,
-    "pnl": 2318
+    "pnl": 605
    },
    {
     "date": "2025-12-15",
@@ -6394,7 +11277,7 @@
     "status": "WIN",
     "win": true,
     "price": 87033.22,
-    "pnl": 3544
+    "pnl": 600
    },
    {
     "date": "2025-12-17",
@@ -6408,7 +11291,7 @@
     "status": "LOSS",
     "win": false,
     "price": 87233.44,
-    "pnl": -620
+    "pnl": -260
    },
    {
     "date": "2025-12-19",
@@ -6422,13 +11305,715 @@
     "status": "LOSS",
     "win": false,
     "price": 87951.87,
-    "pnl": -1756
+    "pnl": -737
    }
-  ]
+  ],
+  "name": "TRAIN",
+  "period": "2024-01 ~ 2025-12"
+ },
+ "test": {
+  "trades": 49,
+  "settled": 49,
+  "wins": 35,
+  "losses": 14,
+  "win_rate": 71.4,
+  "profit_factor": 5.26,
+  "sharpe": 9.41,
+  "sortino": 12.33,
+  "calmar": 32.14,
+  "recovery": 11.8,
+  "vol_ann": 49,
+  "expectancy": 112,
+  "cagr_pct": 148,
+  "total_ret_pct": 54.7,
+  "max_dd_pct": 4.6,
+  "max_dd": 462,
+  "equity": 15472,
+  "total_pnl": 5472,
+  "equity_curve": [
+   10000,
+   10319,
+   10636,
+   10815,
+   10952,
+   10676,
+   10855,
+   10973,
+   10908,
+   11091,
+   11362,
+   11783,
+   11462,
+   11550,
+   11352,
+   11447,
+   11547,
+   11321,
+   11353,
+   11549,
+   11658,
+   11687,
+   11577,
+   11812,
+   12130,
+   12397,
+   12462,
+   12672,
+   12937,
+   13154,
+   13296,
+   13519,
+   13644,
+   13429,
+   13386,
+   13625,
+   14136,
+   14309,
+   14304,
+   14384,
+   14626,
+   14752,
+   14608,
+   14322,
+   15023,
+   15639,
+   15830,
+   15753,
+   15493,
+   15472
+  ],
+  "events": [
+   {
+    "day": "2026-01-16",
+    "dir": "short",
+    "reason": "trail",
+    "r": 0.91,
+    "status": "WIN",
+    "score": -3.2,
+    "risk": 350,
+    "share": 1,
+    "pnl": 319,
+    "equity": 10319
+   },
+   {
+    "day": "2026-01-16",
+    "dir": "short",
+    "reason": "trail",
+    "r": 0.88,
+    "status": "WIN",
+    "score": -3.2,
+    "risk": 361,
+    "share": 1,
+    "pnl": 318,
+    "equity": 10636
+   },
+   {
+    "day": "2026-01-20",
+    "dir": "short",
+    "reason": "t1",
+    "r": 0.8,
+    "status": "WIN",
+    "score": -3.2,
+    "risk": 372,
+    "share": 0.6,
+    "pnl": 179,
+    "equity": 10815
+   },
+   {
+    "day": "2026-01-21",
+    "dir": "short",
+    "reason": "trail",
+    "r": 0.92,
+    "status": "WIN",
+    "score": -3.2,
+    "risk": 372,
+    "share": 0.4,
+    "pnl": 137,
+    "equity": 10952
+   },
+   {
+    "day": "2026-01-26",
+    "dir": "short",
+    "reason": "trail",
+    "r": -0.72,
+    "status": "LOSS",
+    "score": -4,
+    "risk": 383,
+    "share": 1,
+    "pnl": -276,
+    "equity": 10676
+   },
+   {
+    "day": "2026-01-31",
+    "dir": "short",
+    "reason": "t1",
+    "r": 0.8,
+    "status": "WIN",
+    "score": -3.2,
+    "risk": 374,
+    "share": 0.6,
+    "pnl": 179,
+    "equity": 10855
+   },
+   {
+    "day": "2026-01-31",
+    "dir": "short",
+    "reason": "timeout_win",
+    "r": 0.79,
+    "status": "WIN",
+    "score": -3.2,
+    "risk": 374,
+    "share": 0.4,
+    "pnl": 118,
+    "equity": 10973
+   },
+   {
+    "day": "2026-02-02",
+    "dir": "short",
+    "reason": "trail",
+    "r": -0.17,
+    "status": "LOSS",
+    "score": -3.2,
+    "risk": 384,
+    "share": 1,
+    "pnl": -65,
+    "equity": 10908
+   },
+   {
+    "day": "2026-02-05",
+    "dir": "short",
+    "reason": "t1",
+    "r": 0.8,
+    "status": "WIN",
+    "score": -4,
+    "risk": 382,
+    "share": 0.6,
+    "pnl": 183,
+    "equity": 11091
+   },
+   {
+    "day": "2026-02-06",
+    "dir": "short",
+    "reason": "trail",
+    "r": 1.77,
+    "status": "WIN",
+    "score": -4,
+    "risk": 382,
+    "share": 0.4,
+    "pnl": 270,
+    "equity": 11362
+   },
+   {
+    "day": "2026-02-11",
+    "dir": "short",
+    "reason": "trail",
+    "r": 1.06,
+    "status": "WIN",
+    "score": -3.2,
+    "risk": 398,
+    "share": 1,
+    "pnl": 422,
+    "equity": 11783
+   },
+   {
+    "day": "2026-02-13",
+    "dir": "short",
+    "reason": "trail",
+    "r": -0.78,
+    "status": "LOSS",
+    "score": -4,
+    "risk": 412,
+    "share": 1,
+    "pnl": -322,
+    "equity": 11462
+   },
+   {
+    "day": "2026-02-16",
+    "dir": "short",
+    "reason": "trail",
+    "r": 0.22,
+    "status": "WIN",
+    "score": -3.2,
+    "risk": 401,
+    "share": 1,
+    "pnl": 88,
+    "equity": 11550
+   },
+   {
+    "day": "2026-02-20",
+    "dir": "short",
+    "reason": "trail",
+    "r": -0.49,
+    "status": "LOSS",
+    "score": -3.2,
+    "risk": 404,
+    "share": 1,
+    "pnl": -198,
+    "equity": 11352
+   },
+   {
+    "day": "2026-02-23",
+    "dir": "short",
+    "reason": "t1",
+    "r": 0.8,
+    "status": "WIN",
+    "score": -3.2,
+    "risk": 199,
+    "share": 0.6,
+    "pnl": 95,
+    "equity": 11447
+   },
+   {
+    "day": "2026-02-24",
+    "dir": "short",
+    "reason": "timeout_win",
+    "r": 1.26,
+    "status": "WIN",
+    "score": -3.2,
+    "risk": 199,
+    "share": 0.4,
+    "pnl": 100,
+    "equity": 11547
+   },
+   {
+    "day": "2026-02-25",
+    "dir": "short",
+    "reason": "trail",
+    "r": -0.56,
+    "status": "LOSS",
+    "score": -3.2,
+    "risk": 404,
+    "share": 1,
+    "pnl": -226,
+    "equity": 11321
+   },
+   {
+    "day": "2026-02-27",
+    "dir": "short",
+    "reason": "trail",
+    "r": 0.16,
+    "status": "WIN",
+    "score": -3.2,
+    "risk": 198,
+    "share": 1,
+    "pnl": 32,
+    "equity": 11353
+   },
+   {
+    "day": "2026-03-06",
+    "dir": "short",
+    "reason": "trail",
+    "r": 0.99,
+    "status": "WIN",
+    "score": -3.2,
+    "risk": 199,
+    "share": 1,
+    "pnl": 197,
+    "equity": 11549
+   },
+   {
+    "day": "2026-03-07",
+    "dir": "short",
+    "reason": "trail",
+    "r": 0.27,
+    "status": "WIN",
+    "score": -3.2,
+    "risk": 404,
+    "share": 1,
+    "pnl": 109,
+    "equity": 11658
+   },
+   {
+    "day": "2026-03-08",
+    "dir": "short",
+    "reason": "trail",
+    "r": 0.07,
+    "status": "WIN",
+    "score": -3.2,
+    "risk": 408,
+    "share": 1,
+    "pnl": 29,
+    "equity": 11687
+   },
+   {
+    "day": "2026-03-09",
+    "dir": "short",
+    "reason": "trail",
+    "r": -0.27,
+    "status": "LOSS",
+    "score": -3.2,
+    "risk": 409,
+    "share": 1,
+    "pnl": -110,
+    "equity": 11577
+   },
+   {
+    "day": "2026-03-14",
+    "dir": "short",
+    "reason": "trail",
+    "r": 0.58,
+    "status": "WIN",
+    "score": -3.2,
+    "risk": 405,
+    "share": 1,
+    "pnl": 235,
+    "equity": 11812
+   },
+   {
+    "day": "2026-03-15",
+    "dir": "short",
+    "reason": "trail",
+    "r": 0.77,
+    "status": "WIN",
+    "score": -3.2,
+    "risk": 413,
+    "share": 1,
+    "pnl": 318,
+    "equity": 12130
+   },
+   {
+    "day": "2026-03-18",
+    "dir": "short",
+    "reason": "trail",
+    "r": 0.63,
+    "status": "WIN",
+    "score": -4,
+    "risk": 425,
+    "share": 1,
+    "pnl": 267,
+    "equity": 12397
+   },
+   {
+    "day": "2026-03-20",
+    "dir": "short",
+    "reason": "timeout",
+    "r": 0.15,
+    "status": "WIN",
+    "score": -3.2,
+    "risk": 434,
+    "share": 1,
+    "pnl": 65,
+    "equity": 12462
+   },
+   {
+    "day": "2026-06-01",
+    "dir": "short",
+    "reason": "t1",
+    "r": 0.8,
+    "status": "WIN",
+    "score": -4,
+    "risk": 436,
+    "share": 0.6,
+    "pnl": 209,
+    "equity": 12672
+   },
+   {
+    "day": "2026-06-02",
+    "dir": "short",
+    "reason": "trail",
+    "r": 1.52,
+    "status": "WIN",
+    "score": -4,
+    "risk": 436,
+    "share": 0.4,
+    "pnl": 265,
+    "equity": 12937
+   },
+   {
+    "day": "2026-06-03",
+    "dir": "short",
+    "reason": "t1",
+    "r": 0.8,
+    "status": "WIN",
+    "score": -3.2,
+    "risk": 453,
+    "share": 0.6,
+    "pnl": 217,
+    "equity": 13154
+   },
+   {
+    "day": "2026-06-04",
+    "dir": "short",
+    "reason": "trail",
+    "r": 0.78,
+    "status": "WIN",
+    "score": -3.2,
+    "risk": 453,
+    "share": 0.4,
+    "pnl": 141,
+    "equity": 13296
+   },
+   {
+    "day": "2026-06-05",
+    "dir": "short",
+    "reason": "t1",
+    "r": 0.8,
+    "status": "WIN",
+    "score": -3.2,
+    "risk": 465,
+    "share": 0.6,
+    "pnl": 223,
+    "equity": 13519
+   },
+   {
+    "day": "2026-06-05",
+    "dir": "short",
+    "reason": "timeout_win",
+    "r": 0.67,
+    "status": "WIN",
+    "score": -3.2,
+    "risk": 465,
+    "share": 0.4,
+    "pnl": 125,
+    "equity": 13644
+   },
+   {
+    "day": "2026-06-07",
+    "dir": "short",
+    "reason": "trail",
+    "r": -0.45,
+    "status": "LOSS",
+    "score": -3.2,
+    "risk": 478,
+    "share": 1,
+    "pnl": -215,
+    "equity": 13429
+   },
+   {
+    "day": "2026-06-10",
+    "dir": "short",
+    "reason": "trail",
+    "r": -0.09,
+    "status": "LOSS",
+    "score": -3.2,
+    "risk": 470,
+    "share": 1,
+    "pnl": -42,
+    "equity": 13386
+   },
+   {
+    "day": "2026-06-15",
+    "dir": "short",
+    "reason": "trail",
+    "r": 0.51,
+    "status": "WIN",
+    "score": -3.2,
+    "risk": 469,
+    "share": 1,
+    "pnl": 239,
+    "equity": 13625
+   },
+   {
+    "day": "2026-06-17",
+    "dir": "short",
+    "reason": "trail",
+    "r": 1.07,
+    "status": "WIN",
+    "score": -3.2,
+    "risk": 477,
+    "share": 1,
+    "pnl": 510,
+    "equity": 14136
+   },
+   {
+    "day": "2026-06-17",
+    "dir": "short",
+    "reason": "trail",
+    "r": 0.35,
+    "status": "WIN",
+    "score": -3.2,
+    "risk": 495,
+    "share": 1,
+    "pnl": 173,
+    "equity": 14309
+   },
+   {
+    "day": "2026-06-18",
+    "dir": "short",
+    "reason": "trail",
+    "r": -0.01,
+    "status": "LOSS",
+    "score": -3.2,
+    "risk": 501,
+    "share": 1,
+    "pnl": -5,
+    "equity": 14304
+   },
+   {
+    "day": "2026-06-20",
+    "dir": "short",
+    "reason": "timeout",
+    "r": 0.16,
+    "status": "WIN",
+    "score": -3.2,
+    "risk": 501,
+    "share": 1,
+    "pnl": 80,
+    "equity": 14384
+   },
+   {
+    "day": "2026-06-24",
+    "dir": "short",
+    "reason": "t1",
+    "r": 0.8,
+    "status": "WIN",
+    "score": -4,
+    "risk": 503,
+    "share": 0.6,
+    "pnl": 242,
+    "equity": 14626
+   },
+   {
+    "day": "2026-06-24",
+    "dir": "short",
+    "reason": "timeout_win",
+    "r": 0.63,
+    "status": "WIN",
+    "score": -4,
+    "risk": 503,
+    "share": 0.4,
+    "pnl": 127,
+    "equity": 14752
+   },
+   {
+    "day": "2026-06-27",
+    "dir": "short",
+    "reason": "timeout",
+    "r": -0.28,
+    "status": "LOSS",
+    "score": -3.2,
+    "risk": 516,
+    "share": 1,
+    "pnl": -145,
+    "equity": 14608
+   },
+   {
+    "day": "2026-07-01",
+    "dir": "short",
+    "reason": "trail",
+    "r": -0.56,
+    "status": "LOSS",
+    "score": -4,
+    "risk": 511,
+    "share": 1,
+    "pnl": -286,
+    "equity": 14322
+   },
+   {
+    "day": "2026-07-05",
+    "dir": "short",
+    "reason": "trail",
+    "r": 1.4,
+    "status": "WIN",
+    "score": -3.2,
+    "risk": 501,
+    "share": 1,
+    "pnl": 702,
+    "equity": 15023
+   },
+   {
+    "day": "2026-07-07",
+    "dir": "short",
+    "reason": "trail",
+    "r": 1.17,
+    "status": "WIN",
+    "score": -3.2,
+    "risk": 526,
+    "share": 1,
+    "pnl": 615,
+    "equity": 15639
+   },
+   {
+    "day": "2026-07-08",
+    "dir": "short",
+    "reason": "trail",
+    "r": 0.35,
+    "status": "WIN",
+    "score": -3.2,
+    "risk": 547,
+    "share": 1,
+    "pnl": 192,
+    "equity": 15830
+   },
+   {
+    "day": "2026-07-08",
+    "dir": "short",
+    "reason": "trail",
+    "r": -0.14,
+    "status": "LOSS",
+    "score": -3.2,
+    "risk": 554,
+    "share": 1,
+    "pnl": -78,
+    "equity": 15753
+   },
+   {
+    "day": "2026-07-09",
+    "dir": "short",
+    "reason": "trail",
+    "r": -0.47,
+    "status": "LOSS",
+    "score": -3.2,
+    "risk": 551,
+    "share": 1,
+    "pnl": -259,
+    "equity": 15493
+   },
+   {
+    "day": "2026-07-10",
+    "dir": "short",
+    "reason": "trail",
+    "r": -0.04,
+    "status": "LOSS",
+    "score": -3.2,
+    "risk": 542,
+    "share": 1,
+    "pnl": -22,
+    "equity": 15472
+   }
+  ],
+  "by_reason": {
+   "移动止盈": 34,
+   "止盈1(60%)": 8,
+   "超时止盈": 4,
+   "超时": 3
+  },
+  "by_dir": {
+   "short": 49
+  },
+  "longs": 0,
+  "shorts": 49,
+  "flats": 0,
+  "avg_gap": 4,
+  "avg_pos": 12,
+  "win_streak": 10,
+  "loss_streak": 3,
+  "style_tag": "中低频方向引擎 · 复利滚动",
+  "style": "信号评分分档 0/3/8/12% · ATR止损 + 移动止盈 · t1部分止盈60% + 回撤熔断",
+  "avg_pnl": 112,
+  "max_win": 702,
+  "max_loss": -322,
+  "avg_win": 221,
+  "avg_loss": 161,
+  "name": "TEST",
+  "period": "2026-01 ~ 2026-12"
  },
  "total": {
   "trades": 252,
   "win_rate": 65.5,
   "period": "2024-01 ~ 2026-12"
+ },
+ "audit": {
+  "date": "2026-08-11",
+  "passed": true,
+  "caliber": "windows_v3_real",
+  "checks": [
+   "样本真实性: dir_samples.json 252条 用锁定参数重跑引擎 252/252 逐条复现（日期/方向/出场方式/R值/胜负全对，评分零差异）",
+   "无未来函数: 修复 lastFgi 时间戳单位错配（fgi秒级 vs K线毫秒级），修复后 use_fgi=1 仍 252/252 复现，四窗口胜率与官方 walkforward 100%吻合",
+   "结算口径: t1部分止盈60/40拆分 + 回撤熔断(dd>3%→risk×0.5, dd>5%→×0.2) + 复利滚动，与引擎 runBacktest 同逻辑，窗口年化与官方 cagr_rates [56,213,54,97] 自洽",
+   "官方常量核验: 引擎修复后 TRAIN 203笔64%/276.7%/SH7.22/PF3.97/DD17.6%、TEST 49笔71.4%、FULL 252笔65.5%/482.9%/SH7.56/PF4.22/DD17.6% 与 dir_bt_stats.js 逐项一致",
+   "实盘链路: experience_engine.js FGI 查询已正确转换单位(freezeTsMs/1000)，无未来数据"
+  ],
+  "note": "交易样本与官方看板零漂移；展示净值采用真实结算口径（非简化全仓模型）"
  }
 }

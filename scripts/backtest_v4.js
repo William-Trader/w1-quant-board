@@ -158,8 +158,10 @@ function fundingZ(ts) {
 }
 const fgiTs = fgi.map(f => f.ts), fgiVal = fgi.map(f => f.value);
 function lastFgi(ts) {
+  // fgi 表 ts 为秒级，K线 ts 为毫秒级；统一转毫秒比较（修复未来函数隐患）
+  const t = ts / 1000;
   let lo = 0, hi = fgiTs.length - 1, ans = 0;
-  while (lo <= hi) { const m = (lo + hi) >> 1; if (fgiTs[m] <= ts) { ans = m; lo = m + 1; } else hi = m - 1; }
+  while (lo <= hi) { const m = (lo + hi) >> 1; if (fgiTs[m] <= t) { ans = m; lo = m + 1; } else hi = m - 1; }
   return fgiVal[ans];
 }
 
