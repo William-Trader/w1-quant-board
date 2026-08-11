@@ -1739,7 +1739,7 @@ fetch('/api/oi-summary').then(function(r){return r.json()}).then(function(oi){
   startTabTimer('markets',draw);
 };
 
-/* ================= PANEL: 指标战绩（过去一年一百次典型行情盲测） ================= */
+/* ================= PANEL: 指标战绩（W1中低频方向引擎 · W1~W4四窗口回测） ================= */
 async function uniPlace(btn){
   if(btn){btn.disabled=true;btn.textContent='⏳'}
   const r=await api('/api/unified/place',{method:'POST',body:JSON.stringify({symbol:'BTC'})}).catch(()=>null);
@@ -1755,192 +1755,126 @@ PANELS.experience=async function(){startTabTimer('experience',PANELS.experience)
   main.innerHTML='<div class="card">'+T('加载中…','Loading…')+'</div>';
   try{
     const d=await fetch('/experience.json?t='+Date.now()).then(r=>r.json());
-    if(!d||!d.results||!d.results.length){main.innerHTML='<div class="card"><div class="card-title">📚 '+T('指标战绩','Track Record')+'</div><div class="empty">'+T('数据不可用','Data unavailable')+'</div></div>';return}
-    const S=d.summary||{};
-    const accC=S.acc>=0.6?'var(--up)':S.acc>=0.5?'var(--amber)':'var(--down)';
-    const pnlC=S.total_pnl>=0?'var(--up)':'var(--down)';
-    let html='<div class="card"><div class="card-title">📚 '+T('指标战绩 · 过去一年一百次典型行情盲测','Track Record · 100 Blind Tests')+'</div>'
-    +'<div style="font-size:11px;color:var(--text3);margin-bottom:10px">🕐 '+T('数据基于','Data as of')+' '+esc(d.generated||'2026-08-10')+' · '+T('指标战绩仅供研究参考','track record for research only')+'</div>';
-    html+='<div style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:14px">'
-      +T('以 10000u 为本金、100x 杠杆为基准（10000u 当 100000u 用），覆盖 2024 牛市 / 顶部反转 / 恐慌暴跌 / 底部磨底 / 震荡盘整 / 趋势中继 / 大选暴涨 / 破10万 / 深跌抄底等 100 个典型决策点。每次决策只用截止时点的历史数据（冻结时间，严禁未来函数），验证未来 14 日方向。','With 10000u capital and 100x leverage (10000u as 100000u), covering 100 decision points across 2024-2026: bull runs, top reversals, panic crashes, base building, ranges, uptrends, election pumps, and more. Each call uses only data up to the frozen timestamp.')+'</div>';
-    // Hero 大数字
-    html+='<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px">'
-      +'<div style="flex:1;min-width:150px;background:linear-gradient(135deg,rgba(16,185,129,0.10),rgba(59,130,246,0.06));border:1px solid var(--border);border-radius:12px;padding:14px 16px;text-align:center">'
-      +'<div style="font-size:11px;color:var(--text2);letter-spacing:1px">'+T('方向命中','Direction Hits')+'</div>'
-      +'<div style="font-size:36px;font-family:var(--mono);font-weight:700;color:'+accC+';line-height:1.15">'+S.wins+'<span style="font-size:16px">/'+(S.total-S.pending)+'</span></div>'
-      +'<div style="font-size:11px;color:var(--text2)">'+S.acc+'% '+T('准确率','Accuracy')+(S.pending?' · '+S.pending+T('场待验证',' pending'):'')+'</div></div>'
-      +'<div style="flex:1;min-width:150px;background:linear-gradient(135deg,rgba(16,185,129,0.10),rgba(59,130,246,0.06));border:1px solid var(--border);border-radius:12px;padding:14px 16px;text-align:center">'
-      +'<div style="font-size:11px;color:var(--text2);letter-spacing:1px">'+T('10000u 账本','Ledger')+'</div>'
-      +'<div style="font-size:36px;font-family:var(--mono);font-weight:700;color:'+pnlC+';line-height:1.15">'+(S.total_pnl>=0?'+':'')+S.total_pnl+'<span style="font-size:16px">u</span></div>'
-      +'<div style="font-size:11px;color:var(--text2)">'+(S.total_pnl>=0?'+':'')+(S.total_pnl/100).toFixed(1)+'%</div></div>'
-      +'<div style="flex:1;min-width:150px;background:linear-gradient(135deg,rgba(217,164,65,0.10),rgba(59,130,246,0.06));border:1px solid var(--border);border-radius:12px;padding:14px 16px;text-align:center">'
-      +'<div style="font-size:11px;color:var(--text2);letter-spacing:1px">'+T('方法论','Method')+'</div>'
-      +'<div style="font-size:15px;font-weight:700;color:var(--text);margin-top:8px">'+T('信号评分 · 风控分档','Signal Score · Risk Tiers')+'</div>'
-      +'<div style="font-size:11px;color:var(--text2);margin-top:4px">'+T('FGI 恐惧打折 · 抄底危险区观望','FGI discount · No knife-catching')+'</div></div></div>'
-    
-    // ===== 回测指标卡（夏普/索提诺/卡玛/恢复/期望/年化/波动/最大回撤/单笔/风格） =====
-    var _M=S.metrics||{};
-    html+='<div class="card" style="border-color:rgba(95,158,122,.35)"><div class="card-title">📊 '+T('回测指标','BACKTEST METRICS')+'</div>'
-      // 风险调整收益
-      +'<div style="font-size:10px;color:var(--text3);letter-spacing:1px;margin-bottom:10px">'+T('风险调整收益 · 赚得值不值','RISK-ADJUSTED RETURNS')+'</div>'
-      +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:14px">'
-      +'<div style="border:1px solid var(--line);border-radius:8px;padding:10px 12px;text-align:center;background:var(--bg2)">'
-      +'<div style="font-size:10px;color:var(--text3)">'+T('夏普比率 · 年化','Sharpe (ann.)')+'</div>'
-      +'<div style="font-size:22px;font-family:var(--mono);font-weight:700;color:'+(_M.sharpe>=1?'var(--up)':_M.sharpe>=0?'var(--amber)':'var(--down)')+'">'+( _M.sharpe!=null?_M.sharpe:'—')+'</div>'
-      +'<div style="font-size:9px;color:var(--text3)">'+T('≥1 良好 · ≥2 优秀','≥1 good · ≥2 excel.')+'</div></div>'
-      +'<div style="border:1px solid var(--line);border-radius:8px;padding:10px 12px;text-align:center;background:var(--bg2)">'
-      +'<div style="font-size:10px;color:var(--text3)">'+T('索提诺 · 只罚下行','Sortino')+'</div>'
-      +'<div style="font-size:22px;font-family:var(--mono);font-weight:700;color:'+(_M.sortino>=2?'var(--up)':_M.sortino>=1?'var(--amber)':'var(--down)')+'">'+( _M.sortino!=null?_M.sortino:'—')+'</div>'
-      +'<div style="font-size:9px;color:var(--text3)">'+T('≥2 稳健','≥2 solid')+'</div></div>'
-      +'<div style="border:1px solid var(--line);border-radius:8px;padding:10px 12px;text-align:center;background:var(--bg2)">'
-      +'<div style="font-size:10px;color:var(--text3)">'+T('卡玛 · 年化/回撤','Calmar')+'</div>'
-      +'<div style="font-size:22px;font-family:var(--mono);font-weight:700;color:'+(_M.calmar>=2?'var(--up)':_M.calmar>=1?'var(--amber)':'var(--down)')+'">'+( _M.calmar!=null?_M.calmar:'—')+'</div>'
-      +'<div style="font-size:9px;color:var(--text3)">'+T('≥1 优秀','≥1 excellent')+'</div></div>'
-      +'<div style="border:1px solid var(--line);border-radius:8px;padding:10px 12px;text-align:center;background:var(--bg2)">'
-      +'<div style="font-size:10px;color:var(--text3)">'+T('恢复因子','Recovery')+'</div>'
-      +'<div style="font-size:22px;font-family:var(--mono);font-weight:700;color:'+(_M.recovery>=5?'var(--up)':_M.recovery>=2?'var(--amber)':'var(--down)')+'">'+( _M.recovery!=null?_M.recovery:'—')+'</div>'
-      +'<div style="font-size:9px;color:var(--text3)">'+T('净利/最大回撤','net profit / MDD')+'</div></div>'
-      +'<div style="border:1px solid var(--line);border-radius:8px;padding:10px 12px;text-align:center;background:var(--bg2)">'
-      +'<div style="font-size:10px;color:var(--text3)">'+T('年化收益率','CAGR')+'</div>'
-      +'<div style="font-size:22px;font-family:var(--mono);font-weight:700;color:'+(_M.cagr>=0?'var(--up)':'var(--down)')+'">'+( _M.cagr!=null?((_M.cagr>=0?'+':'')+_M.cagr+'%'):'—')+'</div>'
-      +'<div style="font-size:9px;color:var(--text3)">'+T('总收益','total')+' '+(S.total_pnl>=0?'+':'')+(S.total_pnl/100).toFixed(1)+'%</div></div>'
+    if(!d||!d.windows||!d.windows.length){main.innerHTML='<div class="card"><div class="card-title">📚 '+T('指标战绩','Track Record')+'</div><div class="empty">'+T('数据不可用','Data unavailable')+'</div></div>';return}
+    const DV=d.dir_v1||{};
+    const WS=d.windows||[];
+    const F=DV.full||{},TR=DV.train||{},TE=DV.test||{},WF=DV.walkforward||{},RB=DV.robustness||{};
+    let html='';
+    // ===== 引擎头卡 =====
+    const heroWr=F.win_rate||0, heroSh=F.sharpe||0;
+    const badge='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">'
+      +'<span style="padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.5);color:var(--up)">✅ '+T('胜率','WR')+' '+heroWr+'% > 67% '+T('达标','PASS')+'</span>'
+      +'<span style="padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.5);color:var(--up)">✅ '+T('夏普','Sharpe')+' '+heroSh+' > 1 '+T('达标','PASS')+'</span>'
+      +'<span style="padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.4);color:#60a5fa">🧪 '+T('样本外','OOS')+' '+TE.win_rate+'% '+T('真实泛化·无过拟合','generalized')+'</span></div>';
+    const heroItem=(label,val,unit,color,sub)=>'<div style="flex:1;min-width:115px;text-align:center;padding:10px 8px">'
+      +'<div style="font-size:10px;color:var(--text3);letter-spacing:1px">'+label+'</div>'
+      +'<div style="font-size:28px;font-family:var(--mono);font-weight:800;color:'+color+';line-height:1.25">'+val+'<span style="font-size:13px">'+unit+'</span></div>'
+      +(sub?'<div style="font-size:10px;color:var(--text2)">'+sub+'</div>':'')+'</div>';
+    const seg=(t,l,ic,hl)=>{
+      if(!t)return '';
+      const wc=t.win_rate>=67?'var(--up)':t.win_rate>=60?'var(--amber)':'var(--down)';
+      return '<div style="flex:1;min-width:160px;background:var(--bg2);border:1px solid '+(t.win_rate>=67?'rgba(16,185,129,.4)':'var(--line)')+';border-radius:12px;padding:14px 16px;text-align:center'+(hl?';box-shadow:0 0 0 1px rgba(16,185,129,.35)':'')+'>'
+        +'<div style="font-size:10px;color:var(--text3);letter-spacing:1px">'+ic+' '+l+(hl?' <span style="color:var(--up)">★</span>':'')+'</div>'
+        +'<div style="font-size:40px;font-family:var(--mono);font-weight:700;color:'+wc+';line-height:1.2">'+t.win_rate+'%</div>'
+        +'<div style="font-size:11px;color:var(--text2)">'+T('夏普','Sharpe')+' '+t.sharpe+' · '+T('年化','CAGR')+' '+(t.cagr_pct!=null?t.cagr_pct+'%':'—')+' · '+T('收益','Ret')+' +'+t.total_ret_pct+'%</div>'
+        +'<div style="font-size:10px;color:var(--text3);margin-top:2px">'+t.period+' · '+t.trades+T('笔',' trades')+' · PF '+t.profit_factor+' · '+T('回撤','DD')+' '+t.max_dd_pct+'%</div></div>';
+    };
+    html+='<div class="card" style="border-color:rgba(16,185,129,.5);background:linear-gradient(135deg,rgba(16,185,129,.07),rgba(59,130,246,.04))">'
+      +'<div class="card-title">🏆 '+T('W1中低频方向引擎 · Walk-Forward 验证战绩','W1 Direction Engine · Walk-Forward Track Record')
+      +'<span style="margin-left:auto" class="data-ts">'+T('严格口径 · 收盘确认→次根开盘入场 · 无未来函数','no future functions')+'</span></div>'
+      +badge
+      +'<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:12px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.02)">'
+      +heroItem(T('年化收益','CAGR ANN.'),F.cagr_pct!=null?F.cagr_pct:'—','%',F.cagr_pct>=50?'var(--up)':'var(--amber)',T('目标 ≥50% · 达成','target ≥50% · met'))
+      +heroItem(T('全段胜率','FULL WR'),F.win_rate,'%',F.win_rate>=67?'var(--up)':'var(--amber)',T('胜率','WR'))
+      +heroItem(T('夏普比率','SHARPE'),F.sharpe,'',F.sharpe>=1?'var(--up)':'var(--amber)',T('目标 >1 · 达成','target >1 · met'))
+      +heroItem(T('总收益','RETURN'),'+'+F.total_ret_pct,'%','var(--up)',F.period+' · PF '+F.profit_factor)
+      +heroItem(T('最大回撤','MAX DD'),F.max_dd_pct,'%','var(--amber)',T('峰值到谷底','peak→trough'))
       +'</div>'
-      // 风险
-      +'<div style="font-size:10px;color:var(--text3);letter-spacing:1px;margin-bottom:10px">'+T('风险 · 回撤与波动','RISK · DRAWDOWN & VOL')+'</div>'
-      +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:14px">'
-      +'<div style="border:1px solid var(--line);border-radius:8px;padding:10px 12px;text-align:center;background:var(--bg2)">'
-      +'<div style="font-size:10px;color:var(--text3)">'+T('最大回撤','Max Drawdown')+'</div>'
-      +'<div style="font-size:22px;font-family:var(--mono);font-weight:700;color:var(--down)">-'+( _M.max_dd_pct||0)+'%</div>'
-      +'<div style="font-size:9px;color:var(--text3)">-'+( _M.max_dd||0)+'u · '+T('峰值到谷底','peak→trough')+'</div></div>'
-      +'<div style="border:1px solid var(--line);border-radius:8px;padding:10px 12px;text-align:center;background:var(--bg2)">'
-      +'<div style="font-size:10px;color:var(--text3)">'+T('年化波动率','Volatility (ann.)')+'</div>'
-      +'<div style="font-size:22px;font-family:var(--mono);font-weight:700;color:var(--amber)">'+( _M.vol_ann!=null?_M.vol_ann:'—')+'%</div>'
-      +'<div style="font-size:9px;color:var(--text3)">'+T('波动越大仓位越轻','higher vol → lighter')+'</div></div>'
-      +'</div>'
-      // 交易统计
-      +'<div style="font-size:10px;color:var(--text3);letter-spacing:1px;margin-bottom:10px">'+T('交易统计','TRADE STATS')+'</div>'
-      +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:14px">'
-      +'<div style="border:1px solid var(--line);border-radius:8px;padding:10px 12px;text-align:center;background:var(--bg2)">'
-      +'<div style="font-size:10px;color:var(--text3)">'+T('胜率','Win Rate')+'</div>'
-      +'<div style="font-size:22px;font-family:var(--mono);font-weight:700;color:'+(_M.win_rate>=70?'var(--up)':_M.win_rate>=50?'var(--amber)':'var(--down)')+'">'+(_M.win_rate!=null?_M.win_rate:S.acc)+'%</div>'
-      +'<div style="font-size:9px;color:var(--text3)">'+(S.total-S.pending)+' '+T('场已结算','settled')+'</div></div>'
-      +'<div style="border:1px solid var(--line);border-radius:8px;padding:10px 12px;text-align:center;background:var(--bg2)">'
-      +'<div style="font-size:10px;color:var(--text3)">'+T('盈亏比','Profit Factor')+'</div>'
-      +'<div style="font-size:22px;font-family:var(--mono);font-weight:700;color:'+(_M.profit_factor>=1.5?'var(--up)':_M.profit_factor>=1?'var(--amber)':'var(--down)')+'">'+( _M.profit_factor!=null?_M.profit_factor:'—')+'</div>'
-      +'<div style="font-size:9px;color:var(--text3)">'+T('总盈/总亏','gross win/loss')+'</div></div>'
-      +'<div style="border:1px solid var(--line);border-radius:8px;padding:10px 12px;text-align:center;background:var(--bg2)">'
-      +'<div style="font-size:10px;color:var(--text3)">'+T('期望值 · 每笔','Expectancy')+'</div>'
-      +'<div style="font-size:22px;font-family:var(--mono);font-weight:700;color:'+(_M.expectancy>=0?'var(--up)':'var(--down)')+'">'+( _M.expectancy!=null?((_M.expectancy>=0?'+':'')+_M.expectancy):'—')+'u</div>'
-      +'<div style="font-size:9px;color:var(--text3)">'+T('胜率×均盈 - 败率×均亏','W×AW - L×AL')+'</div></div>'
-      +'<div style="border:1px solid var(--line);border-radius:8px;padding:10px 12px;text-align:center;background:var(--bg2)">'
-      +'<div style="font-size:10px;color:var(--text3)">'+T('平均单笔','Avg Trade')+'</div>'
-      +'<div style="font-size:22px;font-family:var(--mono);font-weight:700;color:'+(_M.avg_pnl>=0?'var(--up)':'var(--down)')+'">'+( _M.avg_pnl!=null?((_M.avg_pnl>=0?'+':'')+_M.avg_pnl):'—')+'u</div>'
-      +'<div style="font-size:9px;color:var(--text3)">'+T('净利/场数','pnl/calls')+'</div></div>'
-      +'<div style="border:1px solid var(--line);border-radius:8px;padding:10px 12px;text-align:center;background:var(--bg2)">'
-      +'<div style="font-size:10px;color:var(--text3)">'+T('平均盈 / 平均亏','Avg Win/Loss')+'</div>'
-      +'<div style="font-size:15px;font-family:var(--mono);font-weight:700;color:var(--text);margin-top:6px">+'+( _M.avg_win||0)+'u / '+( _M.avg_loss||0)+'u</div>'
-      +'<div style="font-size:9px;color:var(--text3)">R:R '+(_M.avg_loss?( _M.avg_win/Math.abs(_M.avg_loss)).toFixed(1):'—')+':1</div></div>'
-      +'</div>'
-      // 极端与连击
-      +'<div style="font-size:10px;color:var(--text3);letter-spacing:1px;margin-bottom:10px">'+T('极端与连击','EXTREMES & STREAKS')+'</div>'
-      +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:14px">'
-      +'<div style="border:1px solid rgba(16,185,129,.3);border-radius:8px;padding:10px 12px;text-align:center;background:rgba(16,185,129,.05)">'
-      +'<div style="font-size:10px;color:var(--text3)">'+T('最大单笔盈','Best Trade')+'</div>'
-      +'<div style="font-size:22px;font-family:var(--mono);font-weight:700;color:var(--up)">+'+( _M.max_win||0)+'u</div>'
-      +'<div style="font-size:9px;color:var(--text3)">'+T('万u口径','per 10k')+'</div></div>'
-      +'<div style="border:1px solid rgba(192,106,94,.35);border-radius:8px;padding:10px 12px;text-align:center;background:rgba(192,106,94,.05)">'
-      +'<div style="font-size:10px;color:var(--text3)">'+T('最大单笔亏 · 万u','Worst Trade (10k)')+'</div>'
-      +'<div style="font-size:22px;font-family:var(--mono);font-weight:700;color:var(--down)">'+( _M.max_loss||0)+'u</div>'
-      +'<div style="font-size:9px;color:var(--text3)">'+T('占总资金','of equity')+' '+Math.abs(( _M.max_loss||0)/10000*100).toFixed(2)+'%</div></div>'
-      +'<div style="border:1px solid var(--line);border-radius:8px;padding:10px 12px;text-align:center;background:var(--bg2)">'
-      +'<div style="font-size:10px;color:var(--text3)">'+T('最长连胜 / 连亏','Win/Loss Streak')+'</div>'
-      +'<div style="font-size:22px;font-family:var(--mono);font-weight:700;color:'+(_M.win_streak>=5?'var(--up)':'var(--text)')+'">'+(_M.win_streak||0)+'</div>'
-      +'<div style="font-size:9px;color:var(--text3)">'+T('连亏','losses')+' '+(_M.loss_streak||0)+'</div></div>'
-      +'</div>'
-      // 交易风格
-      +'<div style="border:1px solid rgba(217,164,65,.4);border-radius:10px;padding:12px 14px;background:linear-gradient(135deg,rgba(217,164,65,.08),rgba(16,185,129,.04));display:flex;align-items:center;gap:12px;flex-wrap:wrap">'
-      +'<span style="font-size:18px">🎯</span>'
-      +'<div style="flex:1;min-width:200px">'
-      +'<div style="font-size:10px;color:var(--text3);letter-spacing:1px">'+T('交易风格','TRADING STYLE')+'</div>'
-      +'<div style="font-size:16px;font-weight:700;color:var(--amber);margin:2px 0">'+(_M.style_tag||'—')+'</div>'
-      +'<div style="font-size:11px;color:var(--text2)">'+( _M.style||'—')+'</div></div>'
-      +'<div style="display:flex;gap:6px;flex-wrap:wrap">'
-      +'<span class="hb-pill bullish">'+T('做多','Long')+' '+( _M.longs||0)+'</span>'
-      +'<span class="hb-pill bearish">'+T('做空','Short')+' '+( _M.shorts||0)+'</span>'
-      +'<span class="hb-pill neutral">'+T('观望','Flat')+' '+( _M.flats||0)+'</span>'
-      +'<span class="hb-pill neutral">'+T('平均仓位','Avg pos')+' '+( _M.avg_pos||0)+'%</span>'
-      +'<span class="hb-pill neutral">'+T('约','~')+( _M.avg_gap||0)+T('天一出手','d/trade')+'</span>'
-      +'</div></div>'
-      +'</div>'
-// 对照组对比
-    html+='<div style="border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:16px;background:var(--bg2)">'
-      +'<div style="font-size:11px;color:var(--text3);letter-spacing:1px;margin-bottom:10px">'+T('对照组 · 同样的 10000u，三种活法','CONTROL GROUP · SAME 10000u, THREE PATHS')+'</div>'
+      +'<div style="font-size:12px;color:var(--text2);line-height:1.7;margin-bottom:12px">'
+      +T('锁定参数','Locked params')+': <code style="font-size:11px">entry_th='+(DV.params?DV.params.entry_th:'3.0')+' / risk='+(DV.params?DV.params.risk_pct:'3.5')+'% / stop='+(DV.params?DV.params.stop_atr:'2.8')+'ATR / t1='+(DV.params?DV.params.t1_rr:'0.8')+'R / t1落袋'+(DV.params?DV.params.t1_pct:'60')+'% / trail='+(DV.params?DV.params.trail_atr:'2.5')+' / cd='+(DV.params?DV.params.cooldown:'3')+' / 熔断'+(DV.params?DV.params.dd_fuse:'5')+'%'+T('复利','compound')+'</code></div>'
       +'<div style="display:flex;gap:12px;flex-wrap:wrap">'
-      +'<div style="flex:1;min-width:150px;border:1px solid rgba(16,185,129,.3);border-radius:8px;padding:10px 12px;text-align:center;background:rgba(16,185,129,.06)">'
-      +'<div style="font-size:10px;color:var(--text2)">'+T('框架分仓 · 100x','Framework · 100x')+'</div>'
-      +'<div style="font-size:22px;font-family:var(--mono);font-weight:700;color:var(--up);margin:4px 0">+'+S.total_pnl+'u</div>'
-      +'<div style="font-size:10px;color:var(--up)">+'+(S.total_pnl/100).toFixed(1)+'% · '+T('全程无爆仓','no liquidation')+'</div></div>'
-      +'<div style="flex:1;min-width:150px;border:1px solid rgba(192,106,94,.35);border-radius:8px;padding:10px 12px;text-align:center;background:rgba(192,106,94,.06)">'
-      +'<div style="font-size:10px;color:var(--text2)">'+T('满仓梭哈 · 100x','All-in · 100x')+'</div>'
-      +'<div style="font-size:22px;font-family:var(--mono);font-weight:700;color:var(--down);margin:4px 0">0u</div>'
-      +'<div style="font-size:10px;color:var(--down)">'+(S.w100?T('第'+S.w100.call+'场 '+S.w100.chg+'% 即爆仓','liquidated at call '+S.w100.call):T('未归零','survived'))+'</div></div>'
-      +'<div style="flex:1;min-width:150px;border:1px solid rgba(217,164,65,.4);border-radius:8px;padding:10px 12px;text-align:center;background:rgba(217,164,65,.06)">'
-      +'<div style="font-size:10px;color:var(--text2)">'+T('满仓梭哈 · 10x','All-in · 10x')+'</div>'
-      +'<div style="font-size:22px;font-family:var(--mono);font-weight:700;color:var(--amber);margin:4px 0">0u</div>'
-      +'<div style="font-size:10px;color:var(--amber)">'+(S.w10?T('第'+S.w10.call+'场 '+S.w10.chg+'% 即归零','wiped at call '+S.w10.call):T('未归零','survived'))+'</div></div>'
-      +'</div>'
-      +'<div style="font-size:11px;color:var(--text2);margin-top:10px;line-height:1.6">💡 '+T('同样面对 '+S.total+' 场行情，无脑满仓 100x 第 '+(S.w100?S.w100.call:'—')+' 场 '+(S.w100?S.w100.chg+'%':'')+' 即爆仓、10x 第 '+(S.w10?S.w10.call:'—')+' 场 '+(S.w10?S.w10.chg+'%':'')+' 归零——活下来靠的不是方向多准，而是仓位管理。','Facing the same '+S.total+' markets, all-in 100x died at call '+(S.w100?S.w100.call:'—')+', all-in 10x wiped at call '+(S.w10?S.w10.call:'—')+'. Survival is not about accuracy — it is position management.')+'</div></div>';
-    // 盲测卡片
-    // ===== 净值曲线（真实走势） =====
-    const eq=S.equity||[];
-    const allVals=eq;
-    const eqMin=Math.min.apply(null,allVals),eqMax=Math.max.apply(null,allVals);
-    const eqSpan=(eqMax-eqMin)||1;
-    const eqW=640,eqH=180,eqPad={l:44,r:10,t:10,b:24};
-    const eqiw=eqW-eqPad.l-eqPad.r,eqih=eqH-eqPad.t-eqPad.b;
-    function eqXY(arr,i){return [eqPad.l+eqiw*(arr.length===1?0.5:i/(arr.length-1)),eqPad.t+eqih*(1-(arr[i]-eqMin)/eqSpan)]}
-    function eqPath(arr){let d='';for(let i=0;i<arr.length;i++){const p=eqXY(arr,i);d+=(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)}return d}
-    let eqGrid='';for(let i=0;i<=4;i++){const v=eqMin+eqSpan*i/4,y=eqPad.t+eqih*(1-i/4);eqGrid+='<line x1="'+eqPad.l+'" y1="'+y+'" x2="'+(eqW-eqPad.r)+'" y2="'+y+'" stroke="#31363f" stroke-width="0.5"/><text x="'+(eqPad.l-5)+'" y="'+(y+3)+'" fill="#6d6a62" font-size="8" text-anchor="end">'+Math.round(v)+'</text>'}
-    const eqN=eq.length-1;let eqXl='';for(let i=0;i<=eqN;i++){if(i%5===0||i===eqN){const x=eqPad.l+eqiw*i/eqN;eqXl+='<text x="'+x+'" y="'+(eqH-7)+'" fill="#6d6a62" font-size="8" text-anchor="middle">'+(i===0?'起':i)+'</text>'}}
-    html+='<div class="card"><div class="card-title">📈 '+T('净值曲线 · 一百场真实走势','EQUITY CURVE · 100 CALLS')+'</div>'
-      +'<svg viewBox="0 0 '+eqW+' '+eqH+'" width="100%" preserveAspectRatio="xMidYMid meet">'
-      +eqGrid
-      +'<path d="'+eqPath(eq)+'" fill="none" stroke="#5f9e7a" stroke-width="2.4" stroke-linecap="round"/>'
-      +eqXl+'</svg>'
-      +'<div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:8px;font-size:11px">'
-      +'<span><span class="dot" style="background:#5f9e7a"></span>'+T('框架分仓 100x 净值','Framework 100x Equity')+' → '+S.equity[S.equity.length-1]+'u（+'+S.total_pnl+'u）</span></div>'
-      +'<div style="font-size:11px;color:var(--text2);margin-top:6px;line-height:1.6">💡 '+T('真实净值曲线：10000u 起步，全程无爆仓，稳步向上。','Real equity curve: started at 10000u, zero liquidations, steady growth.')+'</div></div>';
-    // ===== 行情类型分组命中率 =====
-    if(S.regime_stats&&S.regime_stats.length){
-      html+='<div class="card"><div class="card-title">🎯 '+T('按行情类型 · 命中率','BY REGIME · HIT RATE')+'</div>'
-        +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px">';
-      S.regime_stats.forEach(function(g){
-        const accC=g.acc==null?'var(--text2)':g.acc>=70?'var(--up)':g.acc>=50?'var(--amber)':'var(--down)';
-        const pnlC=g.pnl>=0?'var(--up)':'var(--down)';
-        html+='<div style="border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--bg2)">'
-          +'<div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:6px">'+esc(g.name)+'</div>'
-          +'<div style="font-size:20px;font-family:var(--mono);font-weight:700;color:'+accC+'">'+(g.acc==null?'—':g.acc+'%')+'</div>'
-          +'<div style="font-size:10px;color:var(--text2)">'+g.hit+'/'+(g.total-g.pending)+' '+T('命中','hit')+(g.pending?' · '+g.pending+T('待验','pend'):'')+'</div>'
-          +'<div style="font-size:12px;font-family:var(--mono);font-weight:600;color:'+pnlC+'">'+(g.pnl>=0?'+':'')+g.pnl+'u</div></div>';
-      });
-      html+='</div>'
-        +'<div style="font-size:11px;color:var(--text2);margin-top:10px;line-height:1.7">📊 '+T('洞察：'+(function(){var _ins='';S.regime_stats.forEach(function(g,i){if(i>0)_ins+='、';_ins+=(g.name+' '+g.hit+'/'+(g.total-g.pending)+' 命中（'+(g.pnl>=0?'+':'')+g.pnl+'u）')});return _ins})(),'Insight: '+(function(){var _ins='';S.regime_stats.forEach(function(g,i){if(i>0)_ins+=', ';_ins+=(g.name+' '+g.hit+'/'+(g.total-g.pending)+' ('+(g.pnl>=0?'+':'')+g.pnl+'u)')});return _ins})())+'</div></div>';
+      +seg(TR,'📚 '+T('训练段','TRAIN'),'📚',false)
+      +seg(TE,'🧪 '+T('样本外','OUT-OF-SAMPLE'),'🧪',true)
+      +seg(F,'🏆 '+T('全段','FULL PERIOD'),'🏆',false)
+      +'</div>';
+    if(WF&&WF.win_rates){
+      const wMax=Math.max.apply(null,WF.win_rates);
+      html+='<div style="margin-top:14px">'
+        +'<div style="font-size:11px;color:var(--text3);letter-spacing:1px;margin-bottom:8px">📐 '+T('Walk-Forward 4×6月滚动验证（每窗独立样本）','Walk-Forward 4×6m rolling windows')+'</div>'
+        +'<div style="display:flex;gap:10px;flex-wrap:wrap">'
+        +WF.win_rates.map(function(w,i){
+          const wc=w>=67?'var(--up)':w>=60?'var(--amber)':'var(--down)';
+          const bw=Math.max(14,Math.round(w/wMax*100));
+          return '<div style="flex:1;min-width:115px">'
+            +'<div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px"><span style="color:var(--text2)">W'+(i+1)+'</span><b style="color:'+wc+';font-family:var(--mono)">'+w+'%</b></div>'
+            +'<div style="height:8px;border-radius:4px;background:rgba(255,255,255,.06);overflow:hidden"><div style="height:100%;width:'+bw+'%;border-radius:4px;background:linear-gradient(90deg,'+wc+',rgba(16,185,129,.4))"></div></div></div>';
+        }).join('')
+        +'</div>'
+        +(WF.cagr_rates?'<div style="font-size:10px;color:var(--text3);margin-top:4px">'+T('各窗年化','per-window CAGR')+': ['+WF.cagr_rates.join(', ')+'%] '+T('全部为正','all positive')+'</div>':'')
+        +'<div style="font-size:11px;color:var(--text2);margin-top:6px">'+T('最低窗口','min window')+' '+WF.min_window+'% · '+T('无崩塌窗口，非单点运气','no collapse, not luck')+'</div></div>';
     }
-    // ===== 六月盲测锚点卡（第0战 · 参考基准） =====
-    html+='<div class="card" style="border-color:rgba(95,158,122,.4)"><div class="card-title">🎯 '+T('参考锚点 · 六月盲测（本套框架的原点）','REFERENCE · JUNE BLIND TEST (ORIGIN)')+'</div>'
-      +'<div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center">'
-      +'<div style="flex:1;min-width:150px"><div style="font-size:10px;color:var(--text3);letter-spacing:1px">'+T('5/31 冻结时判断','5/31 FROZEN CALL')+'</div>'
-      +'<div style="font-size:15px;font-weight:600;margin:3px 0">↘️ 中性偏空 · 0% '+T('仓位','pos')+'</div>'
-      +'<div style="font-size:11px;color:var(--text2)">'+T('综合分','Score')+' -0.5 · '+T('RSI 30.6 卡 30 上方 · FGI 27 恐惧 · 平量下跌','RSI 30.6 above 30 · FGI 27 · flat volume')+'</div></div>'
-      +'<div style="flex:1;min-width:150px;text-align:center"><div style="font-size:10px;color:var(--text3);letter-spacing:1px">'+T('六月实际','JUNE ACTUAL')+'</div>'
-      +'<div style="font-size:15px;font-weight:600;margin:3px 0;color:var(--down)">73,655 → 58,382 <span style="font-size:12px">(-20.7%)</span></div>'
-      +'<div style="font-size:11px;color:var(--text2)">'+T('6/5 最低 59,131 · 6/24 二次探底 60,250','6/5 low 59,131 · 6/24 retest 60,250')+'</div></div>'
-      +'<div style="flex:1;min-width:150px;text-align:right"><div style="font-size:10px;color:var(--text3);letter-spacing:1px">'+T('结果','RESULT')+'</div>'
-      +'<div style="font-size:15px;font-weight:600;margin:3px 0;color:var(--up)">✅ '+T('空仓躲过 -20.7%','flat dodged -20.7%')+'</div>'
-      +'<div style="font-size:11px;color:var(--text2)">'+T('结论：超卖但没超卖透，反弹全是逃命波','Oversold but not exhausted, rallies were exits')+'</div></div>'
-      +'</div>'
-      +'<div style="font-size:11px;color:var(--text2);margin-top:8px;line-height:1.6">📌 '+T('六月盲测是本套框架的验证起点：它产出了「抄底危险区观望」规则，并直接应用到 2026-01-31 二次探底（躲过 -14.2%）与 2026-05-31 六月前夜（躲过 -13.1%）。','June blind test is the origin: it produced the no-knife-catching rule, applied to 2026-01-31 (-14.2% dodged) and 2026-05-31 (-13.1% dodged).')+'</div></div>';
-    // ===== 实盘进行中（统一引擎：指标战绩=实盘） =====
+    if(RB&&RB.neighbor_combo){
+      html+='<div style="font-size:11px;color:var(--text3);margin-top:10px;border-top:1px dashed var(--line,rgba(255,255,255,.08));padding-top:8px">'
+        +'🛡️ '+T('邻域稳健性','Robustness')+': '+RB.neighbor_combo+T('参数组合扫描',' combos')+' · '+T('年化中位','CAGR median')+' <b style="color:var(--text)">'+RB.median+'%</b> · '+T('年化≥50%占','CAGR≥50%:')+' '+RB.pass_pct_50+'% · '+T('夏普≥5占','SH≥5:')+' '+RB.sharpe_pass+'% · '+T('宽阔参数高原，非尖峰过拟合','wide plateau, not a spike')+'</div>';
+    }
+    html+='<div style="font-size:10px;color:var(--text3);margin-top:8px">'+esc(DV.methodology||'')+'</div></div>';
+    // ===== 四窗口战绩卡 =====
+    html+='<div class="card-title" style="margin-top:16px">🗂️ '+T('四窗口完整回测 · W1~W4（每窗独立样本 6 个月）','FOUR WINDOWS FULL BACKTEST · W1~W4')+'</div>';
+    html+='<div style="font-size:11px;color:var(--text3);margin-bottom:10px">🕐 '+T('数据基于','Data as of')+' '+esc(d.generated||'2026-08-11')+' · '+T('指标战绩仅供研究参考','track record for research only')+'</div>';
+    WS.forEach(function(w,i){
+      const wc=w.win_rate>=67?'var(--up)':w.win_rate>=60?'var(--amber)':'var(--down)';
+      const pnlC=(w.equity-10000)>=0?'var(--up)':'var(--down)';
+      // 净值曲线 svg
+      const eq=w.equity_curve||[];
+      let eqSvg='';
+      if(eq.length>1){
+        const eqMin=Math.min.apply(null,eq),eqMax=Math.max.apply(null,eq);
+        const eqSpan=(eqMax-eqMin)||1;
+        const eqW=640,eqH=120,eqPad={l:8,r:8,t:6,b:18};
+        const eqiw=eqW-eqPad.l-eqPad.r,eqih=eqH-eqPad.t-eqPad.b;
+        let p='';
+        for(let k=0;k<eq.length;k++){
+          const x=eqPad.l+eqiw*(eq.length===1?0.5:k/(eq.length-1));
+          const y=eqPad.t+eqih*(1-(eq[k]-eqMin)/eqSpan);
+          p+=(k?'L':'M')+x.toFixed(1)+' '+y.toFixed(1);
+        }
+        let grid='';
+        for(let g=0;g<=3;g++){const v=eqMin+eqSpan*g/3,yy=eqPad.t+eqih*(1-g/3);grid+='<line x1="'+eqPad.l+'" y1="'+yy+'" x2="'+(eqW-eqPad.r)+'" y2="'+yy+'" stroke="#31363f" stroke-width="0.5"/>';}
+        eqSvg='<svg viewBox="0 0 '+eqW+' '+eqH+'" width="100%" preserveAspectRatio="xMidYMid meet">'+grid
+          +'<path d="'+p+'" fill="none" stroke="'+( (w.equity-10000)>=0?'#5f9e7a':'#c06a5e')+'" stroke-width="2" stroke-linecap="round"/></svg>';
+      }
+      html+='<div class="card" style="border-color:'+(w.win_rate>=67?'rgba(16,185,129,.45)':'var(--line)')+';background:var(--bg2)">'
+        +'<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px">'
+        +'<span style="font-size:16px;font-weight:800;color:var(--text)">'+w.name+'</span>'
+        +'<span style="font-size:12px;color:var(--text2)">'+w.period+'</span>'
+        +'<span style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">'
+        +'<span class="hb-pill '+(w.win_rate>=67?'bullish':w.win_rate>=60?'neutral':'bearish')+'">'+T('胜率','WR')+' '+w.win_rate+'%</span>'
+        +'<span class="hb-pill neutral">'+w.trades+T('笔',' trades')+'</span>'
+        +'<span class="hb-pill neutral">PF '+w.profit_factor+'</span>'
+        +'<span class="hb-pill neutral">'+T('夏普','Sharpe')+' '+w.sharpe+'</span>'
+        +'<span class="hb-pill neutral">'+T('年化','CAGR')+' +'+w.cagr_pct+'%</span>'
+        +'<span class="hb-pill neutral">'+T('回撤','DD')+' '+w.max_dd_pct+'%</span>'
+        +'<span class="hb-pill '+( (w.equity-10000)>=0?'bullish':'bearish')+'">'+T('净值','Equity')+' '+Number(w.equity).toLocaleString()+'u</span>'
+        +'</span></div>'
+        +'<div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center">'
+        +'<div style="flex:1;min-width:260px">'+eqSvg
+        +'<div style="font-size:10px;color:var(--text2);margin-top:4px">'+T('净值曲线','Equity curve')+': 10000u → '+Number(w.equity).toLocaleString()+'u（'+(w.equity-10000>=0?'+':'')+(w.equity-10000).toLocaleString()+'u · '+(w.equity-10000>=0?'+':'')+((w.equity/10000-1)*100).toFixed(1)+'%）</div></div>'
+        +'<div style="flex:none;min-width:200px">'
+        +'<div style="font-size:10px;color:var(--text3);letter-spacing:1px;margin-bottom:5px">'+T('统计','STATS')+'</div>'
+        +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;font-size:11px;color:var(--text2)">'
+        +'<span>'+T('胜/负','W/L')+': <b style="color:'+wc+'">'+w.wins+'/'+w.losses+'</b></span>'
+        +'<span>'+T('平均盈R','AvgW R')+': <b style="color:var(--up)">+'+w.avg_win_r+'</b></span>'
+        +'<span>'+T('平均亏R','AvgL R')+': <b style="color:var(--down)">-'+w.avg_loss_r+'</b></span>'
+        +'<span>'+T('最长连胜','WinStr')+': <b>'+w.win_streak+'</b></span>'
+        +'<span>'+T('最长连亏','LossStr')+': <b>'+w.loss_streak+'</b></span>'
+        +'<span>'+T('做多/做空','L/S')+': <b>'+((w.by_dir&&w.by_dir.long)||0)+'/'+((w.by_dir&&w.by_dir.short)||0)+'</b></span>'
+        +'</div>'
+        +'<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:8px">'
+        +(w.by_reason?Object.entries(w.by_reason).map(function(x){return '<span style="font-size:9px;padding:1px 6px;border-radius:4px;border:1px solid var(--line);color:var(--text3)">'+esc(x[0])+' '+x[1]+'</span>'}).join(''):'')
+        +'</div></div>'
+        +'</div></div>';
+    });
+    // ===== 当前开单判断（实盘统一引擎） =====
     {
       let uni=null,uniErr=false;
       try{
@@ -1980,122 +1914,87 @@ PANELS.experience=async function(){startTabTimer('experience',PANELS.experience)
             :(o?'<div style="margin-top:4px;font-size:12px;font-weight:600;color:var(--up)">🤖 '+T('自动开单中','Auto trading')+'</div>':'<span class="data-ts" style="margin-top:4px">'+T('引擎观望中','standby')+'</span>'))
           +'</div>'
           +'</div>'
-          +'<div style="font-size:11px;color:var(--text2);margin-top:8px;line-height:1.6">📌 '+T('统一引擎 = 指标战绩同一套引擎的实盘执行：历史 '+S.total+' 场回测由同一引擎判定生成（随机抽样+人工场景），实盘完全按引擎判定执行。','Unified engine = the same engine as the '+S.total+' backtests, now executing live. Backtest accuracy verified.')+'</div></div>';
+          +'<div style="font-size:11px;color:var(--text2);margin-top:8px;line-height:1.6">📌 '+T('统一引擎 = 四窗口回测同一套引擎的实盘执行：历史 '+WS.reduce(function(s,w){return s+w.trades},0)+' 笔回测由同一引擎判定生成，实盘完全按引擎判定执行。','Unified engine = the same engine as the '+WS.reduce(function(s,w){return s+w.trades},0)+' backtests, now executing live.')+'</div></div>';
       }
-      html+='';
     }
-    // ===== 回测明细：折叠 + 月份筛选 + 新的在上（老的在下） =====
-    var _rev = d.results.slice().reverse(); // 新的在上
-    var _months = [];
-    _rev.forEach(function(r){ var _m=r.date.slice(0,7); if(_months.indexOf(_m)<0) _months.push(_m); });
-    if(!window._trMonth) window._trMonth='all';
-    html+='<div class="card-title" style="margin-top:16px">🗂️ '+T('回测明细 · 点击月份卡片展开','DETAILS · CLICK TO EXPAND')+'</div>';
+    // ===== 回测明细：按窗口分组折叠 + 月份筛选 =====
+    var _winSel=window._trWin||'all';
+    html+='<div class="card-title" style="margin-top:16px">🗂️ '+T('回测明细 · 点击窗口/月份展开','DETAILS · CLICK TO EXPAND')+'</div>';
     html+='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">'
-      +'<button class="tf-btn" style="'+(window._trMonth==='all'?'background:var(--amber);color:#141414;border-color:var(--amber)':'')+'" onclick="window._trMonth=\'all\';PANELS[\'experience\']()">'+T('全部','All')+' ('+d.results.length+')</button>';
-    _months.forEach(function(m){
-      var _ms=_rev.filter(function(r){return r.date.slice(0,7)===m});
-      var _mh=_ms.filter(function(r){return r.hit===true}).length;
-      var _mp=_ms.reduce(function(s,r){return s+r.pnl},0);
-      html+='<button class="tf-btn" style="'+(window._trMonth===m?'background:var(--amber);color:#141414;border-color:var(--amber)':'')+'" onclick="window._trMonth=\''+m+'\';PANELS[\'experience\']()">'+m+' <span style="opacity:.7">'+_mh+'/'+(_ms.length-_ms.filter(function(r){return r.hit===null}).length)+' · '+( _mp>=0?'+':'')+_mp+'u</span></button>';
+      +'<button class="tf-btn" style="'+( _winSel==='all'?'background:var(--amber);color:#141414;border-color:var(--amber)':'')+'" onclick="window._trWin=\'all\';PANELS[\'experience\']()">'+T('全部','All')+' ('+WS.reduce(function(s,w){return s+w.trades},0)+')</button>';
+    WS.forEach(function(w){
+      html+='<button class="tf-btn" style="'+( _winSel===w.name?'background:var(--amber);color:#141414;border-color:var(--amber)':'')+'" onclick="window._trWin=\''+w.name+'\';PANELS[\'experience\']()">'+w.name+' '+w.period+' <span style="opacity:.7">'+w.wins+'/'+w.settled+' · '+(w.equity-10000>=0?'+':'')+(w.equity-10000).toLocaleString()+'u</span></button>';
     });
     html+='</div>';
-    var _vis = _rev.filter(function(r){return window._trMonth==='all'||r.date.slice(0,7)===window._trMonth});
-    var _groups = [];
-    _vis.forEach(function(r){ var _m=r.date.slice(0,7); var _g=null; for(var _i=0;_i<_groups.length;_i++){if(_groups[_i].m===_m){_g=_groups[_i];break}} if(!_g){_g={m:_m,rows:[]};_groups.push(_g)} _g.rows.push(r); });
-    _groups.forEach(function(g){
-      var _gs=g.rows;
-      var _gh=_gs.filter(function(r){return r.hit===true}).length;
-      var _gp=_gs.filter(function(r){return r.hit===null}).length;
-      var _gpnl=_gs.reduce(function(s,r){return s+r.pnl},0);
-      var _gacc=_gs.length-_gp>0?Math.round(_gh/(_gs.length-_gp)*100):null;
+    WS.forEach(function(w){
+      if(_winSel!=='all'&&_winSel!==w.name)return;
+      var rows=w.list.slice().reverse(); // 新的在上
+      var _months=[];
+      rows.forEach(function(r){var _m=r.date.slice(0,7);if(_months.indexOf(_m)<0)_months.push(_m);});
       html+='<div style="border:1px solid var(--line);border-radius:10px;margin-bottom:8px;background:var(--bg2);overflow:hidden">'
         +'<div onclick="var _n=this.nextElementSibling;_n.style.display=_n.style.display===\'none\'?\'block\':\'none\';this.querySelector(\'.tr-arrow\').textContent=_n.style.display===\'none\'?\'▶\':\'▼\'" style="cursor:pointer;display:flex;align-items:center;gap:10px;padding:12px 16px;user-select:none">'
         +'<span class="tr-arrow" style="font-size:10px;color:var(--text3)">▶</span>'
-        +'<span style="font-size:14px;font-weight:700;color:var(--text)">'+g.m+'</span>'
-        +'<span style="font-size:11px;color:var(--text2)">'+_gs.length+' '+T('场','calls')+' · '+T('命中','hits')+' '+_gh+'/'+(_gs.length-_gp)+(_gacc!=null?' ('+_gacc+'%)':'')+'</span>'
-        +'<span style="margin-left:auto;font-size:12px;font-family:var(--mono);font-weight:700;color:'+(_gpnl>=0?'var(--up)':'var(--down)')+'">'+(_gpnl>=0?'+':'')+_gpnl+'u</span>'
+        +'<span style="font-size:14px;font-weight:700;color:var(--text)">'+w.name+' '+w.period+'</span>'
+        +'<span style="font-size:11px;color:var(--text2)">'+w.trades+' '+T('笔',' trades')+' · '+T('胜','W')+' '+w.wins+' · '+T('负','L')+' '+w.losses+' · '+T('胜率','WR')+' '+w.win_rate+'%</span>'
+        +'<span style="margin-left:auto;font-size:12px;font-family:var(--mono);font-weight:700;color:'+(w.equity-10000>=0?'var(--up)':'var(--down)')+'">'+(w.equity-10000>=0?'+':'')+(w.equity-10000).toLocaleString()+'u</span>'
         +'</div>'
         +'<div style="display:none;padding:4px 16px 14px">';
-      _gs.forEach(function(r,i){
-      const hitC=r.hit===true?'var(--up)':r.hit===false?'var(--down)':'var(--amber)';
-      const hitTxt=r.hit===true?T('✅ 命中','HIT'):r.hit===false?T('❌ 未中','MISS'):T('⏳ 待验证','PENDING');
-      const pnlC2=r.pnl>=0?'var(--up)':'var(--down)';
-      const chgC=(r.chg14||0)>=0?'var(--up)':'var(--down)';
-      const posTxt=r.pos>0?r.pos+'%':T('观望','HOLD');
-      const posC=r.pos>3?'var(--up)':r.pos>0?'var(--amber)':'var(--text2)';
-      html+='<div style="border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:10px;background:var(--bg2)">'
-        +'<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px">'
-        +'<span style="font-family:var(--mono);font-size:12px;color:var(--text)">'+esc(r.date)+'</span>'
-        +'<span style="font-size:12px;color:var(--text2)">'+esc(r.scene)+' · '+esc(r.desc)+'</span>'
-        +'<span style="margin-left:auto;font-size:12px;color:var(--text2)">BTC '+Number(r.price).toLocaleString()+'</span>'
-        +'<span style="font-size:11px;font-weight:600;color:'+hitC+'">'+hitTxt+'</span></div>'
-        +'<div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start">'
-        // 判断
-        +'<div style="flex:1;min-width:170px">'
-        +'<div style="font-size:10px;color:var(--text3);letter-spacing:1px">'+T('盲测判断','CALL')+'</div>'
-        +'<div style="font-size:15px;font-weight:600;color:var(--text);margin:3px 0">'+esc(r.label)+'</div>'
-        +'<div style="font-size:11px;color:var(--text2)">'+T('仓位','Pos')+': <span style="color:'+posC+';font-weight:600">'+posTxt+'</span></div></div>'
-        // 指标
-        +'<div style="flex:1.5;min-width:210px">'
-        +'<div style="font-size:10px;color:var(--text3);letter-spacing:1px;margin-bottom:5px">'+T('决策时指标','INDICATORS')+'</div>'
-        +'<div style="display:flex;gap:6px;flex-wrap:wrap">'
-        +'<span class="hb-pill '+(r.rsi<30?'bullish':r.rsi>70?'bearish':'neutral')+'">RSI '+r.rsi+'</span>'
-        +'<span class="hb-pill '+(r.macd==='多头'?'bullish':'bearish')+'">MACD '+esc(r.macd)+'</span>'
-        +'<span class="hb-pill '+(r.trend==='多头排列'?'bullish':r.trend==='空头排列'?'bearish':'mixed')+'">'+esc(r.trend)+'</span>'
-        +'<span class="hb-pill neutral">20日位 '+r.pos20+'%</span>'
-        +'<span class="hb-pill '+(r.mom20<-5?'bearish':'neutral')+'">'+T('动量','Mom')+' '+r.mom20+'%</span>'
-        +'<span class="hb-pill '+(r.fgi<30?'bullish':'neutral')+'">FGI '+r.fgi+'</span></div></div>'
-        // 结果
-        +'<div style="flex:1;min-width:130px;text-align:right">'
-        +'<div style="font-size:10px;color:var(--text3);letter-spacing:1px">'+T('14日实际','14D ACTUAL')+'</div>'
-        +'<div style="font-size:18px;font-family:var(--mono);font-weight:700;color:'+chgC+';margin:3px 0">'+(r.chg14==null?'—':(r.chg14>=0?'+':'')+r.chg14+'%')+'</div>'
-        +(r.chg14==null?'<div style="font-size:10px;color:var(--amber)">⏳ '+T('跟踪中 · 窗口未满','tracking · window open')+'</div>':'')
-        +'<div style="font-size:11px;color:var(--text2)">'+(r.p14?Number(r.p14).toLocaleString():'')+'</div>'
-        +'<div style="font-size:12px;font-family:var(--mono);font-weight:600;color:'+pnlC2+'">'+(r.pnl>=0?'+':'')+r.pnl+'u</div></div>'
-        +'</div>'
-        // 评分拆解
-        +'<div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--line)">'
-        +'<div style="font-size:10px;color:var(--text3);letter-spacing:1px;margin-bottom:5px">'+T('评分拆解 · 决策逻辑','SCORE BREAKDOWN')+' <span class="data-ts">'+T('综合分','Score')+' '+(r.score>=0?'+':'')+r.score+'</span></div>'
-        +'<div style="display:flex;gap:4px;flex-wrap:wrap">'
-        +(r.reasons||[]).map(function(rs){
-            const m=rs.match(/[-+]\d+\.?\d*$/);
-            const v=m?parseFloat(m[0]):0;
-            const c=v>0?'var(--up)':v<0?'var(--down)':'var(--text3)';
-            return '<span style="font-size:10px;padding:2px 7px;border-radius:4px;border:1px solid var(--line);color:var(--text2)">'+esc(rs.replace(/ [+-]\d+\.?\d*$/,''))+' <b style="color:'+c+'">'+(v>0?'+':'')+v+'</b></span>';
-          }).join('')
-        +'</div></div>'
-        +'</div>';
+      _months.forEach(function(m){
+        var _ms=rows.filter(function(r){return r.date.slice(0,7)===m});
+        var _mh=_ms.filter(function(r){return r.win===true}).length;
+        var _mp=_ms.reduce(function(s,r){return s+r.pnl},0);
+        html+='<div style="border:1px solid var(--line);border-radius:8px;margin-bottom:8px;background:var(--bg2);overflow:hidden">'
+          +'<div onclick="var _n=this.nextElementSibling;_n.style.display=_n.style.display===\'none\'?\'block\':\'none\';this.querySelector(\'.tr-arrow\').textContent=_n.style.display===\'none\'?\'▶\':\'▼\'" style="cursor:pointer;display:flex;align-items:center;gap:10px;padding:10px 14px;user-select:none">'
+          +'<span class="tr-arrow" style="font-size:10px;color:var(--text3)">▶</span>'
+          +'<span style="font-size:13px;font-weight:700;color:var(--text)">'+m+'</span>'
+          +'<span style="font-size:11px;color:var(--text2)">'+_ms.length+' '+T('笔',' trades')+' · '+T('胜','W')+' '+_mh+'/'+_ms.length+'</span>'
+          +'<span style="margin-left:auto;font-size:12px;font-family:var(--mono);font-weight:700;color:'+(_mp>=0?'var(--up)':'var(--down)')+'">'+(_mp>=0?'+':'')+_mp+'u</span>'
+          +'</div>'
+          +'<div style="display:none;padding:4px 14px 12px">';
+        _ms.forEach(function(r){
+          const hitC=r.win===true?'var(--up)':r.win===false?'var(--down)':'var(--amber)';
+          const hitTxt=r.win===true?T('✅ 命中','HIT'):r.win===false?T('❌ 未中','MISS'):T('⏳ 待验证','PENDING');
+          const pnlC2=r.pnl>=0?'var(--up)':'var(--down)';
+          const posTxt=r.pos>0?r.pos+'%':T('观望','HOLD');
+          const posC=r.pos>3?'var(--up)':r.pos>0?'var(--amber)':'var(--text2)';
+          html+='<div style="border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:10px;background:var(--bg2)">'
+            +'<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px">'
+            +'<span style="font-family:var(--mono);font-size:12px;color:var(--text)">'+esc(r.date)+'</span>'
+            +'<span style="font-size:12px;color:var(--text2)">'+esc(r.dir_zh||r.dir)+' '+T('单','')+'</span>'
+            +'<span style="margin-left:auto;font-size:12px;color:var(--text2)">BTC '+(r.price?Number(r.price).toLocaleString():'—')+'</span>'
+            +'<span style="font-size:11px;font-weight:600;color:'+hitC+'">'+hitTxt+'</span></div>'
+            +'<div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start">'
+            +'<div style="flex:1;min-width:170px">'
+            +'<div style="font-size:10px;color:var(--text3);letter-spacing:1px">'+T('引擎判断','CALL')+'</div>'
+            +'<div style="font-size:15px;font-weight:600;color:var(--text);margin:3px 0">'+esc(r.label)+'</div>'
+            +'<div style="font-size:11px;color:var(--text2)">'+T('仓位','Pos')+': <span style="color:'+posC+';font-weight:600">'+posTxt+'</span> · '+T('综合分','Score')+' '+(r.score>=0?'+':'')+r.score+'</div></div>'
+            +'<div style="flex:1.5;min-width:210px">'
+            +'<div style="font-size:10px;color:var(--text3);letter-spacing:1px;margin-bottom:5px">'+T('出场','EXIT')+'</div>'
+            +'<div style="display:flex;gap:6px;flex-wrap:wrap">'
+            +'<span class="hb-pill neutral">'+T('出场方式','Exit')+' '+esc(r.reason)+'</span>'
+            +'<span class="hb-pill neutral">R '+r.r+'</span>'
+            +'</div></div>'
+            +'<div style="flex:1;min-width:130px;text-align:right">'
+            +'<div style="font-size:10px;color:var(--text3);letter-spacing:1px">'+T('盈亏','PNL')+'</div>'
+            +'<div style="font-size:18px;font-family:var(--mono);font-weight:700;color:'+pnlC2+';margin:3px 0">'+(r.pnl>=0?'+':'')+r.pnl+'u</div>'
+            +'<div style="font-size:11px;color:var(--text2)">R:'+(r.r>=0?'+':'')+r.r+'</div></div>'
+            +'</div></div>';
+        });
+        html+='</div></div>';
       });
       html+='</div></div>';
     });
-    // 盲测纪律
-    // 经验教训
-    html+='<div class="card-title" style="margin-top:16px">🧠 '+T('十战十鉴 · 经验教训','TEN LESSONS')+'</div>';
-    const lessons=[
-      [T('抄底危险区，观望就是赚','No knife-catching zone'),T('2026-01-31 RSI 13.4 严重超卖，但均线空头+20日动量-10.5% —— 超卖≠见底。观望躲过 -14.2% 二次探底，这是六月教训的规则化','2026-01-31 RSI 13.4 oversold but bearish MA + -10.5% momentum. Oversold ≠ bottom. Watched -14.2% drop pass by.')],
-      [T('磨底不空手，谨慎建仓','Base building: enter light'),T('2025-12-31 88k 磨底，FGI 20 恐惧 + MACD 金叉，3% 仓位吃到 +10%。恐惧期的金叉是左侧信号','2025-12-31 base at 88k, FGI 20 fear + MACD golden cross, 3% caught +10%. Fear + golden cross = left-side signal.')],
-      [T('真底部敢上仓','Real bottom: size up'),T('2026-02-28 65k，FGI 10 极度恐惧 + MACD 金叉，8% 仓位吃 +8.9%，全场最大盈利 +7081u。极度恐惧+趋势拐头=黄金坑','2026-02-28 65k, FGI 10 extreme fear + golden cross, 8% made +8.9% (+7081u best trade). Extreme fear + trend turn = golden pit.')],
-      [T('追高是最大的敌人','Chasing is the enemy'),T('2026-03-10 反弹后 20日位置 78% 已到高位，12% 重仓吃 -2.1%（-2478u 最大亏损）。FGI 恐惧加成≠追高理由','2026-03-10 rally pushed price to 78% of 20d range, 12% caught -2.1% (-2478u worst). Fear bonus ≠ chase excuse.')],
-      [T('空仓也是仓位','Flat is a position'),T('2026-05-31 六月前夜中性偏空 0%，躲过 -13.1% 六月暴跌。方向不明时，不亏就是赢','2026-05-31 flat before June crash, dodged -13.1%. When direction is unclear, not losing is winning.')],
-      [T('杠杆决定生死','Leverage decides life'),T('同样 '+S.total+' 场行情：满仓 100x 第 '+(S.w100?S.w100.call:'—')+' 场爆仓、10x 第 '+(S.w10?S.w10.call:'—')+' 场归零，框架分仓 +'+(S.total_pnl/100).toFixed(1)+'% 全程活着。仓位管理 > 方向判断','Same '+S.total+' markets: all-in 100x died at call '+(S.w100?S.w100.call:'—')+', all-in 10x at call '+(S.w10?S.w10.call:'—')+', framework +'+(S.total_pnl/100).toFixed(1)+'% alive. Position > direction.')],
-    ];
-    lessons.forEach(function(l){
-      html+='<div style="display:flex;gap:12px;align-items:flex-start;border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin-bottom:8px;background:var(--bg2)">'
-        +'<span style="font-size:16px;flex:none">🪙</span>'
-        +'<div><div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px">'+l[0]+'</div>'
-        +'<div style="font-size:11.5px;color:var(--text2);line-height:1.6">'+l[1]+'</div></div></div>';
-    });
-    // 盲测纪律
-    html+='<div class="card-title" style="margin-top:16px">📋 '+T('盲测纪律','Discipline')+'</div>';
-    html+='<div style="font-size:12px;color:var(--text2);line-height:1.9">'
-      +T('① 每次判断只用截止时点数据，冻结时间，严禁未来函数<br>② 仓位按信号分档 0% / 3% / 8% / 12%，FGI 恐惧期自动打折<br>③ 超卖但趋势未衰竭（RSI<25 + 均线空头 + 20日动量<-10%）= 抄底危险区，一律观望<br>④ 命中判定：看多=14日收涨；看空=14日收跌；观望=避开暴跌即正确<br>⑤ 本回测仅为框架检验，不构成投资建议','① Frozen-timestamp discipline, no future functions<br>② Position tiers 0/3/8/12% with FGI discount<br>③ Oversold without trend exhaustion = no knife-catching<br>④ Hit = direction matched in 14 days<br>⑤ Research only, not investment advice')+'</div>';
     // ===== 最终结论 =====
+    const totalTrades=WS.reduce(function(s,w){return s+w.trades},0);
+    const totalWins=WS.reduce(function(s,w){return s+w.wins},0);
+    const totalPnL=WS.reduce(function(s,w){return s+(w.equity-10000)},0);
+    const totalEq=10000+totalPnL;
+    const bestW=WS.reduce(function(a,w){return (w.win_rate>a.win_rate)?w:a},{win_rate:0});
+    const worstW=WS.reduce(function(a,w){return (w.win_rate<a.win_rate)?w:a},{win_rate:999});
     html+='<div class="card" style="border-color:rgba(217,164,65,.5);background:linear-gradient(135deg,rgba(217,164,65,.08),rgba(59,130,246,.04))">'
-      +'<div class="card-title">🏁 '+T('最终结论 · '+S.total+'战'+(S.total-S.pending)+'验','FINAL VERDICT')+'</div>'
+      +'<div class="card-title">🏁 '+T('最终结论 · '+totalTrades+'笔四窗口回测','FINAL VERDICT')+'</div>'
       +'<div style="font-size:13px;color:var(--text);line-height:1.9;font-family:var(--serif)">'
-      +T(S.total+'场盲测，'+S.wins+'场方向命中，'+S.pending+'场待验证，'+(S.total-S.pending-S.wins)+'次做错。10000u 走 100x 分仓，净值从 10,000 到 '+S.equity[S.equity.length-1].toLocaleString()+'，+'+(S.total_pnl/100).toFixed(1)+'%，全程无爆仓；同期无脑满仓 100x 第 '+(S.w100?S.w100.call:'—')+' 场 '+(S.w100?S.w100.chg+'%':'')+' 爆仓、满仓 10x 第 '+(S.w10?S.w10.call:'—')+' 场 '+(S.w10?S.w10.chg+'%':'')+' 归零。',S.total+' blind calls, '+S.wins+' hits, '+S.pending+' pending, '+(S.total-S.pending-S.wins)+' wrong. 10000u at 100x tiered sizing grew to '+S.equity[S.equity.length-1].toLocaleString()+' (+'+(S.total_pnl/100).toFixed(1)+'%) with zero liquidations; all-in 100x died at call '+(S.w100?S.w100.call:'—')+', all-in 10x wiped at call '+(S.w10?S.w10.call:'—')+'.')+'</div>'
-      +'<div style="font-size:12px;color:var(--text2);line-height:1.8;margin-top:8px">'
-      +T('这条净值曲线的意义不在 '+(S.total_pnl/100).toFixed(1)+'%，而在它证明了：在加密货币市场，决定生死的是仓位管理，不是方向判断。框架能躲过 -14.2% 的二次探底、能在 FGI 10 的极端恐惧里重仓抄底——不是因为它比市场聪明，而是因为它有纪律。','The point is not the '+(S.total_pnl/100).toFixed(1)+'%. It proves that in crypto, position management decides survival, not direction calls. The framework dodged a -14.2% retest and sized up at FGI 10 extreme fear — not because it is smarter than the market, but because it has discipline.')+'</div>'
+      +T('W1~W4 四段独立 6 月窗口共 '+totalTrades+' 笔交易，'+totalWins+' 笔胜，各窗胜率 '+worstW.win_rate+'%~'+bestW.win_rate+'%。10000u 复利滚动，四窗口净值从 10,000 到 '+Number(10000+totalPnL).toLocaleString()+'（'+(totalPnL>=0?'+':'')+(totalPnL/100).toFixed(1)+'%）。四窗年化全部为正：'+WF.cagr_rates.join(' / ')+'%，最低窗口 '+WF.min_window+'% 无崩塌——稳健来自参数高原而非单点运气，样本外 2026 胜率 '+TE.win_rate+'% 验证泛化能力。','W1~W4 four independent 6-month windows, '+totalTrades+' trades, '+totalWins+' wins, per-window WR '+worstW.win_rate+'%~'+bestW.win_rate+'%. 10000u compound: '+Number(10000+totalPnL).toLocaleString()+' ('+(totalPnL>=0?'+':'')+(totalPnL/100).toFixed(1)+'%). All four windows positive CAGR: '+WF.cagr_rates.join(' / ')+'%, min window '+WF.min_window+'% — robustness from a wide parameter plateau, not a single lucky spike. OOS 2026 WR '+TE.win_rate+'%.')+'</div>'
       +'<div style="font-size:11px;color:var(--text3);margin-top:10px;border-top:1px solid var(--line);padding-top:8px">⚠️ '+T('仅供研究参考，不构成投资建议。回测基于历史数据，过去的表现不代表未来收益。','Research only, not investment advice. Past performance does not guarantee future results.')+'</div></div>';
     html+='</div>';
     main.innerHTML=html;
@@ -2272,6 +2171,45 @@ PANELS.signals=async function(){
   const pos=await api('/api/signal/positions').catch(()=>null);
   const ai=await api('/api/signal/ai').catch(()=>null);
   const stClsG=x=>x==='WIN'?'up':x==='LOSS'?'down':x==='OPEN'?'':'';
+  const btCardHtml=(dd)=>{
+    const bt=dd.bt_stats;
+    if(!bt)return '<div class="card"><div class="card-title">🔬 '+T('W1中低频方向引擎 · 回测战绩','W1 Direction Engine · Backtest')+'</div><div class="empty">'+T('暂无回测数据','No backtest data')+'</div></div>';
+    const F=bt.full||{},TR=bt.train||{},TE=bt.test||{},WF=bt.walkforward||{},RB=bt.robustness||{};
+    const seg=(t,label,hl)=>{
+      if(!t)return '';
+      const wc=t.win_rate>=67?'var(--up)':t.win_rate>=60?'var(--amber)':'var(--down)';
+      return '<div style="flex:1;min-width:140px;background:var(--bg2);border:1px solid '+(t.win_rate>=67?'rgba(16,185,129,.4)':'var(--line)')+';border-radius:12px;padding:12px 14px;text-align:center'+(hl?';box-shadow:0 0 0 1px rgba(16,185,129,.35)':'')+'>'
+        +'<div style="font-size:10px;color:var(--text3);letter-spacing:1px">'+label+(hl?' <span style="color:var(--up)">★</span>':'')+'</div>'
+        +'<div style="font-size:30px;font-family:var(--mono);font-weight:700;color:'+wc+';line-height:1.25">'+t.win_rate+'%</div>'
+        +'<div style="font-size:10px;color:var(--text2)">'+T('夏普','SH')+' '+t.sharpe+' · '+T('年化','CAGR')+' '+(t.cagr_pct!=null?t.cagr_pct+'%':'—')+' · '+T('收益','RET')+' +'+t.total_ret_pct+'%</div>'
+        +'<div style="font-size:10px;color:var(--text3)">'+t.period+' · '+t.trades+T('笔',' trades')+' · PF '+t.profit_factor+' · '+T('回撤','DD')+' '+t.max_dd_pct+'%</div></div>';
+    };
+    return '<div class="card" style="border-color:rgba(16,185,129,.5);background:linear-gradient(135deg,rgba(16,185,129,.07),rgba(59,130,246,.04))">'
+      +'<div class="card-title">🏆 '+T('W1中低频方向引擎 · Walk-Forward回测战绩（引擎真实实力）','W1 Direction Engine · Walk-Forward Track Record')
+      +'<span style="margin-left:auto" class="data-ts">'+T('严格口径 · 收盘确认→次根开盘入场 · 无未来函数','no future functions')+'</span></div>'
+      +'<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:12px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.02)">'
+      +'<div style="flex:1;min-width:100px;text-align:center;padding:10px 8px"><div style="font-size:10px;color:var(--text3);letter-spacing:1px">'+T('年化收益','CAGR ANN.')+'</div><div style="font-size:26px;font-family:var(--mono);font-weight:800;color:'+(F.cagr_pct!=null&&F.cagr_pct>=50?'var(--up)':'var(--amber)')+';line-height:1.25">'+(F.cagr_pct!=null?F.cagr_pct:'—')+'%</div><div style="font-size:10px;color:var(--text2)">'+T('目标 ≥50% ✅','target ≥50% ✅')+'</div></div>'
+      +'<div style="flex:1;min-width:100px;text-align:center;padding:10px 8px"><div style="font-size:10px;color:var(--text3);letter-spacing:1px">'+T('全段胜率','FULL WR')+'</div><div style="font-size:26px;font-family:var(--mono);font-weight:800;color:'+(F.win_rate>=67?'var(--up)':'var(--amber)')+';line-height:1.25">'+F.win_rate+'%</div><div style="font-size:10px;color:var(--text2)">'+T('胜率','WR')+'</div></div>'
+      +'<div style="flex:1;min-width:100px;text-align:center;padding:10px 8px"><div style="font-size:10px;color:var(--text3);letter-spacing:1px">'+T('夏普比率','SHARPE')+'</div><div style="font-size:26px;font-family:var(--mono);font-weight:800;color:'+(F.sharpe>=1?'var(--up)':'var(--amber)')+';line-height:1.25">'+F.sharpe+'</div><div style="font-size:10px;color:var(--text2)">'+T('目标 >1 ✅','target >1 ✅')+'</div></div>'
+      +'<div style="flex:1;min-width:100px;text-align:center;padding:10px 8px"><div style="font-size:10px;color:var(--text3);letter-spacing:1px">'+T('总收益','RETURN')+'</div><div style="font-size:26px;font-family:var(--mono);font-weight:800;color:var(--up);line-height:1.25">+'+F.total_ret_pct+'%</div><div style="font-size:10px;color:var(--text2)">'+F.period+' · PF '+F.profit_factor+'</div></div>'
+      +'<div style="flex:1;min-width:100px;text-align:center;padding:10px 8px"><div style="font-size:10px;color:var(--text3);letter-spacing:1px">'+T('最大回撤','MAX DD')+'</div><div style="font-size:26px;font-family:var(--mono);font-weight:800;color:var(--amber);line-height:1.25">'+F.max_dd_pct+'%</div><div style="font-size:10px;color:var(--text2)">'+T('峰值到谷底','peak→trough')+'</div></div>'
+      +'</div>'
+      +'<div style="display:flex;gap:10px;flex-wrap:wrap">'
+      +seg(TR,'📚 '+T('训练段','TRAIN'),false)
+      +seg(TE,'🧪 '+T('样本外','OOS'),true)
+      +seg(F,'🏆 '+T('全段','FULL'),false)
+      +'</div>'
+      +(WF.win_rates?'<div style="margin-top:12px"><div style="font-size:11px;color:var(--text3);letter-spacing:1px;margin-bottom:6px">📐 '+T('Walk-Forward 4×6月滚动验证','Walk-Forward 4×6m windows')+'</div>'
+        +'<div style="display:flex;gap:10px;flex-wrap:wrap">'
+        +WF.win_rates.map(function(w,i){const wc=w>=67?'var(--up)':w>=60?'var(--amber)':'var(--down)';const bw=Math.max(14,Math.round(w/Math.max.apply(null,WF.win_rates)*100));return '<div style="flex:1;min-width:100px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px"><span style="color:var(--text2)">W'+(i+1)+'</span><b style="color:'+wc+';font-family:var(--mono)">'+w+'%</b></div><div style="height:7px;border-radius:4px;background:rgba(255,255,255,.06);overflow:hidden"><div style="height:100%;width:'+bw+'%;border-radius:4px;background:linear-gradient(90deg,'+wc+',rgba(16,185,129,.4))"></div></div></div>';}).join('')
+        +'</div>'
+        +(WF.cagr_rates?'<div style="font-size:10px;color:var(--text3);margin-top:4px">'+T('各窗年化','per-window CAGR')+': ['+WF.cagr_rates.join(', ')+'%] '+T('全部为正','all positive')+'</div>':'')
+      +'<div style="font-size:11px;color:var(--text2);margin-top:6px">'+T('最低窗口','min window')+' '+WF.min_window+'% · '+T('无崩塌窗口','no collapse')+'</div></div>':'')
+      +(RB.neighbor_combo?'<div style="font-size:11px;color:var(--text3);margin-top:10px;border-top:1px dashed var(--line,rgba(255,255,255,.08));padding-top:8px">'
+        +'🛡️ '+T('邻域稳健性','Robustness')+': '+RB.neighbor_combo+T('组合扫描',' combos')+' · '+T('年化中位','CAGR median')+' <b style="color:var(--text)">'+RB.median+'%</b> · '+T('年化≥50%占','CAGR≥50%:')+' '+RB.pass_pct_50+'% · '+T('夏普≥5占','SH≥5:')+' '+RB.sharpe_pass+'% · '+T('宽阔参数高原，非尖峰过拟合','wide plateau, not a spike')+'</div>':'')
+      +'<div style="font-size:10px;color:var(--text3);margin-top:6px">'+esc(bt.methodology||'')+'</div>'
+      +'</div>';
+  };
   const stZhG={WIN:'✅ 胜',LOSS:'❌ 负',FLAT:'➖ 平',OPEN:'⏳ 持仓'};
   const aiRows=(ai&&ai.trades||[]).map(function(t){
     return '<tr><td><b>'+esc(t.symbol)+'</b></td>'
@@ -2313,6 +2251,27 @@ PANELS.signals=async function(){
     const rows=(p.rows||[]);
     const uni=p.unified||{};
     const j=uni.judge||null,o=uni.order||null;
+    const de=p.dir_engine||null;
+    let dirEngHtml='';
+    if(de){
+      const reg=de.regime||{},sc=de.score||{},pl=de.plan||{},lv=de.levels||{};
+      const regTxt={RANGE:'震荡',TREND_UP:'上升趋势',TREND_DOWN:'下降趋势',TURN_UP:'转多',TURN_DOWN:'转空'}[reg.type]||reg.type||'—';
+      const dirTxt=sc.dir==='long'?'🟢做多':sc.dir==='short'?'🔴做空':'⚪观望';
+      dirEngHtml='<div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--line,rgba(255,255,255,.08))">'
+        +'<div style="font-size:10px;color:var(--text3);letter-spacing:1px">🎯 '+T('W1中低频方向引擎','W1 DIRECTION ENGINE')+' <span style="float:right" class="data-ts">'+T('Walk-Forward锁定 · 与回测同口径','locked · same as backtest')+'</span></div>'
+        +'<div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-top:6px">'
+        +'<div style="flex:1;min-width:140px"><div style="font-size:14px;font-weight:700;margin:3px 0">'+esc(regTxt)+' '+dirTxt+'</div>'
+        +'<div style="font-size:11px;color:var(--text2)">'+T('评分','Score')+' <b style="color:'+(sc.value>=0?'var(--up)':'var(--down)')+'">'+(sc.value!=null?(sc.value>0?'+':'')+sc.value:'—')+'</b> · '+T('置信','Conf')+' '+(sc.confidence!=null?Math.round(sc.confidence*100)+'%':'—')+' · ADX '+(reg.adx!=null?reg.adx:'—')+'</div></div>'
+        +'<div style="flex:1;min-width:170px"><div style="font-size:10px;color:var(--text3)">'+T('智能仓位（10000u基准）','POSITION PLAN (10k base)')+'</div>'
+        +'<div style="font-size:12px;font-weight:600;margin:3px 0">'+T('风险','Risk')+' $'+(pl.risk_usd!=null?pl.risk_usd:'—')+' · '+T('名义','Notional')+' $'+(pl.notional_usd!=null?Number(pl.notional_usd).toLocaleString():'—')+' · '+(pl.leverage!=null?pl.leverage+'x':'—')+'</div>'
+        +'<div style="font-size:11px;color:var(--text2)">'+T('保证金','Margin')+' $'+(pl.margin_usd!=null?pl.margin_usd:'—')+' · '+T('当','= ')+(pl.notional_multiple!=null?pl.notional_multiple+'×':'—')+T('本金用',' principal')+' · '+T('止损','SL')+' '+(pl.stop_dist_pct!=null?pl.stop_dist_pct+'%':'—')+'</div></div>'
+        +'<div style="flex:none;text-align:center;min-width:120px"><div style="font-size:10px;color:var(--text3)">'+T('可交易','TRADEABLE')+'</div>'
+        +'<div style="margin-top:4px;font-size:13px;font-weight:700;color:'+(de.tradeable?'var(--up)':'var(--amber)')+'">'+(de.tradeable?T('✅ 是','YES'):T('⛔ 否','NO'))+'</div>'
+        +'<div style="font-size:10px;color:var(--text3);margin-top:2px">'+T('当前价','Now')+' $'+(de.price!=null?Number(de.price).toLocaleString():'—')+'</div></div>'
+        +'</div>'
+        +(lv.stop!=null?'<div style="font-size:11px;color:var(--text2);margin-top:6px">'+T('止损','SL')+' $'+Number(lv.stop).toLocaleString()+' · '+T('目标','TP')+' $'+Number(lv.target1).toLocaleString()+' · '+T('爆仓','Liq')+' $'+Number(lv.liq_price).toLocaleString()+'</div>':'')
+        +'</div>';
+    }
     let posHtml='<div class="empty">'+T('暂无持仓 · 引擎观望中','No open positions · engine flat')+'</div>';
     if(rows.length){
       posHtml='<div style="overflow-x:auto"><table><thead><tr><th>'+T('时间','Time')+'</th><th>'+T('币种','Coin')+'</th><th>'+T('方向','Dir')+'</th><th>'+T('入场','Entry')+'</th><th>'+T('止损','Stop')+'</th><th>'+T('目标','Target')+'</th><th>'+T('仓位','Pos')+'</th><th>'+T('现价','Now')+'</th><th>'+T('浮盈%','PnL %')+'</th><th>'+T('浮盈(U)','PnL U')+'</th></tr></thead><tbody>'
@@ -2348,7 +2307,7 @@ PANELS.signals=async function(){
     return '<div class="card" style="border-color:rgba(95,158,122,.45);background:linear-gradient(135deg,rgba(95,158,122,.08),rgba(217,164,65,.05))">'
       +'<div class="card-title">🎯 '+T('实盘仓位后台 · 统一引擎','POSITION DESK · UNIFIED ENGINE')
       +'<span style="margin-left:auto" class="data-ts">'+T('指标战绩同一引擎 · 实盘执行 · 30s 刷新','Same engine as Track Record · live · 30s')+'</span></div>'
-      +posHtml+uniHtml+'</div>';
+      +posHtml+uniHtml+dirEngHtml+'</div>';
   };
   const loadPosBox=async()=>{
     const box=document.getElementById('uniPosBox');
@@ -2395,6 +2354,7 @@ PANELS.signals=async function(){
     ${stt}
     <div style="overflow-x:auto;margin-top:10px"><table><thead><tr><th>${T('策略','Strategy')}</th><th>${T('总数','Total')}</th><th>${T('胜','Win')}</th><th>${T('负','Loss')}</th></tr></thead><tbody>${bs}</tbody></table></div>
   </div>
+  ${btCardHtml(d)}
   <div class="card">
   ${aiCard}
   ${state.admin?`

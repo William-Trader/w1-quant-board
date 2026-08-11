@@ -8,6 +8,7 @@
 const Database = require('/home/ubuntu/w1-board/node_modules/better-sqlite3');
 const fs = require('fs');
 const eng = require('/home/ubuntu/w1-board/lib/experience_engine.js');
+const { settleTrade, FEE, SLIP } = require('/home/ubuntu/w1-board/scripts/experience/honest_settle.js');
 
 const DB = '/home/ubuntu/btc-oracle/backtest/hist.db';
 const PUBLIC = '/home/ubuntu/w1-board/public/experience.json';
@@ -15,6 +16,32 @@ const DATA_OUT = '/home/ubuntu/w1-board/data/experience_blind.json';
 const PRINCIPAL = 10000, LEVER = 100;
 
 const db = new Database(DB, { readonly: true });
+// 全量1H bars（严谨结算用，逐bar止损/止盈/爆仓）
+const allBars = db.prepare("SELECT ts,o,h,l,c,v FROM klines WHERE symbol='BTCUSDT' ORDER BY ts").all();
+
+// ===== 订单计划：与 experience_engine.buildOrder 完全一致 =====
+function atrAt(freezeMs) {
+  const closes = [];
+  for (let i = allBars.length - 1; i >= 0 && closes.length < 15; i--) {
+    if (allBars[i].ts < freezeMs) closes.push(allBars[i].c);
+  }
+  closes.reverse();
+  return closes.length >= 2 ? Math.abs(closes[closes.length - 1] - closes[closes.length - 2]) : null;
+}
+function buildOrder(r, freezeMs) {
+  const price = r.price, label = r.label;
+  const dir = label.includes('多') ? 'long' : label.includes('空') ? 'short' : null;
+  if (!dir || !r.pos || r.pos <= 0) return null;
+  const atr = atrAt(freezeMs) || price * 0.01;
+  const stopMult = r.pos >= 8 ? 2.0 : r.pos >= 3 ? 1.5 : 1.2;
+  const stopDist = Math.max(atr * stopMult, price * 0.008);
+  const fgiDisc = r.fgi != null ? (r.fgi <= 20 ? 0.3 : r.fgi <= 30 ? 0.5 : r.fgi <= 45 ? 0.7 : 1) : 1;
+  const posPct = Math.min(12, Math.max(0, Math.round(r.pos * fgiDisc * 100) / 100));
+  let entry, stop, t1, t2;
+  if (dir === 'long') { entry = price; stop = price - stopDist; t1 = entry + stopDist * 1.5; t2 = entry + stopDist * 2.5; }
+  else { entry = price; stop = price + stopDist; t1 = entry - stopDist * 1.5; t2 = entry - stopDist * 2.5; }
+  return { dir, entry, stop, t1, t2, posPct };
+}
 
 // 交易日 + 收盘价
 const rows = db.prepare(`
@@ -74,12 +101,18 @@ for (const d of picks) {
   const chg14 = Math.round((p14 / a.price - 1) * 1000) / 10;
   const label = j.label, pos = j.pos;
   const dr = label.includes('多') ? 1 : label.includes('空') ? -1 : 0;
-  let hit, status;
-  if (pos === 0) { hit = true; status = '✅ 观望避险'; }
-  else if ((dr > 0 && chg14 > 0) || (dr < 0 && chg14 < 0)) { hit = true; status = '✅ 命中'; }
-  else { hit = false; status = '❌ 未中'; }
-  let pnl = Math.round(dr * pos * chg14 * 100);
-  if (!hit && pos) pnl = -Math.min(Math.abs(pnl), pos * 100);   // 爆仓截断 pos%×100
+  // 严谨结算：真实持仓逐bar止损/止盈/爆仓 + 双边费滑点（与指标战绩同口径）
+  let pnl = 0, hit = null, status = '⚪ 观望（不计入命中率）';
+  let exit_reason = '观望', exit_px = null, exit_rr = null, entry = null, pos_pct_actual = null;
+  const ord = buildOrder({ price: a.price, label, pos, fgi: a.fgi }, freeze);
+  const startTs = freeze + 3600000;
+  const bars = allBars.filter(b => b.ts > startTs && b.ts <= freeze + 15 * 86400000);
+  if (ord && bars.length) {
+    const st = settleTrade({ entry: ord.entry, dir: ord.dir, stop: ord.stop, t1: ord.t1, t2: ord.t2, bars, leverage: LEVER, posPct: ord.posPct, equity: PRINCIPAL });
+    pnl = st.pnlUsd; hit = st.pnlUsd > 0;
+    status = st.pnlUsd > 0 ? '✅ 命中' : '❌ 未中';
+    entry = ord.entry; exit_reason = st.reason; exit_px = st.exitPx; exit_rr = st.rr; pos_pct_actual = ord.posPct;
+  }
   newResults.push({
     date: d, scene: '随机波段', desc: '随机抽样·统一引擎盲测',
     cls: (dr > 0 ? 'long' : dr < 0 ? 'short' : 'flat') + (pos >= 8 ? '_agg' : pos === 3 ? '_mild' : ''),
@@ -92,7 +125,8 @@ for (const d of picks) {
     volr: a.volr != null ? Math.round(a.volr * 100) / 100 : null,
     fgi: a.fgi != null ? Math.round(a.fgi) : 0,
     score: j.score, label, pos, reasons: j.reasons,
-    p14: Math.round(p14), chg14, status, hit, pnl
+    p14: Math.round(p14), chg14, status, hit, pnl,
+    entry, exit_reason, exit_px, exit_rr, pos_pct_actual
   });
 }
 console.log(`新段生成: ${newResults.length}`);
