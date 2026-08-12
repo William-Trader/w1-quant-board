@@ -6,7 +6,7 @@
   "private": true,
   "scripts": {
     "start": "node server.js",
-    "smoke": "SMOKE=1 node scripts/smoke-test.js",
+    "smoke": "node tests/signal.smoke.test.js",
     "verify-cg": "node scripts/verify-coinglass.js",
     "test": "node --test tests/*.test.js"
   },
