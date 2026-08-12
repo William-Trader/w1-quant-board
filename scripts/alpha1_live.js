@@ -207,7 +207,7 @@ async function openPos(sig, src) {
     okxMeta.notional = Math.round(notional); okxMeta.lev = lev;
     console.log(`[DRY] 信号: ${sig.reg} ${sig.dir}(${sig.mode}/${src}) @${sig.price} 止损${sig.stop.toFixed(1)} 止盈${sig.t1.toFixed(1)} 风险$${riskUsd.toFixed(1)} 名义$${notional.toFixed(0)} 杠杆${lev}x 倍数${posMult}x`);
   } else {
-    const okx = require('./okx_executor');
+    const okx = require('../lib/okx_executor');
     const pr = await okx.openPosition(wdb, { dir: sig.dir, entry: sig.price, stop: sig.stop, target1: sig.t1, leverage: lev });
     if (!pr.ok) { console.error(`[ALPHA1] 开单失败: ${pr.error}`); return pr; }
     okxMeta.notional = pr.meta.notional; okxMeta.lev = lev;
@@ -216,9 +216,11 @@ async function openPos(sig, src) {
   const liqDist = sig.stopPct * 1.3;
   const liqPx = sig.dir === 'long' ? sig.price * (1 - liqDist / 100) : sig.price * (1 + liqDist / 100);
   try {
-    wdb.prepare(`INSERT INTO signal_track (symbol, direction, entry, stop, target1, status, pushed_at, reason, strategy, strategy_id, regime, leverage, liq_price, margin_usd, notional_usd, risk_usd, okx_meta)
-      VALUES (?,?,?,?,?, 'OPEN', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
-      SYMBOL, sig.dir, sig.price, sig.stop, sig.t1, Date.now(), sig.mode + ':' + src, STRAT, 'alpha1-v3', sig.reg,
+    const t2Px = sig.dir === 'long' ? sig.price * (1 - 4 * sig.stopPct / 100) : sig.price * (1 + 4 * sig.stopPct / 100);
+    const rrV = Math.abs(sig.t1 - sig.price) / Math.max(Math.abs(sig.stop - sig.price), 0.01);
+    wdb.prepare(`INSERT INTO signal_track (symbol, direction, entry, stop, target1, target2, rr, pos_pct, status, pushed_at, reason, strategy, strategy_id, regime, leverage, liq_price, margin_usd, notional_usd, risk_usd, okx_meta)
+      VALUES (?,?,?,?,?,?,?,?, 'OPEN', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
+      SYMBOL, sig.dir, sig.price, sig.stop, sig.t1, t2Px, rrV, sig.posPct || 1, Date.now(), sig.mode + ':' + src, STRAT, 'alpha1-v3', sig.reg,
       lev, liqPx, +(riskUsd / lev).toFixed(2), Math.round(notional), Math.round(riskUsd), JSON.stringify(okxMeta));
     console.log(`[ALPHA1] signal_track 已记录 #${wdb.prepare("SELECT MAX(id) m FROM signal_track").get().m}`);
   } catch (e) { console.error('[ALPHA1] signal_track 写入失败:', e.message); }
@@ -269,7 +271,7 @@ async function checkWithdraw() {
 async function syncOkxStop(p, isLong, newSlPx) {
   try {
     if (DRY) { console.log(`[DRY] 同步 OKX 止损单 → ${newSlPx.toFixed(1)}`); return; }
-    const okx = require('./okx_executor');
+    const okx = require('../lib/okx_executor');
     const g = await okx.getAlgoStop(wdb);
     if (!g.ok) { console.log(`[ALPHA1] OKX 止损单查询: ${g.error}`); return; }
     const cur = g.slTriggerPx;
@@ -332,11 +334,15 @@ async function managePositions() {
     const pnlPct = (isLong ? (exit - p.entry) : (p.entry - exit)) / p.entry * 100 * (p.leverage || 1);
     if (DRY) { console.log(`[DRY] 平仓 #${p.id} ${p.direction} ${reason} @${exit} r=${rTotal.toFixed(2)} pnl≈${pnlPct.toFixed(2)}%`); continue; }
     try {
-      const okx = require('./okx_executor');
-      const r = await okx.closePosition(SYMBOL);
-      wdb.prepare("UPDATE signal_track SET status=?, resolved_at=?, pnl_pct=?, exit_reason=? WHERE id=?").run(reason === 'stop' ? 'LOSS' : 'WIN', Date.now(), +pnlPct.toFixed(2), reason, p.id);
-      console.log(`[ALPHA1] 平仓 #${p.id} ${reason} @${exit} r=${rTotal.toFixed(2)} ${r.ok ? 'OK' : 'FAIL:' + r.error}`);
-    } catch (e) { console.error('[ALPHA1] 平仓异常:', e.message); }
+      const okx = require('../lib/okx_executor');
+      const r = await okx.closePosition(SYMBOL, p.direction);
+      if (r.ok) {
+        wdb.prepare("UPDATE signal_track SET status=?, resolved_at=?, pnl_pct=?, exit_reason=? WHERE id=?").run(reason === 'stop' ? 'LOSS' : 'WIN', Date.now(), +pnlPct.toFixed(2), reason, p.id);
+        console.log(`[ALPHA1] 平仓 #${p.id} ${reason} @${exit} r=${rTotal.toFixed(2)} OK`);
+      } else {
+        console.error(`[ALPHA1] 平仓 #${p.id} 失败（保持 OPEN，下轮重试）: ${r.error}`);
+      }
+    } catch (e) { console.error('[ALPHA1] 平仓异常（保持 OPEN）:', e.message); }
   }
 }
 
