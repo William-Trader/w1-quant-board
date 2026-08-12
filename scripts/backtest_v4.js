@@ -23,6 +23,44 @@ function agg(bars, secs) {
   return out;
 }
 const h4 = agg(h1, 14400);
+
+// ---------- 15m 精确入场（v5：4h 分析 + 15m 找点） ----------
+// klines15 表：2020 起 15 分钟 K 线（231,646 根）
+const rows15 = db.prepare("SELECT ts,o,h,l,c FROM klines15 ORDER BY ts").all();
+const m15 = rows15.map(r => ({ ts: r.ts, o: r.o, h: r.h, l: r.l, c: r.c }));
+console.log('[bt-v5] 15m bars:', m15.length);
+// 15m → 所在 4h bucket 索引映射（用于给定 4h idx 快速找 15m 区间）
+function m15RangeForH4(h4Idx) {
+  const startTs = h4[h4Idx].ts, endTs = h4[h4Idx + 1] ? h4[h4Idx + 1].ts : Infinity;
+  // 二分找 startTs
+  let lo = 0, hi = m15.length;
+  while (lo < hi) { const mid = (lo + hi) >> 1; if (m15[mid].ts < startTs) lo = mid + 1; else hi = mid; }
+  const a = lo;
+  while (lo < m15.length && m15[lo].ts < endTs) lo++;
+  return [a, lo]; // [startIdx, endIdx)
+}
+// 15m 入场优化（严格无未来函数：只看已收盘 15m bar，成交 = 决策后下一根 15m 开盘价）
+// 规则（以多单为例，空单对称）：
+//   1. 次根 4h 的第一根 15m 收盘后：若该 15m 收盘价 < 4h 开盘价（回调确认）→ 下一根 15m 开盘价入场
+//   2. 否则看第二根：若其收盘 < 开盘（继续回调）→ 第三根开盘入场
+//   3. 前 4 根 15m 都无回调 → 用第 5 根 15m 开盘价入场（等 1 小时仍无回踩，说明强势，追入）
+// 回调判定阈值：收盘相对开盘跌幅 > 0.1×effStop 才算有效回踩（避免噪音）
+function entryOpt15m(dir, h4Idx, effStopPct, fallbackPx) {
+  const [a, b] = m15RangeForH4(h4Idx);
+  if (b - a < 1) return fallbackPx;
+  const n = Math.min(5, b - a);
+  const h4open = m15[a].o;
+  const th = effStopPct * 0.1; // 回调阈值（%）
+  // 扫描已收盘 15m：k 收盘后决策，k+1 开盘成交（k+1 必须存在）
+  for (let k = a; k < a + n - 1; k++) {
+    const bar = m15[k];
+    const ret = (bar.c - h4open) / h4open * 100; // 相对 4h 开盘的累计
+    if (dir === 'long' && ret < -th) return m15[k + 1].o; // 回调确认 → 次根开盘买
+    if (dir === 'short' && ret > th) return m15[k + 1].o;
+  }
+  // 无回调：最后可用 15m 的下一根开盘价入场
+  return m15[Math.min(a + n - 1, m15.length - 1)].o;
+}
 const d1 = agg(h1, 86400);
 const N4 = h4.length, N1 = d1.length;
 
@@ -224,11 +262,13 @@ for (let i = 60; i < N4; i++) {
 
 // ---------- 单次回测（O(n) 循环） ----------
 function runBacktest(cfg, startTs, endTs) {
-  const { entry_th, risk_pct, stop_atr, t1_rr, t1_pct = 50, trail_atr, time_bars, min_r = 0.5, lev_cap = 50, cooldown = 6, cons_only = 0, vol_confirm = 0, adx_min = 0, only_trend = 0, trend_min = 0, use_fgi = 1, quality = 0, sustain = 0, return_trades = false, bb_break = 0, range_et = 0, compound = 0, dd_fuse = 0 } = cfg;
+  const { entry_th, risk_pct, stop_atr, t1_rr, t1_pct = 50, trail_atr, time_bars, min_r = 0.5, lev_cap = 50, cooldown = 6, cons_only = 0, vol_confirm = 0, adx_min = 0, only_trend = 0, trend_min = 0, use_fgi = 1, quality = 0, sustain = 0, return_trades = false, bb_break = 0, range_et = 0, compound = 0, dd_fuse = 0, skipped = null, skippedMax = 5000, use15m = 1, withdrawPct = 0, withdrawMult = 1.5, riskBoostScore = 0, riskBoostVol = 0, riskFloor = 0, wdMode = 'mult', wdThresh = 0, wdExPct = 0 } = cfg;
   const PRINCIPAL = 10000;
   const startIdx = Math.max(60, h4.findIndex(b => b.ts >= startTs));
   const endIdx = (() => { const k = h4.findIndex(b => b.ts > endTs); return k === -1 ? N4 : k; })();
   let trades = [], equity = PRINCIPAL, peak = PRINCIPAL, maxDd = 0;
+  let wdBase = PRINCIPAL, withdrawnTotal = 0, withdrawnCount = 0;
+  const curve = cfg.curve || null;
   let dailyPnl = new Map(), pos = null;
   let cd = { long: -1e9, short: -1e9 };
   for (let i = startIdx; i < endIdx; i++) {
@@ -237,6 +277,14 @@ function runBacktest(cfg, startTs, endTs) {
     if (pos) {
       pos.barsHeld++;
       const isLong = pos.dir === 'long';
+      // 审计：记录 bar 级权益（含持仓浮亏）——浮亏按当前 bar 最低/最高价保守估算
+      if (cfg.barCurve) {
+        const advPct = isLong ? (bar.l - pos.entry) / pos.entry : (pos.entry - bar.h) / pos.entry;
+        const rFloat = advPct / (Math.abs(pos.entry - pos.origStop) / pos.entry || 0.01);
+        const floatPnl = pos.riskUsd * (pos.remaining || 1) * rFloat;
+        cfg.barCurve.push({ day: dayStr, eq: Math.round(equity + floatPnl) });
+      }
+      // 吊灯追踪：按 4h 最高/最低（40 根窗口）
       if (isLong) {
         let mx = -Infinity;
         for (let k = Math.max(0, i - 40); k <= i; k++) if (h4[k].h > mx) mx = h4[k].h;
@@ -247,16 +295,34 @@ function runBacktest(cfg, startTs, endTs) {
         pos.trail = Math.min(mn + trail_atr * atrH4[i], pos.partial ? pos.entry : Infinity);
       }
       let exitPx = null, reason = null;
-      if (isLong && bar.l <= pos.stop) { exitPx = pos.stop; reason = 'stop'; }
-      else if (!isLong && bar.h >= pos.stop) { exitPx = pos.stop; reason = 'stop'; }
-      else if (!pos.partial && isLong && bar.h >= pos.t1) { exitPx = pos.t1; reason = 't1'; }
-      else if (!pos.partial && !isLong && bar.l <= pos.t1) { exitPx = pos.t1; reason = 't1'; }
-      else if (pos.barsHeld >= 2 && isLong && bar.l <= pos.trail) { exitPx = pos.trail; reason = 'trail'; }
-      else if (pos.barsHeld >= 2 && !isLong && bar.h >= pos.trail) { exitPx = pos.trail; reason = 'trail'; }
-      else if (pos.barsHeld >= time_bars) {
-        const rNow = (isLong ? (bar.c - pos.entry) : (pos.entry - bar.c)) / Math.abs(pos.entry - pos.origStop);
-        if (rNow >= min_r) { exitPx = bar.c; reason = 'timeout_win'; }
-        else { exitPx = bar.c; reason = 'timeout'; }
+      if (use15m) {
+        // 15m 模拟出场：遍历当前 4h bar 区间内的 15m bars（逐根检查触发，用更精确价格）
+        const [m0, m1] = m15RangeForH4(i);
+        for (let k = m0; k < m1; k++) {
+          const b15 = m15[k];
+          if (isLong && b15.l <= pos.stop) { exitPx = pos.stop; reason = 'stop'; break; }
+          if (!isLong && b15.h >= pos.stop) { exitPx = pos.stop; reason = 'stop'; break; }
+          if (!pos.partial && isLong && b15.h >= pos.t1) { exitPx = pos.t1; reason = 't1'; break; }
+          if (!pos.partial && !isLong && b15.l <= pos.t1) { exitPx = pos.t1; reason = 't1'; break; }
+          if (pos.barsHeld >= 2 && isLong && b15.l <= pos.trail) { exitPx = pos.trail; reason = 'trail'; break; }
+          if (pos.barsHeld >= 2 && !isLong && b15.h >= pos.trail) { exitPx = pos.trail; reason = 'trail'; break; }
+          if (pos.barsHeld >= time_bars) {
+            const rNow = (isLong ? (b15.c - pos.entry) : (pos.entry - b15.c)) / Math.abs(pos.entry - pos.origStop);
+            exitPx = b15.c; reason = rNow >= min_r ? 'timeout_win' : 'timeout'; break;
+          }
+        }
+      } else {
+        if (isLong && bar.l <= pos.stop) { exitPx = pos.stop; reason = 'stop'; }
+        else if (!isLong && bar.h >= pos.stop) { exitPx = pos.stop; reason = 'stop'; }
+        else if (!pos.partial && isLong && bar.h >= pos.t1) { exitPx = pos.t1; reason = 't1'; }
+        else if (!pos.partial && !isLong && bar.l <= pos.t1) { exitPx = pos.t1; reason = 't1'; }
+        else if (pos.barsHeld >= 2 && isLong && bar.l <= pos.trail) { exitPx = pos.trail; reason = 'trail'; }
+        else if (pos.barsHeld >= 2 && !isLong && bar.h >= pos.trail) { exitPx = pos.trail; reason = 'trail'; }
+        else if (pos.barsHeld >= time_bars) {
+          const rNow = (isLong ? (bar.c - pos.entry) : (pos.entry - bar.c)) / Math.abs(pos.entry - pos.origStop);
+          if (rNow >= min_r) { exitPx = bar.c; reason = 'timeout_win'; }
+          else { exitPx = bar.c; reason = 'timeout'; }
+        }
       }
       if (exitPx != null) {
         const rTotal = (isLong ? (exitPx - pos.entry) : (pos.entry - exitPx)) / Math.abs(pos.entry - pos.origStop);
@@ -264,18 +330,44 @@ function runBacktest(cfg, startTs, endTs) {
           const partReal = pos.riskUsd * (t1_pct / 100) * rTotal;
           equity += partReal; if (equity > peak) peak = equity; const dd = peak - equity; if (dd > maxDd) maxDd = dd;
           dailyPnl.set(dayStr, (dailyPnl.get(dayStr) || 0) + partReal);
-          trades.push({ day: dayStr, dir: pos.dir, reason: 't1', r: +rTotal.toFixed(2), status: 'WIN', regime: pos.reg, score: pos.score });
+          trades.push({ day: dayStr, entryTs: pos.entryTs, exitTs: ts, dir: pos.dir, reason: 't1', r: +rTotal.toFixed(2), status: 'WIN', regime: pos.reg, score: pos.score,
+            entry: +pos.entry.toFixed(1), exit: +exitPx.toFixed(1), stop: +pos.origStop.toFixed(1),
+            leverage: pos.leverage, notional: Math.round(pos.notional), margin: Math.round(pos.margin),
+            risk_usd: Math.round(pos.riskUsd), share: +(t1_pct / 100).toFixed(2),
+            pnl_usd: Math.round(partReal), equity_after: Math.round(equity) });
           pos = { ...pos, stop: pos.entry, t1: null, remaining: +(1 - t1_pct / 100).toFixed(3), barsHeld: pos.barsHeld, partial: true, origStop: pos.origStop };
+          if (curve) curve.push({ day: dayStr, eq: Math.round(equity) });
           continue;
         } else {
           const realized = pos.riskUsd * (pos.remaining || 1) * rTotal;
           equity += realized; if (equity > peak) peak = equity; const dd = peak - equity; if (dd > maxDd) maxDd = dd;
           dailyPnl.set(dayStr, (dailyPnl.get(dayStr) || 0) + realized);
           const status = rTotal > 0 ? 'WIN' : 'LOSS';
-          trades.push({ day: dayStr, dir: pos.dir, reason, r: +rTotal.toFixed(2), status, regime: pos.reg, score: pos.score });
+          trades.push({ day: dayStr, entryTs: pos.entryTs, exitTs: ts, dir: pos.dir, reason, r: +rTotal.toFixed(2), status, regime: pos.reg, score: pos.score,
+            entry: +pos.entry.toFixed(1), exit: +exitPx.toFixed(1), stop: +pos.origStop.toFixed(1),
+            leverage: pos.leverage, notional: Math.round(pos.notional), margin: Math.round(pos.margin),
+            risk_usd: Math.round(pos.riskUsd), share: +(pos.remaining || 1).toFixed(2),
+            pnl_usd: Math.round(realized), equity_after: Math.round(equity) });
+          if (curve) curve.push({ day: dayStr, eq: Math.round(equity) });
           pos = null;
         }
       }
+    }
+    // 强制提现：两种模式
+    //  - mult 模式（原）：权益达基准×withdrawMult 提取利润 withdrawPct%
+    //  - excess 模式（α2 深度定制）：权益超基准×(1+wdThresh) → 超额提走 wdExPct%，留小头复利，基准随提现上移
+    if (withdrawPct > 0 && wdMode === 'excess') {
+      if (equity >= wdBase * (1 + wdThresh)) {
+        const profit = equity - wdBase;
+        const wd = profit * wdExPct;
+        if (wd > 0) { equity -= wd; withdrawnTotal += wd; withdrawnCount++; }
+        wdBase = equity;
+      }
+    } else if (withdrawPct > 0 && equity >= wdBase * withdrawMult) {
+      const profit = equity - wdBase;
+      const wd = profit * withdrawPct;
+      if (wd > 0) { equity -= wd; withdrawnTotal += wd; withdrawnCount++; }
+      wdBase = equity;
     }
     if (!pos) {
       let sc = score4h[i];
@@ -299,6 +391,20 @@ function runBacktest(cfg, startTs, endTs) {
       const canTrade2 = only_trend ? (reg === 'TREND_UP' || reg === 'TREND_DOWN') : canTrade;
       if (canTrade2 && i < N4 - 1) {
         const dir = sc >= entry_th ? 'long' : sc <= -entry_th ? 'short' : null;
+        if (dir && skipped && skipped.length < (skippedMax || 5000)) {
+          const dStr = new Date(ts).toISOString().slice(0, 10);
+          if (i - cd[dir] < cooldown) skipped.push({ day: dStr, dir, score: +sc.toFixed(2), reason: 'cooldown', reg: regime4h[i], price: +bar.c.toFixed(1) });
+          else if (cons_only && !consArr[i]) skipped.push({ day: dStr, dir, score: +sc.toFixed(2), reason: 'consistency', reg: regime4h[i], price: +bar.c.toFixed(1) });
+          else if (trend_min > 0 && Math.abs(trendScoreD[dIdxOf4[i]]) < trend_min) skipped.push({ day: dStr, dir, score: +sc.toFixed(2), reason: 'trend_min', reg: regime4h[i], price: +bar.c.toFixed(1) });
+          else if (sustain > 0 && dir === 'long' && sustainUp[i] < sustain) skipped.push({ day: dStr, dir, score: +sc.toFixed(2), reason: 'sustain', reg: regime4h[i], price: +bar.c.toFixed(1) });
+          else if (sustain > 0 && dir === 'short' && sustainDn[i] < sustain) skipped.push({ day: dStr, dir, score: +sc.toFixed(2), reason: 'sustain', reg: regime4h[i], price: +bar.c.toFixed(1) });
+          else if (bb_break === 1 && dir === 'long' && !(bar.c > bbUpper[i])) skipped.push({ day: dStr, dir, score: +sc.toFixed(2), reason: 'bb_break', reg: regime4h[i], price: +bar.c.toFixed(1) });
+          else if (bb_break === 1 && dir === 'short' && !(bar.c < bbLower[i])) skipped.push({ day: dStr, dir, score: +sc.toFixed(2), reason: 'bb_break', reg: regime4h[i], price: +bar.c.toFixed(1) });
+          else if (bb_break === 2 && dir === 'long' && !(bar.c > bbUpper[i] || bar.c > e20h4[i])) skipped.push({ day: dStr, dir, score: +sc.toFixed(2), reason: 'bb_break', reg: regime4h[i], price: +bar.c.toFixed(1) });
+          else if (bb_break === 2 && dir === 'short' && !(bar.c < bbLower[i] || bar.c < e20h4[i])) skipped.push({ day: dStr, dir, score: +sc.toFixed(2), reason: 'bb_break', reg: regime4h[i], price: +bar.c.toFixed(1) });
+          else if (vol_confirm && vSMA20[i] > 0 && bar.v < vol_confirm * vSMA20[i]) skipped.push({ day: dStr, dir, score: +sc.toFixed(2), reason: 'vol_confirm', reg: regime4h[i], price: +bar.c.toFixed(1) });
+          else if (adx_min > 0 && adxVal[dIdxOf4[i]] < adx_min) skipped.push({ day: dStr, dir, score: +sc.toFixed(2), reason: 'adx_min', reg: regime4h[i], price: +bar.c.toFixed(1) });
+        }
         if (dir && i - cd[dir] >= cooldown) {
           // 信号质量过滤（防过拟合的合理约束）
           if (trend_min > 0 && Math.abs(trendScoreD[dIdxOf4[i]]) < trend_min) { /* skip: 日线趋势强度不足 */ }
@@ -314,7 +420,20 @@ function runBacktest(cfg, startTs, endTs) {
           else {
           const atrV = atrH4[i] || bar.c * 0.01;
           // 严格口径：收盘确认信号 → 次根开盘价入场（杜绝未来函数）
-          const entryPx = h4[i + 1].o;
+          const basePx = h4[i + 1].o;
+          // 先算 effStop 需要 stopDistPct；15m 优化需要 effStop → 两步：先粗算 effStop，再优化入场，再精算
+          const stopDistPct0 = Math.min(6, Math.max(0.8, stop_atr * atrV / basePx * 100));
+          const mult0 = (reg === 'TREND_UP' || reg === 'TREND_DOWN') ? 1.2 : (reg === 'RANGE' ? 0.85 : 1.0);
+          const effStop0 = Math.max(0.8, Math.min(6, stopDistPct0 * mult0 * (Math.abs(sc) >= 4 ? 1.1 : Math.abs(sc) >= 3 ? 1.05 : 1.0)));
+          const entryPx = (use15m ? entryOpt15m(dir, i + 1, effStop0, basePx) : basePx);
+          let entryTs = h4[i + 1].ts;
+          if (use15m) {
+            const [a0] = m15RangeForH4(i + 1);
+            // 找 entryPx 对应的 15m bar（首个 o == entryPx 的）
+            for (let k = a0; k < Math.min(a0 + 6, m15.length); k++) {
+              if (Math.abs(m15[k].o - entryPx) < 0.01) { entryTs = m15[k].ts; break; }
+            }
+          }
           const stopDistPct = Math.min(6, Math.max(0.8, stop_atr * atrV / entryPx * 100));
           // 智能仓位（风险预算）
           let mult = 1.0;
@@ -330,7 +449,15 @@ function runBacktest(cfg, startTs, endTs) {
             if (curDd > dd_fuse * 0.6) effRp = risk_pct * 0.5;
             if (curDd > dd_fuse) effRp = risk_pct * 0.2;
           }
-          const riskUsd = baseEq * effRp / 100;
+          let riskUsd = baseEq * effRp / 100;
+          // 激进因子（α2 专属，默认关闭）：评分≥4 风险×N / 波动率扩张×N / 风险下限
+          if (riskBoostScore > 0 && Math.abs(sc) >= 4) riskUsd *= riskBoostScore;
+          if (riskBoostVol > 0) {
+            const atrN = atrH4[i] || bar.c * 0.01;
+            const atrP = atrH4[Math.max(0, i - 20)] || atrN;
+            if (atrN / atrP > 1.25) riskUsd *= riskBoostVol;
+          }
+          if (riskFloor > 0) riskUsd = Math.max(riskUsd, baseEq * riskFloor / 100);
           const notional = riskUsd / (effStop / 100);
           const liqDist = effStop * 1.3;
           const leverage = Math.min(lev_cap, Math.floor(100 / liqDist * 10) / 10);
@@ -338,7 +465,7 @@ function runBacktest(cfg, startTs, endTs) {
           const stop = dir === 'long' ? entryPx * (1 - effStop / 100) : entryPx * (1 + effStop / 100);
           const t1 = dir === 'long' ? entryPx * (1 + effStop * t1_rr / 100) : entryPx * (1 - effStop * t1_rr / 100);
           const liqPx = dir === 'long' ? entryPx * (1 - liqDist / 100) : entryPx * (1 + liqDist / 100);
-          pos = { dir, entry: entryPx, stop, origStop: stop, t1, trail: 0, barsHeld: 0, notional, margin, riskUsd, remaining: 1, partial: false, liqPx, reg, score: sc, day: dayStr };
+          pos = { dir, entry: entryPx, stop, origStop: stop, t1, trail: 0, barsHeld: 0, notional, margin, leverage, riskUsd, remaining: 1, partial: false, liqPx, reg, score: sc, day: dayStr, entryTs };
           cd[dir] = i;
           }
         }
@@ -362,12 +489,20 @@ function runBacktest(cfg, startTs, endTs) {
   const totalRet = (equity - PRINCIPAL) / PRINCIPAL * 100;
   const daysSpan = (endTs - startTs) / 86400000;
   const cagr = daysSpan > 0 ? ((Math.pow(1 + totalRet / 100, 365 / daysSpan) - 1) * 100) : 0;
-  const result = { trades: trades.length, settled: settled.length, wins: wins.length, losses: losses.length, win_rate: +(winRate * 100).toFixed(1), avg_win_r: +avgWin.toFixed(2), avg_loss_r: +avgLoss.toFixed(2), profit_factor: +profitFactor.toFixed(2), sharpe: +sharpe.toFixed(2), total_ret_pct: +totalRet.toFixed(1), cagr_pct: +cagr.toFixed(1), max_dd_pct: +(maxDd / PRINCIPAL * 100).toFixed(1), equity: +equity.toFixed(0), compound: compound ? 1 : 0, dd_fuse: dd_fuse || 0, by_reason: trades.reduce((a, t) => { a[t.reason] = (a[t.reason] || 0) + 1; return a; }, {}), by_dir: trades.reduce((a, t) => { a[t.dir] = (a[t.dir] || 0) + 1; return a; }, {}) };
+  // 回撤口径修正：maxDd 是绝对金额，百分比应除以峰值权益（复利后峰值远大于本金）
+  const ddBase = compound ? peak : PRINCIPAL;
+  const result = { trades: trades.length, settled: settled.length, wins: wins.length, losses: losses.length, win_rate: +(winRate * 100).toFixed(1), avg_win_r: +avgWin.toFixed(2), avg_loss_r: +avgLoss.toFixed(2), profit_factor: +profitFactor.toFixed(2), sharpe: +sharpe.toFixed(2), total_ret_pct: +totalRet.toFixed(1), cagr_pct: +cagr.toFixed(1), max_dd_pct: +(maxDd / ddBase * 100).toFixed(1), equity: +equity.toFixed(0), compound: compound ? 1 : 0, dd_fuse: dd_fuse || 0, by_reason: trades.reduce((a, t) => { a[t.reason] = (a[t.reason] || 0) + 1; return a; }, {}), by_dir: trades.reduce((a, t) => { a[t.dir] = (a[t.dir] || 0) + 1; return a; }, {}), withdrawn_total: Math.round(withdrawnTotal), withdrawn_count: withdrawnCount };
   if (return_trades) result.trade_list = trades;
   return result;
 }
 
-module.exports = { runBacktest, h4, d1 };
+// 收集未触发信号：评分达标(>=entry_th)但被冷却/一致性/其他过滤挡住的信号
+function collectSkipped(cfg, startTs, endTs) {
+  const skipped = [];
+  runBacktest(Object.assign({}, cfg, { skipped, skippedMax: 20000 }), startTs, endTs);
+  return skipped;
+}
+module.exports = { runBacktest, collectSkipped, h4, d1 };
 if (require.main === module) {
   const scan = JSON.parse(process.argv[2] || '{}');
   const combos = scan.combos || [];

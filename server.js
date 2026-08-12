@@ -93,10 +93,14 @@ if (SMOKE) {
   startNewsCollector(ctx);
   collectors.prune(ctx);
   // 全自动开单：统一引擎每5分钟扫描大方向，有信号且无同向OPEN单 → 市价自动开单
+  // 2026-08-12：实盘策略互斥（kv live_strategy）；β1 由 kv beta:auto 动态控制
   try {
     const eng = require('./lib/experience_engine');
     const signal = require('./lib/signal');
     const autoOpenTimer = setInterval(() => {
+      let betaOn = false;
+      try { const r = db.prepare("SELECT value FROM kv WHERE key='beta:auto'").get(); betaOn = r && r.value === '1'; } catch (e) {}
+      if (!betaOn) return;  // β1 未接入实盘（当前 α1 破浪）
       try { eng.autoOpen(db, { symbol: 'BTC' }); } catch (e) { console.warn('[unified] 自动开单异常:', e.message); }
       // 自动结算：OPEN 单到目标/止损/超时48h → 自动平仓入账
       try {
