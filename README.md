@@ -8,8 +8,9 @@
 npm install
 cp .env.example .env   # 填入真实密钥
 npm start              # 启动服务 (:3300)
-npm test               # 跑回归测试（31 用例）
-node scripts/ci-test.js --push   # CI 守护（失败推群）
+npm test               # 跑自动化测试（node --test tests/）
+npm run smoke           # 信号引擎 smoke test（7 用例）
+node scripts/health_check.js      # 系统健康检查（PM2/API/实盘心跳/磁盘，异常推群）
 ```
 
 ## 架构总览
@@ -27,6 +28,7 @@ node scripts/ci-test.js --push   # CI 守护（失败推群）
 │              │  daily_analysis.js / macro_alert.js       │
 ├──────────────┼──────────────────────────────────────────┤
 │  决策层       │  lib/engine.js (给单引擎主循环)            │
+│              │  scripts/alpha1_live.js ★当前实盘(15m)  │
 │              │  ├─ lib/regime.js    体制分类 TREND/RANGE │
 │              │  ├─ lib/evalctx.js   WSL 求值上下文+FN    │
 │              │  ├─ lib/indicators.js 指标库(纯函数)      │
@@ -92,12 +94,12 @@ regime 体制分类（15min）
 ## 测试与 CI
 
 ```bash
-npm test    # 31 个回归测试（node:test，零依赖）
+npm test    # 自动化测试（node --test tests/*.test.js，零依赖）
+npm run smoke  # 信号引擎 smoke test（7 用例，纯函数只读）
 ```
 
-- `tests/engine.test.js` — 引擎 6 大历史缺陷回归（ref/lsr/ema/dirFix/partial/策略表达式）
-- `tests/wsl-regime.test.js` — WSL 语言 + 体制分类器
-- crontab 每 30 分钟自动跑，失败推群：`node scripts/ci-test.js --push`
+- `tests/signal.smoke.test.js` — 信号引擎核心纯函数（bollinger/trendFilter/stopScale/momentumCheck）
+- crontab 每 5 分钟跑健康检查：`node scripts/health_check.js`（4服务/API/实盘心跳/磁盘，异常推群）
 
 ## 数据表（data/w1.db）
 
@@ -114,6 +116,19 @@ npm test    # 31 个回归测试（node:test，零依赖）
 
 详见 `README_部署说明.txt`。生产环境：腾讯云 2C4G + pm2 + nginx。
 
+**实盘运行（2026-08 现状）：**
+- 当前实盘 = `scripts/alpha1_live.js`（α1 破浪 v3.1，BTC-USDT-SWAP，cron 每 5 分钟）
+- 实盘日志：`/tmp/alpha1_live.log`；看板服务：PM2 `w1-board`（:3300）
+- 提现规则：可用余额 ≥ 基准×2 时提利润 15%（冻结资金不计入，基准存 `kv.alpha1:wdBase`）
+- 日志轮转：`/etc/logrotate.d/w1-logs`（每日 7 份压缩）
+- 每日 03:17 数据库备份 → `backups/db/`（保留 7 天）+ 每周 VACUUM
+
+**故障排查：**
+1. 服务挂 → `pm2 restart w1-board`；看板 API → `curl 127.0.0.1:3300/api/signal/overview`
+2. 实盘不跑 → 查 `/tmp/alpha1_live.log` 末行时间戳（>15min 即异常，health_check 会推群）
+3. 数据源报错 → `logs/w1-board.err.log`（odaily 偶发失败属已知噪音）
+
 ## 版本历史
 
-- v5.0.0 — 当前：算法缺陷修复 + 模块化重构 + 测试/CI + 同引擎回测
+- v5.1.0 — 2026-08-12：系统规整（归档88文件/日志轮转/权限收紧）+ 健康检查告警 + smoke test
+- v5.0.0 — 算法缺陷修复 + 模块化重构 + 测试/CI + 同引擎回测
