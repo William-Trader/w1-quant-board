@@ -52,12 +52,16 @@ function buildCloseMsg(r) {
   const dir = r.direction === 'long' ? '多单' : '空单';
   const res = r.status === 'WIN' ? '✅ 止盈平仓' : '❌ 止损平仓';
   const ts = new Date(r.resolved_at || r.pushed_at).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' });
+  // 真实成交价优先（okx_meta.exitPx），无则用触发价
+  let exitPx = null;
+  try { if (r.okx_meta) { const m = JSON.parse(r.okx_meta); if (m.exitPx) exitPx = m.exitPx; } } catch (e) {}
+  const effExit = exitPx || (r.exit_reason === 'stop' ? r.stop : r.target1);
   const lines = [
     `${res}【α1 实盘】${ts}`,
     `──────────────`,
     `📌 ${dir} | 原因：${r.exit_reason || r.reason || '-'}`,
     `💵 入场：${fmtNum(r.entry)}`,
-    `🏁 离场：${fmtNum(r.exit_reason === 'stop' ? r.stop : r.target1)}`,
+    `🏁 离场：${fmtNum(effExit)}${exitPx ? '（实际成交）' : ''}`,
     `💰 盈亏：${r.pnl_pct != null ? r.pnl_pct.toFixed(2) + '%' : '-'}`,
     `──────────────`,
     `⏱ ${new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })} · 独立监控推送`
