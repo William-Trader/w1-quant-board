@@ -227,8 +227,17 @@ function hasOpen(dir) {
   const r = wdb.prepare("SELECT COUNT(*) c FROM signal_track WHERE status='OPEN' AND strategy=?").get(STRAT);
   if (r.c > 0) return true;
   // 冷却（全方向，对齐回测）——从平仓时间 resolved_at 起算，非开仓时间
-  const last = wdb.prepare("SELECT resolved_at FROM signal_track WHERE strategy=? AND status IN ('WIN','LOSS') ORDER BY id DESC LIMIT 1").get(STRAT);
-  const t0 = last && last.resolved_at ? last.resolved_at : (last && last.pushed_at ? last.pushed_at : 0);
+  let t0 = 0;
+  try {
+    const last = wdb.prepare("SELECT resolved_at FROM signal_track WHERE strategy=? AND status IN ('WIN','LOSS') ORDER BY id DESC LIMIT 1").get(STRAT);
+    if (last && last.resolved_at) t0 = last.resolved_at;
+  } catch (e) {}
+  // 双保险：kv 里的 alpha1:last_close（signal_track 被清空时仍能防冷却绕过）
+  try {
+    const kvr = wdb.prepare("SELECT value FROM kv WHERE key='alpha1:last_close'").get();
+    const kvT = kvr ? Number(kvr.value) : 0;
+    if (kvT > t0) t0 = kvT;
+  } catch (e) {}
   if (t0 && (Date.now() - t0) < COOLDOWN_H * 3600e3) return true;
   return false;
 }
@@ -285,14 +294,16 @@ async function openPos(sig, src) {
     if (pr.avgPx) okxMeta.avgPx = pr.avgPx;
     console.log(`[ALPHA1] OKX 开单成功: ${sig.dir} ${pr.mode} 成交均价${pr.avgPx ? pr.avgPx.toFixed(1) : '待确认'} 名义$${pr.meta.notional} 杠杆${pr.meta.lev || lev}x`);
   }
+  // 实际入场价：限价成交/兜底成交可能偏离信号价 → DB entry 与 OKX 持仓对齐，盈亏才准（DRY 模式无 pr，用信号价）
+  const entryReal = (typeof pr !== 'undefined' && pr.avgPx) || sig.price;
   const liqDist = sig.stopPct * 1.3;
-  const liqPx = sig.dir === 'long' ? sig.price * (1 - liqDist / 100) : sig.price * (1 + liqDist / 100);
+  const liqPx = sig.dir === 'long' ? entryReal * (1 - liqDist / 100) : entryReal * (1 + liqDist / 100);
   try {
-    const t2Px = sig.dir === 'long' ? sig.price * (1 - 4 * sig.stopPct / 100) : sig.price * (1 + 4 * sig.stopPct / 100);
-    const rrV = Math.abs(sig.t1 - sig.price) / Math.max(Math.abs(sig.stop - sig.price), 0.01);
+    const t2Px = sig.dir === 'long' ? entryReal * (1 - 4 * sig.stopPct / 100) : entryReal * (1 + 4 * sig.stopPct / 100);
+    const rrV = Math.abs(sig.t1 - entryReal) / Math.max(Math.abs(sig.stop - entryReal), 0.01);
     wdb.prepare(`INSERT INTO signal_track (symbol, direction, entry, stop, target1, target2, rr, pos_pct, status, pushed_at, reason, strategy, strategy_id, regime, leverage, liq_price, margin_usd, notional_usd, risk_usd, okx_meta)
       VALUES (?,?,?,?,?,?,?,?, 'OPEN', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
-      SYMBOL, sig.dir, sig.price, sig.stop, sig.t1, t2Px, rrV, sig.posPct || 1, Date.now(), sig.mode + ':' + src, STRAT, 'alpha1-v3', sig.reg,
+      SYMBOL, sig.dir, entryReal, sig.stop, sig.t1, t2Px, rrV, sig.posPct || 1, Date.now(), sig.mode + ':' + src, STRAT, 'alpha1-v3', sig.reg,
       lev, liqPx, +(riskUsd / lev).toFixed(2), Math.round(notional), Math.round(riskUsd), JSON.stringify(okxMeta));
     console.log(`[ALPHA1] signal_track 已记录 #${wdb.prepare("SELECT MAX(id) m FROM signal_track").get().m}`);
   } catch (e) { console.error('[ALPHA1] signal_track 写入失败:', e.message); }
@@ -410,7 +421,9 @@ async function managePositions() {
         const effPnl = real ? ((isLong ? (effExit - p.entry) : (p.entry - effExit)) / p.entry * 100 * (p.leverage || 1)) : pnlPct;
         const meta = JSON.stringify({ exitPx: effExit, pnl: real ? real.pnl : null, fee: real ? real.fee : null });
         const win = effPnl >= 0;
-        wdb.prepare("UPDATE signal_track SET status=?, resolved_at=?, pnl_pct=?, exit_reason=?, okx_meta=? WHERE id=?").run(win ? 'WIN' : 'LOSS', Date.now(), +effPnl.toFixed(2), reason, meta, p.id);
+        const resolvedAt = Date.now();
+        wdb.prepare("UPDATE signal_track SET status=?, resolved_at=?, pnl_pct=?, exit_reason=?, okx_meta=? WHERE id=?").run(win ? 'WIN' : 'LOSS', resolvedAt, +effPnl.toFixed(2), reason, meta, p.id);
+        wdb.prepare("INSERT OR REPLACE INTO kv(key,value) VALUES('alpha1:last_close',?)").run(String(resolvedAt));
         console.log(`[ALPHA1] 平仓 #${p.id} ${reason} 实价${effExit.toFixed(1)} r=${rTotal.toFixed(2)} pnl=${effPnl.toFixed(2)}% OK`);
       } else {
         console.error(`[ALPHA1] 平仓 #${p.id} 失败（保持 OPEN，下轮重试）: ${r.error}`);
