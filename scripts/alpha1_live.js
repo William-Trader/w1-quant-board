@@ -10,8 +10,19 @@
 // 运行：node scripts/alpha1_live.js [--dry]
 // ============================================================
 const Database = require('better-sqlite3');
+const fs = require('fs');
+const { execFileSync, execSync } = require('child_process');
 const db = new Database('/home/ubuntu/btc-oracle/backtest/hist.db', { readonly: true });
 const wdb = new Database('/home/ubuntu/w1-board/data/w1.db');
+
+// ---------- 防并发锁（cron 1分钟 + 限价轮询，防止重叠执行重复开单） ----------
+const LOCK = '/tmp/alpha1_live.lock';
+function acquireLock() {
+  try { const st = fs.statSync(LOCK); if (Date.now() - st.mtimeMs < 90000) { console.log('[ALPHA1] 上一轮仍在运行，跳过本轮'); return false; } } catch (e) {}
+  try { fs.writeFileSync(LOCK, String(process.pid)); } catch (e) {}
+  return true;
+}
+function releaseLock() { try { fs.unlinkSync(LOCK); } catch (e) {} }
 
 const DRY = process.argv.includes('--dry');
 const SYMBOL = 'BTC-USDT-SWAP';
@@ -62,9 +73,31 @@ function adxArr(bars, n = 14) {
   return out;
 }
 
-// ---------- 数据（1h + 15m + 日线，全部已收盘 bar） ----------
-const h1 = db.prepare("SELECT ts,o,h,l,c,v FROM klines WHERE symbol='BTCUSDT' ORDER BY ts DESC LIMIT 700").all().reverse();
-const m15 = db.prepare("SELECT ts,o,h,l,c FROM klines15 ORDER BY ts DESC LIMIT 2900").all().reverse();
+// ---------- 数据（1h + 15m + 日线，全部已收盘 bar + OKX 实时覆盖） ----------
+// 改造：hist.db 每5分钟刷新（滞后≤10min），叠加 OKX 实时 K 线（已收盘 bar）消除滞后
+function fetchOkxCandles(bar, limit) {
+  try {
+    const out = execFileSync('okx', ['--profile', 'live', '--json', 'market', 'candles', 'BTC-USDT-SWAP', '--bar', bar, '--limit', String(limit)], { timeout: 20000, encoding: 'utf8' });
+    const d = JSON.parse(out);
+    const arr = Array.isArray(d) ? d : (d.data || []);
+    // OKX 返回 [ts,o,h,l,c,vol,...confirm]，confirm='1' 已收盘；过滤形成中 bar
+    const now = Date.now();
+    const barMs = bar === '1H' ? 3600e3 : 900e3;
+    return arr.filter(x => Array.isArray(x) && x.length >= 5 && (String(x[8]) === '1' || (Number(x[0]) + barMs) <= now))
+      .map(x => ({ ts: Number(x[0]), o: Number(x[1]), h: Number(x[2]), l: Number(x[3]), c: Number(x[4]), v: Number(x[5]) || 0 }))
+      .sort((a, b) => a.ts - b.ts);
+  } catch (e) { console.warn('[ALPHA1] OKX 实时K线获取失败(用hist.db):', e.message); return []; }
+}
+function mergeBars(base, live) {
+  const map = new Map();
+  for (const b of base) map.set(b.ts, b);
+  for (const b of live) if (!map.has(b.ts)) map.set(b.ts, b);
+  return [...map.values()].sort((a, b) => a.ts - b.ts);
+}
+const _h1Base = db.prepare("SELECT ts,o,h,l,c,v FROM klines WHERE symbol='BTCUSDT' ORDER BY ts DESC LIMIT 700").all().reverse();
+const _m15Base = db.prepare("SELECT ts,o,h,l,c FROM klines15 ORDER BY ts DESC LIMIT 2900").all().reverse();
+const h1 = mergeBars(_h1Base, fetchOkxCandles('1H', 300)).slice(-700);
+const m15 = mergeBars(_m15Base, fetchOkxCandles('15m', 300)).slice(-2900);
 const d1 = (() => {
   const map = new Map();
   for (const b of h1) {
@@ -162,19 +195,24 @@ function buildParams(dir, mode, price, reg) {
 function okxAutoOn() {
   try { const r = wdb.prepare("SELECT value FROM kv WHERE key='okx:auto'").get(); return r && r.value === '1'; } catch (e) { return false; }
 }
+// 实时可用余额（口径统一：available，冻结不计入）——返回 null 表示查询失败
+function liveAvailEq() {
+  try {
+    const out = execSync('okx --profile live account balance USDT 2>/dev/null | tail -4', { timeout: 30000 });
+    const m = out.toString().match(/USDT\s+[\d.]+\s+([\d.]+)/);
+    if (m) return parseFloat(m[1]);
+  } catch (e) {}
+  return null;
+}
 function accountEq() {
+  const live = liveAvailEq();
+  if (live != null) return live;
   const r = wdb.prepare("SELECT value FROM kv WHERE key='okx:eq'").get();
   return r ? Number(r.value) : 2890;
 }
-// 回撤熔断：实时权益 → 更新峰值 → 返回风险系数
+// 回撤熔断：实时可用权益 → 更新峰值 → 返回风险系数（口径与提现一致：available）
 function riskFactor() {
-  let eq = null;
-  try {
-    const { execSync } = require('child_process');
-    const out = execSync('okx --profile live account balance USDT 2>/dev/null | tail -4', { timeout: 30000 });
-    const m = out.toString().match(/USDT\s+([\d.]+)/);
-    eq = m ? parseFloat(m[1]) : null;
-  } catch (e) {}
+  let eq = liveAvailEq();
   if (eq == null) { try { const r = wdb.prepare("SELECT value FROM kv WHERE key='okx:eq'").get(); eq = r ? Number(r.value) : 2890; } catch (e) {} }
   let peak = eq;
   try { const r = wdb.prepare("SELECT value FROM kv WHERE key='alpha1:peak'").get(); if (r) peak = Math.max(Number(r.value) || eq, eq); } catch (e) {}
@@ -188,10 +226,38 @@ function riskFactor() {
 function hasOpen(dir) {
   const r = wdb.prepare("SELECT COUNT(*) c FROM signal_track WHERE status='OPEN' AND strategy=?").get(STRAT);
   if (r.c > 0) return true;
-  // 冷却（全方向，对齐回测）
-  const last = wdb.prepare("SELECT pushed_at FROM signal_track WHERE strategy=? AND status IN ('WIN','LOSS') ORDER BY id DESC LIMIT 1").get(STRAT);
-  if (last && (Date.now() - last.pushed_at) < COOLDOWN_H * 3600e3) return true;
+  // 冷却（全方向，对齐回测）——从平仓时间 resolved_at 起算，非开仓时间
+  const last = wdb.prepare("SELECT resolved_at FROM signal_track WHERE strategy=? AND status IN ('WIN','LOSS') ORDER BY id DESC LIMIT 1").get(STRAT);
+  const t0 = last && last.resolved_at ? last.resolved_at : (last && last.pushed_at ? last.pushed_at : 0);
+  if (t0 && (Date.now() - t0) < COOLDOWN_H * 3600e3) return true;
   return false;
+}
+// 实时盘口（bid/ask），用于最优限价入场
+function fetchTicker() {
+  try {
+    const out = execFileSync('okx', ['--profile', 'live', '--json', 'market', 'ticker', 'BTC-USDT-SWAP'], { timeout: 15000, encoding: 'utf8' });
+    const d = JSON.parse(out);
+    const arr = Array.isArray(d) ? d : (d.data || []);
+    const t = arr[0] || {};
+    return { bid: Number(t.bidPx) || 0, ask: Number(t.askPx) || 0, last: Number(t.last) || 0 };
+  } catch (e) { return { bid: 0, ask: 0, last: 0 }; }
+}
+// 真实平仓成交价：bills 最近一笔带盈亏的成交（type=2 交易, pnl!=0 = 平仓）
+function fetchRealFillPx() {
+  try {
+    const out = execFileSync('okx', ['--profile', 'live', '--json', 'account', 'bills', '--instType', 'SWAP'], { timeout: 20000, encoding: 'utf8' });
+    const d = JSON.parse(out);
+    const arr = Array.isArray(d) ? d : (d.data || []);
+    const t = arr.find(x => String(x.instId || '').includes('BTC-USDT-SWAP') && String(x.type) === '2' && Number(x.pnl) !== 0);
+    if (t) return { px: Number(t.px), pnl: Number(t.pnl), fee: Number(t.fee), ts: Number(t.ts) };
+  } catch (e) {}
+  return null;
+}
+// 最优限价：做多挂 bid（吃流动性最优点），做空挂 ask；拿不到盘口则用信号价
+function optimalLimitPx(dir, sigPrice) {
+  const tk = fetchTicker();
+  if (dir === 'long') return (tk.bid > 0 && Math.abs(tk.bid - sigPrice) / sigPrice < 0.01) ? tk.bid : sigPrice;
+  return (tk.ask > 0 && Math.abs(tk.ask - sigPrice) / sigPrice < 0.01) ? tk.ask : sigPrice;
 }
 async function openPos(sig, src) {
   const eq = accountEq();
@@ -208,10 +274,16 @@ async function openPos(sig, src) {
     console.log(`[DRY] 信号: ${sig.reg} ${sig.dir}(${sig.mode}/${src}) @${sig.price} 止损${sig.stop.toFixed(1)} 止盈${sig.t1.toFixed(1)} 风险$${riskUsd.toFixed(1)} 名义$${notional.toFixed(0)} 杠杆${lev}x 倍数${posMult}x`);
   } else {
     const okx = require('../lib/okx_executor');
-    const pr = await okx.openPosition(wdb, { dir: sig.dir, entry: sig.price, stop: sig.stop, target1: sig.t1, leverage: lev });
+    const lpx = optimalLimitPx(sig.dir, sig.price);
+    console.log(`[ALPHA1] 信号 ${sig.dir}(${sig.mode}/${src}) @${sig.price} → 最优限价 ${lpx.toFixed(1)}（轮询40s，不成交流单市价兜底）`);
+    const pr = await okx.openPositionLimit(wdb, {
+      dir: sig.dir, entry: sig.price, stop: sig.stop, target1: sig.t1,
+      leverage: lev, mult: posMult, riskPct: RISK_PCT * rf, limitPx: lpx
+    });
     if (!pr.ok) { console.error(`[ALPHA1] 开单失败: ${pr.error}`); return pr; }
-    okxMeta.notional = pr.meta.notional; okxMeta.lev = lev;
-    console.log(`[ALPHA1] OKX 开单成功: ${sig.dir} @${sig.price} 名义$${pr.meta.notional} 杠杆${lev}x`);
+    okxMeta.notional = pr.meta.notional; okxMeta.lev = pr.meta.lev || lev; okxMeta.mode = pr.mode;
+    if (pr.avgPx) okxMeta.avgPx = pr.avgPx;
+    console.log(`[ALPHA1] OKX 开单成功: ${sig.dir} ${pr.mode} 成交均价${pr.avgPx ? pr.avgPx.toFixed(1) : '待确认'} 名义$${pr.meta.notional} 杠杆${pr.meta.lev || lev}x`);
   }
   const liqDist = sig.stopPct * 1.3;
   const liqPx = sig.dir === 'long' ? sig.price * (1 - liqDist / 100) : sig.price * (1 + liqDist / 100);
@@ -230,14 +302,8 @@ async function openPos(sig, src) {
 // ---------- 提现落袋 ----------
 async function checkWithdraw() {
   try {
-    const { execSync } = require('child_process');
-    let eq = null;
-    try {
-      const out = execSync('okx --profile live account balance USDT 2>/dev/null | tail -4', { timeout: 30000 });
-      // 可用余额口径：USDT <equity> <available> <frozen>，冻结资金不计入提现判断
-      const m = out.toString().match(/USDT\s+[\d.]+\s+([\d.]+)/);
-      eq = m ? parseFloat(m[1]) : null;
-    } catch (e) {}
+    // 可用余额口径（冻结不计入），与开仓风控统一
+    const eq = liveAvailEq();
     if (eq == null) { console.log('[ALPHA1] 余额查询失败，跳过提现检查'); return; }
     let wdBase = null;
     try { const r = wdb.prepare("SELECT value FROM kv WHERE key='alpha1:wdBase'").get(); wdBase = r ? Number(r.value) : null; } catch (e) {}
@@ -319,7 +385,9 @@ async function managePositions() {
     if (!exit && heldH >= timeout) { exit = b15.c; reason = 'timeout'; }
     if (!exit) continue;
     const stopDist = Math.abs(p.entry - p.stop);
-    const rTotal = (isLong ? (exit - p.entry) : (p.entry - exit)) / (stopDist || 1);
+    // 实际成交价优先：平仓成功后从 OKX bills 查询真实均价，避免虚拟吊灯价失真
+    let actualExit = exit;
+    const rTotal = (isLong ? (actualExit - p.entry) : (p.entry - actualExit)) / (stopDist || 1);
     if (reason === 't1_partial') {
       // 部分止盈：60% 利润落袋（等价）→ 止损移到保本，剩余仓位继续吊灯（不实际平仓，OKX 无部分平）
       const pnlPct = (isLong ? (exit - p.entry) : (p.entry - exit)) / p.entry * 100 * (p.leverage || 1) * (T1_PCT / 100);
@@ -331,14 +399,19 @@ async function managePositions() {
       } catch (e) { console.error('[ALPHA1] 部分止盈异常:', e.message); }
       continue;
     }
-    const pnlPct = (isLong ? (exit - p.entry) : (p.entry - exit)) / p.entry * 100 * (p.leverage || 1);
-    if (DRY) { console.log(`[DRY] 平仓 #${p.id} ${p.direction} ${reason} @${exit} r=${rTotal.toFixed(2)} pnl≈${pnlPct.toFixed(2)}%`); continue; }
+    const pnlPct = (isLong ? (actualExit - p.entry) : (p.entry - actualExit)) / p.entry * 100 * (p.leverage || 1);
+    if (DRY) { console.log(`[DRY] 平仓 #${p.id} ${p.direction} ${reason} @${actualExit} r=${rTotal.toFixed(2)} pnl≈${pnlPct.toFixed(2)}%`); continue; }
     try {
       const okx = require('../lib/okx_executor');
       const r = await okx.closePosition(SYMBOL, p.direction);
       if (r.ok) {
-        wdb.prepare("UPDATE signal_track SET status=?, resolved_at=?, pnl_pct=?, exit_reason=? WHERE id=?").run(reason === 'stop' ? 'LOSS' : 'WIN', Date.now(), +pnlPct.toFixed(2), reason, p.id);
-        console.log(`[ALPHA1] 平仓 #${p.id} ${reason} @${exit} r=${rTotal.toFixed(2)} OK`);
+        const real = fetchRealFillPx();
+        const effExit = real ? real.px : exit;
+        const effPnl = real ? ((isLong ? (effExit - p.entry) : (p.entry - effExit)) / p.entry * 100 * (p.leverage || 1)) : pnlPct;
+        const meta = JSON.stringify({ exitPx: effExit, pnl: real ? real.pnl : null, fee: real ? real.fee : null });
+        const win = effPnl >= 0;
+        wdb.prepare("UPDATE signal_track SET status=?, resolved_at=?, pnl_pct=?, exit_reason=?, okx_meta=? WHERE id=?").run(win ? 'WIN' : 'LOSS', Date.now(), +effPnl.toFixed(2), reason, meta, p.id);
+        console.log(`[ALPHA1] 平仓 #${p.id} ${reason} 实价${effExit.toFixed(1)} r=${rTotal.toFixed(2)} pnl=${effPnl.toFixed(2)}% OK`);
       } else {
         console.error(`[ALPHA1] 平仓 #${p.id} 失败（保持 OPEN，下轮重试）: ${r.error}`);
       }
@@ -348,6 +421,8 @@ async function managePositions() {
 
 // ---------- 主流程 ----------
 (async () => {
+  if (!acquireLock()) return;
+  try {
   console.log(`[ALPHA1] ${DRY ? 'DRY-RUN（不下单）' : 'LIVE'} · v3.1(15m) · ${new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })}`);
   await checkWithdraw();
   await managePositions();
@@ -396,4 +471,6 @@ async function managePositions() {
       console.log(`[ALPHA1] 1h 信号 ${sig.dir}(${sig.mode}) 已挂起，等待 15m 入场点（15m 触带/回调）`);
     } catch (e) { console.error('[ALPHA1] pending 写入失败:', e.message); }
   }
+  } catch (e) { console.error('[ALPHA1] 主流程异常:', e.message); }
+  finally { releaseLock(); }
 })();
