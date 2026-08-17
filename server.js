@@ -1,11 +1,13 @@
 'use strict';
+const { info, error: logError } = require('./lib/log');
 // ========== process guard for Node 24 ==========
+// 全局异常守卫：统一走 logger，避免裸 console；记录完整 stack 便于排查。
+// 注意：unhandledRejection 只记录（业务可恢复）；uncaughtException 记录后由 pm2 重启兜底。
 process.on('unhandledRejection', (reason, promise) => {
-  console.error('[guard] unhandledRejection:', reason instanceof Error ? reason.message : reason);
+  logError('[guard] unhandledRejection:', reason instanceof Error ? reason.message : reason);
 });
 process.on('uncaughtException', (err) => {
-  console.error('[guard] uncaughtException:', err.message);
-  console.error(err.stack);
+  logError('[guard] uncaughtException:', err && err.message, '\n' + (err && err.stack));
 });
 
 // William 量化看板 W1 — Express 127.0.0.1:3300，nginx 80→3300 反代，pm2 进程名 w1-board
@@ -92,31 +94,12 @@ if (SMOKE) {
   collectors.startCron(ctx);
   startNewsCollector(ctx);
   collectors.prune(ctx);
-  // 全自动开单：统一引擎每5分钟扫描大方向，有信号且无同向OPEN单 → 市价自动开单
-  // 2026-08-12：实盘策略互斥（kv live_strategy）；β1 由 kv beta:auto 动态控制
-  try {
-    const eng = require('./lib/experience_engine');
-    const signal = require('./lib/signal');
-    const autoOpenTimer = setInterval(() => {
-      let betaOn = false;
-      try { const r = db.prepare("SELECT value FROM kv WHERE key='beta:auto'").get(); betaOn = r && r.value === '1'; } catch (e) {}
-      if (!betaOn) return;  // β1 未接入实盘（当前 α1 破浪）
-      try { eng.autoOpen(db, { symbol: 'BTC' }); } catch (e) { console.warn('[unified] 自动开单异常:', e.message); }
-      // 自动结算：OPEN 单到目标/止损/超时48h → 自动平仓入账
-      try {
-        const snaps = signal.futuresSnapshots(db, 1);
-        if (snaps.length) { const n = signal.resolveOpenSignals(db, snaps); if (n) console.log(`[unified] 自动结算 ${n} 单`); }
-      } catch (e) { console.warn('[unified] 自动结算异常:', e.message); }
-    }, 5 * 60 * 1000);
-    autoOpenTimer.unref && autoOpenTimer.unref();
-    console.log('[unified] 全自动开单+自动结算已启动（每5分钟扫描 BTC 大方向）');
-  } catch (e) { console.warn('[unified] 自动开单初始化失败:', e.message); }
 }
 
 const PORT = Number(env.PORT || 3300);
 if (require.main === module) {
   app.listen(PORT, '127.0.0.1', () => {
-    console.log(`[w1-board] William 量化看板 W1 v${require('./package.json').version} listening on 127.0.0.1:${PORT} (smoke=${SMOKE}, cg=${cg.maskedKey()})`);
+    info(`[w1-board] William 量化看板 W1 v${require('./package.json').version} listening on 127.0.0.1:${PORT} (smoke=${SMOKE}, cg=${cg.maskedKey()})`);
   });
   collectors.prune(ctx);
 }

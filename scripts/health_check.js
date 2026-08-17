@@ -29,16 +29,11 @@ async function main() {
 
   // 2. w1-board API
   try {
-    const r = await fetch('http://127.0.0.1:3300/api/signal/overview', { signal: AbortSignal.timeout(5000) });
+    const r = await fetch('http://127.0.0.1:3300/health', { signal: AbortSignal.timeout(5000) });
     if (!r.ok && r.status !== 401) problems.push(`w1-board API 异常 HTTP ${r.status}`);
   } catch (e) { problems.push('w1-board API 无响应'); }
 
-  // 3. 实盘心跳: alpha1_live.log 最后写入时间
-  try {
-    const out = sh('stat -c %Y /tmp/alpha1_live.log');
-    const ageMin = (Date.now() / 1000 - parseInt(out)) / 60;
-    if (ageMin > 15) problems.push(`实盘心跳超时 ${ageMin.toFixed(0)}分钟`);
-  } catch (e) { problems.push('实盘日志缺失'); }
+  // 3. 实盘心跳检查已停用(2026-08-13 William老板指令: 停掉实盘心跳告警)
 
   // 4. 磁盘
   try {
@@ -47,12 +42,29 @@ async function main() {
     if (pct > 85) problems.push(`磁盘占用 ${pct}%`);
   } catch (e) {}
 
-  const status = problems.length ? '🔴 ' + problems.join(' | ') : '🟢 W1 系统健康: 4服务在线/API正常/实盘心跳正常/磁盘OK';
+  const status = problems.length ? '🔴 ' + problems.join(' | ') : '🟢 W1 系统健康: 4服务在线/API正常/实盘心跳检查已停用磁盘OK';
   console.log(new Date().toISOString(), status);
 
   // 有异常才推群，正常静默
   if (problems.length) {
-    await pushToGroup(env, db, `⚠️【系统告警 ${new Date().toLocaleString('zh-CN')}】\n` + problems.join('\n'));
+    // 去重防刷屏：同类告警 30 分钟内只推一次（2026-08-13 凌晨刷屏修复）
+    const sig = problems.join('|');
+    const now = Date.now();
+    const lastRow = db.prepare("SELECT value FROM kv WHERE key='health:last_push'").get();
+    let dup = false;
+    if (lastRow) {
+      try {
+        const p = JSON.parse(lastRow.value);
+        if (p.sig === sig && now - p.ts < 30 * 60 * 1000) dup = true;
+      } catch (e) {}
+    }
+    if (!dup) {
+      db.prepare("INSERT OR REPLACE INTO kv(key,value) VALUES('health:last_push',?)").run(JSON.stringify({ sig, ts: now }));
+      await pushToGroup(env, db, `⚠️【系统告警 ${new Date().toLocaleString('zh-CN')}】\n` + problems.join('\n'));
+      console.log(new Date().toISOString(), '已推送告警（30分钟内同类不再重复）');
+    } else {
+      console.log(new Date().toISOString(), '同类告警重复，30分钟内不重复推送');
+    }
   }
   db.close();
 }
