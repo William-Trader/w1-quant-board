@@ -1,6 +1,16 @@
-# W1 量化看板 · William Quant Board
+# W1 量化看板 · W1 Quant Board
 
-专业级加密货币量化分析与给单引擎。技术面 + 资金面 + 消息面三引擎交叉验证，WSL 表达式驱动策略，实盘/回测同引擎。
+**中文** ｜ **English** (see [English](#english) below)
+
+> ⚠️ **重要声明：本仓库内置的量化交易策略均为「失败案例」。**
+> 这些策略未通过稳健性验证（实盘/回测无正收益），仅作为研究记录与反面教材保留。
+> **本项目的定位是「行情分析与实时监测」，并非可盈利的交易系统。** 全部内容仅供研究，不构成任何投资建议。
+
+加密货币**行情分析与监测**看板：技术面 + 资金面 + 消息面多源监测，21 选项卡 UI + QQ 推送。
+
+## English
+
+**W1 Quant Board** is a cryptocurrency **market-analysis & monitoring dashboard** — technical, capital-flow and news multi-source monitoring, a 21-tab UI, and QQ push. ⚠️ **The bundled quantitative trading strategies are documented FAILURE CASES**: they did not pass robustness validation and produced no positive live/backtest return. They are kept as research records only. This project is about **market analysis & monitoring, not a profitable trading system.** Research use only; not investment advice.
 
 ## 快速开始
 
