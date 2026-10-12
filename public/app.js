@@ -4285,3 +4285,28 @@ function initTableAutoFix(){
   new MutationObserver(function(){autoWrapTables(main)}).observe(main,{childList:true,subtree:true});
 }
 boot();
+
+/* ---- 数据源健康红绿灯（2026-10-12 阶段2） ---- */
+(function () {
+  function paint() {
+    fetch('/api/health/sources', { credentials: 'same-origin' }).then(function (r) { return r.json(); }).then(function (d) {
+      if (!d || !d.ok || !d.sources) return;
+      var bad = d.sources.filter(function (s) { return s.status !== 'ok'; });
+      var total = d.sources.length;
+      var color = bad.length === 0 ? '#20d4a0' : (bad.length <= 2 ? '#f5a623' : '#ff5f5f');
+      var el = document.getElementById('dataHealth');
+      if (!el) {
+        var host = document.querySelector('.top-actions');
+        if (!host) return;
+        el = document.createElement('span');
+        el.id = 'dataHealth';
+        el.style.cssText = 'font-family:var(--mono);font-size:11px;display:inline-flex;align-items:center;gap:5px;cursor:default';
+        host.insertBefore(el, host.firstChild);
+      }
+      el.innerHTML = '<span style="width:7px;height:7px;border-radius:50%;background:' + color + ';display:inline-block"></span>数据 ' + (total - bad.length) + '/' + total;
+      el.title = bad.length ? ('陈旧/断供: ' + bad.map(function (s) { return s.zh; }).join('、')) : '全部数据源正常';
+    }).catch(function () {});
+  }
+  paint();
+  setInterval(paint, 300000);
+})();
