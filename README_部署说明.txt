@@ -38,7 +38,9 @@
 - PROXY_URL=http://127.0.0.1:7890
 
 ## 定时任务
-- crontab：jin10 5min / 数据库备份 03:17 / VACUUM 周日 03:30
+- crontab（系统级）：
+  - jin10 快讯 5min / w1.db 备份 03:17 / tianji_full.sqlite 备份 03:20 / VACUUM 周日 03:30
+  - TIANJI 五维回测库：因子快照 5min / K线 4h+5m 每小时续拉 / 因子·清算·FGI·共识·新闻 每日 12:20 增量 / 回测 12:40
 - 引擎内 cron（node-cron）：现货 60s · 合约/LSR/清算 5min · FGI 30min · 每日判断 08:30 · 宏观提醒 08:00/20:00 · 威廉每日分析 08:00 · 给单扫描 5min · 周报周日 10:00
 
 ## 运维常用命令

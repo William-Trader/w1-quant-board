@@ -29,7 +29,7 @@ async function main() {
 
   // 2. w1-board API
   try {
-    const r = await fetch('http://127.0.0.1:3300/health', { signal: AbortSignal.timeout(5000) });
+    const r = await fetch('http://127.0.0.1:3300/healthz', { signal: AbortSignal.timeout(5000) });
     if (!r.ok && r.status !== 401) problems.push(`w1-board API 异常 HTTP ${r.status}`);
   } catch (e) { problems.push('w1-board API 无响应'); }
 
@@ -42,7 +42,28 @@ async function main() {
     if (pct > 85) problems.push(`磁盘占用 ${pct}%`);
   } catch (e) {}
 
-  const status = problems.length ? '🔴 ' + problems.join(' | ') : '🟢 W1 系统健康: 4服务在线/API正常/实盘心跳检查已停用磁盘OK';
+  // 5) 每部分数据新鲜度（2026-10-01 底座级：健康日志体现「每个部分的反馈」）
+  const sections = [];
+  try {
+    const { WATCH } = require('../lib/health_guard');
+    const nowS = Math.floor(Date.now() / 1000);
+    for (const w of WATCH) {
+      try {
+        const ex = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name=?").get(w.table);
+        if (!ex) { sections.push(w.zh + ':无表'); continue; }
+        const r = db.prepare("SELECT MAX(" + w.col + ") m FROM " + w.table).get();
+        const v = r && r.m != null ? Number(r.m) : null;
+        if (v == null) { sections.push(w.zh + ':空'); continue; }
+        const sec = String(Math.floor(v)).length > 10 ? Math.floor(v / 1000) : v;
+        const age = nowS - sec;
+        if (age > w.secs) { sections.push(w.zh + ':断供' + Math.floor(age / 60) + '分'); problems.push(w.zh + ' 断供' + Math.floor(age / 60) + '分'); }
+        else sections.push(w.zh + ':正常');
+      } catch (e) { sections.push(w.zh + ':查询失败'); }
+    }
+  } catch (e) { sections.push('分段巡检不可用'); }
+  const status = problems.length
+    ? '🔴 ' + problems.join(' | ') + ' ｜分区: ' + sections.join(' ')
+    : '🟢 W1 系统健康: 4服务在线/API正常/磁盘OK ｜分区: ' + sections.join(' ');
   console.log(new Date().toISOString(), status);
 
   // 有异常才推群，正常静默

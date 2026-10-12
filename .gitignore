@@ -19,3 +19,8 @@ collectors.js
 routes.js
 patch_routes.js
 backups/
+
+# 本地 sqlite 产物
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm

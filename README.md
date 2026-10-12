@@ -101,16 +101,29 @@ npm run smoke  # 信号引擎 smoke test（7 用例，纯函数只读）
 - `tests/signal.smoke.test.js` — 信号引擎核心纯函数（bollinger/trendFilter/stopScale/momentumCheck）
 - crontab 每 5 分钟跑健康检查：`node scripts/health_check.js`（4服务/API/实盘心跳/磁盘，异常推群）
 
-## 数据表（data/w1.db）
+## 数据表
 
+### 实盘库 `data/w1.db`
 | 表 | 内容 | 保留策略 |
 |----|------|---------|
 | prices | gate 现货行情 | 滚动清理 |
-| futures_markets | 合约费率/持仓 | 1 天（待扩容 90 天） |
+| futures_markets | 合约费率/持仓 | 90 天 |
 | lsr_rankings / lsr_signals | 多空比 | 滚动清理 |
-| liquidation | 爆仓聚合 | 滚动清理 |
+| liquidation | 爆仓聚合 | 90 天 |
 | signal_track | 给单记录 | 永久 |
 | schema_version | 迁移版本 | 永久 |
+
+### 回测库 `data/tianji_full.sqlite`（五维度全量 · 与实盘同源）
+| 维度 | 表 | 时间字段/单位 | 更新频率 |
+|------|----|-------------|---------|
+| ① 技术面 K线 | klines（symbol/interval/time=毫秒） | 4h 全史 2018起 + 5m 2026/8/11起 | 每小时 |
+| ② 资金面 | lsr_account / lsr_top / oi_history / funding_hist | time=毫秒 | 每天 12:20 |
+| ③ 清算 | liquidation_hist | time=毫秒 | 每天 12:20 |
+| ④ FGI | fgi_hist | ts=秒 | 每天 12:20 |
+| ⑤ 消息+共识 | news_hist / consensus_hist | ts=秒 | 每天 12:20 |
+| 实盘因子快照 | factor_snapshots（ts=秒） | oi/funding/lsr/qibao | 每 5 分钟 |
+
+> 数据源约定：因子表 exchange='OKX'（与实盘 Coinglass markets 同源）；time=毫秒 vs ts=秒 不可混用（回测引擎按各自单位读取）。
 
 ## 部署与运维
 
