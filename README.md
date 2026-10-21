@@ -356,3 +356,36 @@ npm test                   # syntax + pure functions + alerts + research
 ## 12. License
 
 PolyForm Noncommercial 1.0.0. Non-commercial research use only; contact the repository owner for commercial licensing.
+
+---
+
+## 更新日志 / Changelog
+
+### 2026-10-21
+
+- **任务型导航 v9**：主导航从 16 个入口重组为 7 个任务型 Tab（今日 / 市场 / 衍生品 / 情报 / 研究 / 监测 / 我的），新增二级 subnav；新增今日决策台、市场地图、事件日历、跨资产、自选/我的；会员入口保留锁定状态，requireVip 与锁卡逻辑不变。
+  **Task-oriented navigation v9**: regrouped 16 entries into 7 task tabs (Today / Market / Derivatives / Intel / Research / Monitor / My) with a secondary subnav; added Today, Market Map, Events, Cross-Asset and Watchlist panels. Member entry points stay visible with lock badges; requireVip and lock-card behavior are unchanged.
+- **实盘策略层移除**：/api/signal/*、/api/okx/*、/api/strategy/*、/api/unified/* 统一返回 410；清空 signal_track / equity_history 等运行历史；保留研究/回测框架；风险舱改为 BTC 市场风险。
+  **Live strategy layer removed**: strategy/signal/OKX/unified APIs now return 410; strategy run history was cleared; research/backtest frameworks are retained; the risk panel now uses BTC market risk.
+- **Bot 通知工程化**：新增 Telegram / Discord / Slack / Webhook / QQ 适配器；配置模板 config/notify.example.json；默认 dry-run，设置 NOTIFY_LIVE=1 才真实发送；新增管理员接口 /api/notify/channels 与 /api/notify/send。
+  **Notification engineering**: added Telegram / Discord / Slack / Webhook / QQ adapters; config template config/notify.example.json; dry-run by default, live sending only when NOTIFY_LIVE=1; admin APIs /api/notify/channels and /api/notify/send.
+- **README 重写并双语化**：聚焦市场监测、Coinglass 数据、Bot 通知、交易辅助与社群产品化；补充实现方式、数据窗口、限制与合规说明。
+  **README rewritten and bilingualized**: focused on market monitoring, Coinglass data, bot notifications, trading assistance and community productization; added implementation notes, data windows, limitations and compliance.
+- **监测 v7**：统一告警状态机（open/ack/silenced/resolved）、SLO 与错误预算、/metrics、自适应阈值、告警评分卡、跨源基差/冻结行情检测。
+  **Monitoring v7**: unified alert state machine (open/ack/silenced/resolved), SLO and error budgets, /metrics, adaptive thresholds, alert scorecards, cross-source basis and frozen-feed checks.
+- **研究 Hub v8**：体制实验室、仓位压力、新闻冲击、跨资产、逐日回放、市场风险；明确样本窗口与限制。
+  **Research Hub v8**: regime lab, positioning stress, news impact, cross-asset, daily replay and market risk; explicit sample windows and limitations.
+- **数据核心 v6**：历史 JSON 载荷 gzip 压缩，w1.db 从约 4.1GB 降至约 1.9GB；新增 /api/data-quality；大于 1KB 的 JSON 响应启用 gzip；新增载荷编解码与数据质量测试。
+  **Data core v6**: gzip-compressed historical JSON payloads reduced w1.db from about 4.1GB to about 1.9GB; added /api/data-quality; gzip for JSON responses over 1KB; added payload codec and data-quality tests.
+- **前端样式修复**：恢复被研究页样式覆盖的完整 app.css，重新计算资源哈希；新增桌面/移动端响应式样式。
+  **Frontend style fix**: restored the full app.css that had been overwritten by research-panel styles; recomputed asset hashes; added responsive desktop/mobile styles.
+
+### 2026-10-12
+
+- 前端拆分为 index.html + app.css + app.js，加入内容哈希缓存失效；新增公开 /api/health/sources 数据源红绿灯；站点统一 301 到 HTTPS 域名。
+  Frontend split into index.html + app.css + app.js with content-hash cache busting; added public /api/health/sources; site standardized on HTTPS via 301.
+
+### 2026-10-01
+
+- 补齐数据保留策略与 Coinglass 限流/429 冷却，修复长期无清理导致的库膨胀。
+  Added retention policies and Coinglass rate-limit/429 cooldown; fixed long-term database growth caused by missing cleanup.
