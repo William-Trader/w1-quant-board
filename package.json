@@ -8,7 +8,7 @@
     "start": "node server.js",
     "smoke": "node tests/signal.smoke.test.js",
     "verify-cg": "node scripts/verify-coinglass.js",
-    "test": "node tests/core.pure.test.js && node tests/signal.core.test.js && node tests/signal.smoke.test.js && node tests/payload.codec.test.js && node tests/monitoring.test.js"
+    "test": "node tests/core.pure.test.js && node tests/signal.core.test.js && node tests/signal.smoke.test.js && node tests/payload.codec.test.js && node tests/monitoring.test.js && node tests/research.test.js"
   },
   "engines": {
     "node": ">=20"

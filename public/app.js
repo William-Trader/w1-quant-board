@@ -63,7 +63,7 @@ async function api(path,opts){
 function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),2600)}
 function dataTsHtml(ts,stale){return `<span class="data-ts${stale?' stale':''}">数据 ${fmtTs(ts)}</span>${stale?'<span class="stale-tag">STALE</span>':''}`}
 function clearTimers(){Object.values(state.timers).forEach(clearTimeout);state.timers={}}
-const tabRefresh={overview:120000,coins:300000,sentiment:1800000,flows:300000,markets:60000,liquidation:1800000,'chip-distribution':300000,signals:900000,access:60000,assets:300000,news:60000,lsr:300000,funding:300000,consensus:600000,countdown:60000,messages:60000,monitor:60000};
+const tabRefresh={overview:120000,coins:300000,sentiment:1800000,flows:300000,markets:60000,liquidation:1800000,'chip-distribution':300000,signals:900000,access:60000,assets:300000,news:60000,lsr:300000,funding:300000,consensus:600000,countdown:60000,messages:60000,monitor:60000,research:120000};
 function startTabTimer(id,fn){clearTimeout(state.timers[id+'_t']);state.timers[id+'_t']=setTimeout(()=>{if(state.tab===id)fn();startTabTimer(id,fn)},tabRefresh[id]||120000)}
 
 /* ================= Tab 定义 ================= */
@@ -107,6 +107,7 @@ const TABS=[
   {id:'funding',zh:'费率套利',en:'Funding Arb',pub:false},
   {id:'news',zh:'消息面',en:'News',pub:false},
   {id:'monitor',zh:'监测',en:'Monitor',pub:false},
+  {id:'research',zh:'研究',en:'Research',pub:false},
   {id:'messages',zh:'留言',en:'Messages',pub:true,hide:true}, // 2026-09-06 暂时隐藏留言板（恢复: 删 hide:true）
   {id:'account',zh:'登录/注册',en:'Account',pub:true},
   {id:'admin',zh:'后台',en:'Admin',pub:true,hide:true},
@@ -3615,3 +3616,107 @@ boot();
   paint();
   setInterval(paint, 300000);
 })();
+
+function rsGrid(items){return '<div class="rs-grid">'+items.join('')+'</div>'}
+function rsCard(label,value,sub){return '<div class="rs-card"><div class="rs-label">'+esc(label)+'</div><div class="rs-value">'+esc(value)+'</div><div class="rs-sub">'+esc(sub||'')+'</div></div>'}
+function rsTable(head,rows){
+  return '<div class="rs-table-wrap"><table class="rs-table"><thead><tr>'+head.map(h=>'<th>'+esc(h)+'</th>').join('')+'</tr></thead><tbody>'+rows.map(r=>'<tr>'+r.map(c=>'<td>'+c+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';
+}
+function rsRegimeZh(k){return ({trend_up:'趋势上行',trend_down:'趋势下行',range:'震荡',high_vol:'高波动',unknown:'未知'})[k]||k}
+function rsSpark(bars){
+  if(!bars||bars.length<2) return '<div style="color:var(--muted)">无K线</div>';
+  const vals=bars.map(b=>Number(b.c)), min=Math.min.apply(null,vals), max=Math.max.apply(null,vals);
+  const w=680,h=180,pad=8, span=max-min||1;
+  const pts=vals.map((v,i)=>((i/(vals.length-1))*(w-pad*2)+pad).toFixed(1)+','+((h-pad)-((v-min)/span)*(h-pad*2)).toFixed(1)).join(' ');
+  const up=vals[vals.length-1]>=vals[0];
+  return '<svg viewBox="0 0 '+w+' '+h+'" style="width:100%;height:auto;background:rgba(0,0,0,.15);border-radius:8px"><polyline fill="none" stroke="'+(up?'#c0392b':'#2e7d5b')+'" stroke-width="2" points="'+pts+'"/></svg><div style="color:var(--muted);font-size:11px;margin-top:4px">'+bars.length+' 根 5m · 区间 '+min.toFixed(2)+' ~ '+max.toFixed(2)+'</div>';
+}
+PANELS.research=async function(){
+  startTabTimer('research',PANELS.research);
+  const main=$('#main');
+  const tabs=[['regime','体制实验室'],['positioning','仓位压力'],['news','新闻冲击'],['cross','跨资产轮动'],['replay','逐日回放'],['risk','风险舱']];
+  const cur=state.rsTab||'regime';
+  main.innerHTML='<div class="card" style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><div><div style="font-size:20px;font-weight:800">🔬 研究 / 交易支持</div><div style="color:var(--muted);font-size:12px;margin-top:4px">体制 · 仓位压力 · 新闻冲击 · 跨资产 · 回放 · 风险</div></div><button class="btn secondary" id="rsRefresh">⟳ 刷新</button></div><div class="rs-nav" id="rsNav">'+tabs.map(t=>'<button class="rs-tab'+(t[0]===cur?' active':'')+'" data-rs="'+t[0]+'">'+t[1]+'</button>').join('')+'</div></div><div id="rsBody"><div style="color:var(--muted);padding:12px">加载中…</div></div>';
+  $('#rsRefresh').onclick=function(){PANELS.research()};
+  $$('#rsNav [data-rs]').forEach(function(b){b.onclick=function(){state.rsTab=b.dataset.rs;PANELS.research()}});
+  const body=$('#rsBody');
+  try{
+    if(cur==='regime'){
+      const d=await api('/api/research/regime');
+      if(!d||!d.ok){body.innerHTML='<div class="rs-card">数据不足：'+esc((d&&d.error)||'unknown')+'</div>';return}
+      body.innerHTML=rsGrid([
+        rsCard('当前体制',rsRegimeZh(d.current&&d.current.regime),'EMA20 '+d.current.ema20+' / EMA60 '+d.current.ema60+' · 波动分位 '+(d.current.vol_pct==null?'—':d.current.vol_pct+'%')),
+        rsCard('样本',d.coverage.bars+' 根 1h','覆盖 '+d.coverage.from+' ~ '+d.coverage.to),
+        rsCard('策略数',String(d.strategies.length),'持有 24 根 · 扣 0.08% 手续费')
+      ])+'<div class="rs-card"><div class="rs-title">体制统计（未来 24h）</div>'+rsTable(['体制','样本','平均收益','胜率','P10','P90'],d.regimes.map(function(r){return [rsRegimeZh(r.regime),r.n,r.avg_fwd_24h_pct+'%',r.win_rate_pct+'%',r.p10_pct+'%',r.p90_pct+'%']}))+'</div>'
+        +'<div class="rs-card"><div class="rs-title">策略 × 体制</div>'+d.strategies.map(function(s){return '<div style="margin:10px 0 4px;font-weight:700">'+esc(s.zh)+'（'+s.trades+' 笔）</div>'+rsTable(['体制','样本','胜率','平均收益','盈亏比','最大回撤'],Object.keys(s.by_regime).map(function(k){var v=s.by_regime[k];return [rsRegimeZh(k),v.n,v.win_rate_pct+'%',v.avg_ret_pct+'%',v.profit_factor==null?'—':v.profit_factor,v.max_drawdown_pct+'%']}))}).join('')+'</div>';
+      return;
+    }
+    if(cur==='positioning'){
+      const d=await api('/api/research/positioning');
+      if(!d||!d.ok){body.innerHTML='<div class="rs-card">数据不足</div>';return}
+      const rows=d.rows.map(function(r){
+        const col=r.stress>=70?'#b83a2e':r.stress>=45?'#d99e2b':'#4da6ff';
+        return [esc(r.symbol),'<div style="min-width:90px"><div style="height:6px;background:rgba(255,255,255,.08);border-radius:3px"><div style="height:6px;width:'+Math.min(100,r.stress)+'%;background:'+col+';border-radius:3px"></div></div><span style="font-size:11px;color:'+col+'">'+r.stress+'</span></div>',r.funding==null?'—':r.funding,r.funding_z,r.oi_change_24h==null?'—':r.oi_change_24h+'%',r.lsr_ratio==null?'—':r.lsr_ratio,r.liq_imbalance_pct+'%',esc(r.trapped)];
+      });
+      body.innerHTML=rsGrid([
+        rsCard('市场平均压力',String(d.market.avg_stress),d.market.high_stress.length?('高压：'+d.market.high_stress.join(' / ')):'无高压币种'),
+        rsCard('最高压力',d.market.max?d.market.max.symbol+' '+d.market.max.stress:'—',d.market.max?d.market.max.trapped:''),
+        rsCard('验证样本',String(d.validation.samples||0),'费率z vs 未来4h收益 相关 '+(d.validation.corr_funding_z_vs_fwd_4h==null?'—':d.validation.corr_funding_z_vs_fwd_4h))
+      ])+'<div class="rs-card"><div class="rs-title">币种仓位压力</div>'+rsTable(['币','压力','费率','费率z','OI24h','LSR','清算偏斜','判断'],rows)+'</div>'
+        +'<div class="rs-card"><div class="rs-title">说明</div><div class="rs-sub">'+esc(d.notes)+'</div></div>';
+      return;
+    }
+    if(cur==='news'){
+      const d=await api('/api/research/news-impact');
+      if(!d||!d.ok){body.innerHTML='<div class="rs-card">数据不足</div>';return}
+      body.innerHTML=rsGrid([
+        rsCard('评估新闻',String(d.coverage.evaluated),'样本 '+d.coverage.from+' ~ '+d.coverage.to),
+        rsCard('新闻总数',String(d.coverage.news),'BTC 5m 基准'),
+        rsCard('方向命中率',(d.by_sentiment.find(function(x){return x.sentiment==='bullish'})||{}).hit_rate_pct+'%','仅统计多空情绪')
+      ])+'<div class="rs-card"><div class="rs-title">来源影响</div>'+rsTable(['来源','样本','方向命中','1h均值','1h绝对','4h绝对'],d.by_source.map(function(x){return [esc(x.source),x.n,x.hit_rate_pct==null?'—':x.hit_rate_pct+'%',x.avg_ret_1h_pct+'%',x.avg_abs_1h_pct+'%',x.avg_abs_4h_pct+'%']}))+'</div>'
+        +'<div class="rs-card"><div class="rs-title">情绪影响</div>'+rsTable(['情绪','样本','方向命中','1h均值','1h绝对'],d.by_sentiment.map(function(x){return [esc(x.sentiment),x.n,x.hit_rate_pct==null?'—':x.hit_rate_pct+'%',x.avg_ret_1h_pct+'%',x.avg_abs_1h_pct+'%']}))+'</div>'
+        +'<div class="rs-card"><div class="rs-title">近 7 天高冲击新闻</div>'+rsTable(['时间','来源','标题','1h','4h'],(d.top||[]).map(function(x){return [new Date(x.ts*1000).toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}),esc(x.source),'<a href="'+esc(x.url||'#')+'" target="_blank" style="color:inherit">'+esc(x.title)+'</a>',x.ret_1h==null?'—':x.ret_1h+'%',x.ret_4h==null?'—':x.ret_4h+'%']}))+'</div>';
+      return;
+    }
+    if(cur==='cross'){
+      const d=await api('/api/research/cross-asset');
+      if(!d||!d.ok){body.innerHTML='<div class="rs-card">数据不足</div>';return}
+      body.innerHTML=rsGrid([
+        rsCard('风险偏好',String(d.risk_on_score),'0 防守 / 100 进攻'),
+        rsCard('5日广度',d.breadth_5d_pct+'%','风险资产上涨占比'),
+        rsCard('防御资产',d.defensives_5d_avg+'%','黄金/白银/波动率 5日均值')
+      ])+'<div class="rs-card"><div class="rs-title">5日领涨</div>'+rsTable(['标的','类别','1日','5日','20日','BTC相关'],d.top_5d.map(function(x){return [esc(x.name),esc(x.cls),x.ret_1d==null?'—':x.ret_1d.toFixed(2)+'%',x.ret_5d==null?'—':x.ret_5d.toFixed(2)+'%',x.ret_20d==null?'—':x.ret_20d.toFixed(2)+'%',x.corr_btc_20d==null?'—':x.corr_btc_20d]}))+'</div>'
+        +'<div class="rs-card"><div class="rs-title">5日领跌</div>'+rsTable(['标的','类别','1日','5日','20日','BTC相关'],d.bottom_5d.map(function(x){return [esc(x.name),esc(x.cls),x.ret_1d==null?'—':x.ret_1d.toFixed(2)+'%',x.ret_5d==null?'—':x.ret_5d.toFixed(2)+'%',x.ret_20d==null?'—':x.ret_20d.toFixed(2)+'%',x.corr_btc_20d==null?'—':x.corr_btc_20d]}))+'</div>';
+      return;
+    }
+    if(cur==='replay'){
+      const today=new Date(Date.now()-86400000).toISOString().slice(0,10);
+      body.innerHTML='<div class="rs-card"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><input type="date" id="rsDate" value="'+today+'" style="background:var(--bg2);border:1px solid var(--line);color:var(--fg);border-radius:6px;padding:7px"><button class="btn" id="rsGo">加载</button><span style="color:var(--muted);font-size:12px">按北京时间日界</span></div><div id="rsChart" style="margin-top:12px"></div><div id="rsEvents"></div></div>';
+      const load=async function(){
+        const date=$('#rsDate').value;
+        const d=await api('/api/research/replay?date='+encodeURIComponent(date)+'&symbol=BTC');
+        if(!d||!d.ok){$('#rsEvents').innerHTML='<div class="rs-card">加载失败：'+esc((d&&d.error)||'')+'</div>';return}
+        $('#rsChart').innerHTML=rsSpark(d.bars);
+        $('#rsEvents').innerHTML='<div class="rs-card"><div class="rs-title">当日信号（'+d.signals.length+'）</div>'+rsTable(['时间','币','方向','入场','止损','止盈1','状态'],d.signals.map(function(s){return [new Date(s.pushed_at).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),esc(s.symbol),esc(s.direction),s.entry,s.stop,s.target1,esc(s.status)]}))+'</div>'
+          +'<div class="rs-card"><div class="rs-title">因子快照（'+d.factors.length+'）</div>'+rsTable(['时间','OI24h','费率','LSR','清算分'],d.factors.filter(function(_,i){return i%6===0}).map(function(f){return [new Date(f.ts*1000).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),f.oi_chg_24h==null?'—':f.oi_chg_24h,f.funding==null?'—':f.funding,f.lsr==null?'—':f.lsr,f.qibao_score==null?'—':f.qibao_score]}))+'</div>'
+          +'<div class="rs-card"><div class="rs-title">当日新闻</div>'+rsTable(['时间','来源','标题'],d.news.map(function(n){return [new Date(n.ts*1000).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),esc(n.source),'<a href="'+esc(n.url||'#')+'" target="_blank" style="color:inherit">'+esc(n.title)+'</a>']}))+'</div>';
+      };
+      $('#rsGo').onclick=load; await load(); return;
+    }
+    if(cur==='risk'){
+      const d=await api('/api/research/risk');
+      if(!d||!d.ok){body.innerHTML='<div class="rs-card">数据不足</div>';return}
+      const s=d.summary;
+      body.innerHTML=rsGrid([
+        rsCard('当前净值',s.current_equity+' u','峰值 '+s.peak_equity+' u'),
+        rsCard('回撤',s.drawdown_pct+'%','历史峰值回落'),
+        rsCard('VaR 95%',s.var95_pct==null?'—':s.var95_pct+'%','CVaR '+(s.cvar95_pct==null?'—':s.cvar95_pct+'%')),
+        rsCard('年化波动',s.annual_vol_pct+'%','Sharpe '+(s.sharpe==null?'—':s.sharpe))
+      ])+'<div class="rs-card"><div class="rs-title">策略表现</div>'+rsTable(['策略','样本','胜','负','持仓','胜率','平均盈亏','盈亏比'],d.strategies.map(function(x){return [esc(x.strategy),x.n,x.wins,x.losses,x.open,x.win_rate_pct==null?'—':x.win_rate_pct+'%',x.avg_pnl_pct==null?'—':x.avg_pnl_pct+'%',x.profit_factor==null?'—':x.profit_factor]}))+'</div>'
+        +'<div class="rs-card"><div class="rs-title">当前持仓（'+d.open_positions.length+'）</div>'+rsTable(['币','方向','入场','止损','止盈1','名义'],d.open_positions.map(function(p){return [esc(p.symbol),esc(p.direction),p.entry,p.stop,p.target1,p.notional_usd==null?'—':p.notional_usd]}))+'</div>';
+      return;
+    }
+  }catch(e){body.innerHTML='<div class="rs-card" style="color:#b83a2e">加载失败：'+esc(e.message)+'</div>'}
+};
+
