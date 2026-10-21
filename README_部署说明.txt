@@ -1,7 +1,7 @@
 # W1 量化看板 · 部署与运维说明（2026-08-09 更新）
 
 ## 服务架构
-- **腾讯云**：YOUR_SERVER_HOST（Ubuntu 20.04/22.04 LTS，2C4G，nginx 80→3300）
+- **腾讯云**：49.232.251.21（Ubuntu 20.04/22.04 LTS，2C4G，nginx 80→3300）
 - **PM2 进程**：
   - `w1-board`（:3300）—— 看板 + 采集 + 给单引擎 + 威廉分析
   - `cloud-lobster`（OpenClaw Gateway :18789）—— QQ 智能体（DeepSeek 对话/联网/服务器命令）
@@ -26,7 +26,7 @@
 - 周报：周日 10:00 战绩 + 出场分布；引擎健康告警：连续 3 轮异常 QQ 通知
 
 ## QQ 机器人（2026-08-09 重新接入）
-- QQ 号 <YOUR_QQ_BOT_ID> · appId <YOUR_APPID> · secret 见 .env（勿外泄）
+- QQ 号 4016629021 · appId 1905262033 · secret 见 .env（勿外泄）
 - 双通道：w1-board（主动推送信号/宏观/周报/告警）+ cloud-lobster（智能体对话）
 - WebSocket：OpenClaw qqbot 插件自动连接（wss://api.sgroup.qq.com/websocket）
 

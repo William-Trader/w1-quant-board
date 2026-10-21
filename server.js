@@ -14,6 +14,7 @@ process.on('uncaughtException', (err) => {
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const path = require('path');
+const zlib = require('zlib');
 
 const { loadEnv } = require('./lib/env');
 const { openDb } = require('./lib/db');
@@ -40,6 +41,27 @@ app.use(express.json({
   verify: (req, res, buf) => { req.rawBody = buf.toString('utf8'); }
 }));
 app.use(cookieParser());
+
+// ---- JSON 响应 gzip（>1KB 才压；静态资源交给 express.static）----
+app.use((req, res, next) => {
+  const ae = String(req.headers['accept-encoding'] || '');
+  if (!/\bgzip\b/i.test(ae)) return next();
+  const json = res.json.bind(res);
+  res.json = (body) => {
+    let buf;
+    try { buf = Buffer.from(JSON.stringify(body), 'utf8'); } catch (e) { return json(body); }
+    if (buf.length < 1024) return json(body);
+    try {
+      const gz = zlib.gzipSync(buf, { level: 6 });
+      res.setHeader('Content-Type', 'application/json; charset=utf-8');
+      res.setHeader('Content-Encoding', 'gzip');
+      res.setHeader('Vary', 'Accept-Encoding');
+      res.setHeader('Content-Length', gz.length);
+      return res.end(gz);
+    } catch (e) { return json(body); }
+  };
+  next();
+});
 
 // ---- 访问统计中间件（页面浏览人数/趋势）----
 try { require('./lib/daily_analysis').ensureTable(db); } catch (e) {}
