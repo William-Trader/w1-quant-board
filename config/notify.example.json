@@ -1,0 +1,9 @@
+{
+  "channels": {
+    "telegram_main": { "type": "telegram", "token_env": "TELEGRAM_BOT_TOKEN", "chat_id_env": "TELEGRAM_CHAT_ID", "enabled": true },
+    "discord_main": { "type": "discord", "webhook_env": "DISCORD_WEBHOOK_URL", "enabled": true },
+    "slack_main": { "type": "slack", "webhook_env": "SLACK_WEBHOOK_URL", "enabled": false },
+    "webhook_main": { "type": "webhook", "url_env": "GENERIC_WEBHOOK_URL", "enabled": false },
+    "qq_monitor": { "type": "qq", "enabled": true }
+  }
+}

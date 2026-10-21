@@ -3709,12 +3709,12 @@ PANELS.research=async function(){
       if(!d||!d.ok){body.innerHTML='<div class="rs-card">数据不足</div>';return}
       const s=d.summary;
       body.innerHTML=rsGrid([
-        rsCard('当前净值',s.current_equity+' u','峰值 '+s.peak_equity+' u'),
-        rsCard('回撤',s.drawdown_pct+'%','历史峰值回落'),
+        rsCard('BTC 现价','$'+s.current_equity,'周期峰值 $'+s.peak_equity),
+        rsCard('回撤',s.drawdown_pct+'%','峰值回落'),
         rsCard('VaR 95%',s.var95_pct==null?'—':s.var95_pct+'%','CVaR '+(s.cvar95_pct==null?'—':s.cvar95_pct+'%')),
         rsCard('年化波动',s.annual_vol_pct+'%','Sharpe '+(s.sharpe==null?'—':s.sharpe))
-      ])+'<div class="rs-card"><div class="rs-title">策略表现</div>'+rsTable(['策略','样本','胜','负','持仓','胜率','平均盈亏','盈亏比'],d.strategies.map(function(x){return [esc(x.strategy),x.n,x.wins,x.losses,x.open,x.win_rate_pct==null?'—':x.win_rate_pct+'%',x.avg_pnl_pct==null?'—':x.avg_pnl_pct+'%',x.profit_factor==null?'—':x.profit_factor]}))+'</div>'
-        +'<div class="rs-card"><div class="rs-title">当前持仓（'+d.open_positions.length+'）</div>'+rsTable(['币','方向','入场','止损','止盈1','名义'],d.open_positions.map(function(p){return [esc(p.symbol),esc(p.direction),p.entry,p.stop,p.target1,p.notional_usd==null?'—':p.notional_usd]}))+'</div>';
+      ])+'<div class="rs-card"><div class="rs-title">区间收益</div>'+rsTable(['7 日','30 日','90 日'],[[s.ret_7d_pct==null?'—':s.ret_7d_pct+'%',s.ret_30d_pct==null?'—':s.ret_30d_pct+'%',s.ret_90d_pct==null?'—':s.ret_90d_pct+'%']])+'</div>'
+        +'<div class="rs-card"><div class="rs-sub">'+esc(d.notes||'')+'</div></div>';
       return;
     }
   }catch(e){body.innerHTML='<div class="rs-card" style="color:#b83a2e">加载失败：'+esc(e.message)+'</div>'}
