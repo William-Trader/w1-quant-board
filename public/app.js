@@ -63,7 +63,7 @@ async function api(path,opts){
 function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),2600)}
 function dataTsHtml(ts,stale){return `<span class="data-ts${stale?' stale':''}">数据 ${fmtTs(ts)}</span>${stale?'<span class="stale-tag">STALE</span>':''}`}
 function clearTimers(){Object.values(state.timers).forEach(clearTimeout);state.timers={}}
-const tabRefresh={overview:120000,coins:300000,sentiment:1800000,flows:300000,markets:60000,liquidation:1800000,'chip-distribution':300000,signals:900000,access:60000,assets:300000,news:60000,lsr:300000,funding:300000,consensus:600000,countdown:60000,messages:60000,monitor:60000,research:120000};
+const tabRefresh={overview:120000,coins:300000,sentiment:1800000,flows:300000,markets:60000,liquidation:1800000,'chip-distribution':300000,signals:900000,access:60000,assets:300000,news:60000,lsr:300000,funding:300000,consensus:600000,countdown:60000,messages:60000,monitor:60000,research:120000,today:120000,'market-map':300000,events:300000,'cross-asset':300000,watchlist:300000};
 function startTabTimer(id,fn){clearTimeout(state.timers[id+'_t']);state.timers[id+'_t']=setTimeout(()=>{if(state.tab===id)fn();startTabTimer(id,fn)},tabRefresh[id]||120000)}
 
 /* ================= Tab 定义 ================= */
@@ -93,7 +93,9 @@ function engBadge(key){
 }
 
 const TABS=[
+  {id:'today',zh:'今日',en:'Today',pub:true},
   {id:'overview',zh:'总览',en:'Overview',pub:true},
+  {id:'market-map',zh:'市场地图',en:'Market Map',pub:true},
   {id:'coins',zh:'8币立场',en:'Stances',pub:true},
   {id:'sentiment',zh:'情绪',en:'Sentiment',pub:true},
   {id:'flows',zh:'资金流',en:'Flows',pub:true},
@@ -106,40 +108,66 @@ const TABS=[
   {id:'lsr',zh:'多空LSR',en:'LSR',pub:false},
   {id:'funding',zh:'费率套利',en:'Funding Arb',pub:false},
   {id:'news',zh:'消息面',en:'News',pub:false},
+  {id:'events',zh:'事件日历',en:'Events',pub:false},
+  {id:'cross-asset',zh:'跨资产',en:'Cross-Asset',pub:false},
   {id:'monitor',zh:'监测',en:'Monitor',pub:false},
   {id:'research',zh:'研究',en:'Research',pub:false},
-  {id:'messages',zh:'留言',en:'Messages',pub:true,hide:true}, // 2026-09-06 暂时隐藏留言板（恢复: 删 hide:true）
+  {id:'watchlist',zh:'自选',en:'Watchlist',pub:false},
+  {id:'messages',zh:'留言',en:'Messages',pub:true,hide:true},
   {id:'account',zh:'登录/注册',en:'Account',pub:true},
   {id:'admin',zh:'后台',en:'Admin',pub:true,hide:true},
 ];
+
+const GROUPS=[
+  {id:'today',zh:'今日',en:'Today',icon:'☀️',subs:['today']},
+  {id:'market',zh:'市场',en:'Market',icon:'📊',subs:['overview','market-map','coins','sentiment','flows','assets','glossary','market-analysis']},
+  {id:'derivatives',zh:'衍生品',en:'Derivatives',icon:'⚙️',subs:['funding','lsr','liquidation','chip-distribution']},
+  {id:'intel',zh:'情报',en:'Intel',icon:'📰',subs:['news','events','onchain','cross-asset']},
+  {id:'research',zh:'研究',en:'Research',icon:'🔬',subs:['research']},
+  {id:'monitor',zh:'监测',en:'Monitor',icon:'🛰️',subs:['monitor']},
+  {id:'my',zh:'我的',en:'My',icon:'👤',subs:['account','watchlist']},
+  {id:'admin',zh:'后台',en:'Admin',icon:'⚙',subs:['admin'],hide:true}
+];
+function tabMeta(id){ return TABS.find(t=>t.id===id); }
+function activeGroup(){ return GROUPS.find(g=>g.subs.includes(state.tab))||GROUPS[0]; }
 function renderNav(){
-  $('#tabnav').innerHTML=TABS.filter(t=>{
-    // 2026-08-22：owner 登录后导航栏显示「后台」选项卡（默认即停在此）
-    if(t.id==='admin'&&state.user&&state.user.is_owner)return true;
-    if(t.hide)return false;
-    if(t.admin)return state.admin;
-    if(t.pub)return true;
-    return !!state.user;
-  }).map(t=>`<div class="tab${state.tab===t.id?' active':''}${t.pub?'':' member-tab'}" data-tab="${t.id}">${state.lang==='zh'?t.zh:t.en}${t.pub?'':'<span class="lock">◆</span>'}</div>`).join('');
-  $$('#tabnav .tab').forEach(el=>el.onclick=()=>switchTab(el.dataset.tab));
+  const active=activeGroup();
+  $('#tabnav').innerHTML=GROUPS.filter(g=>{
+    if(g.id==='admin') return !!(state.user&&state.user.is_owner);
+    if(g.hide) return false;
+    return true; // 保留会员入口可见性：锁定组显示 ◆，点击进入锁卡
+  }).map(g=>{
+    const isActive=g.id===active.id;
+    const allLocked=g.subs.every(id=>{const t=tabMeta(id);return t&&!t.pub;});
+    return '<div class="tab'+(isActive?' active':'')+(allLocked&&!state.user?' member-tab':'')+'" data-group="'+g.id+'">'+(g.icon||'')+' '+(state.lang==='zh'?g.zh:g.en)+(allLocked&&!state.user?'<span class="lock">◆</span>':'')+'</div>';
+  }).join('');
+  $$('#tabnav .tab').forEach(el=>el.onclick=()=>{const g=GROUPS.find(x=>x.id===el.dataset.group);if(g)switchTab(g.subs[0])});
+  const sub=$('#subnav');
+  if(!sub)return;
+  if(active.subs.length<2){sub.innerHTML='';sub.style.display='none';return;}
+  sub.style.display='';
+  sub.innerHTML=active.subs.map(id=>{
+    const t=tabMeta(id);if(!t)return '';
+    const locked=!t.pub&&!state.user;
+    return '<button class="subtab'+(state.tab===id?' active':'')+(locked?' locked':'')+'" data-sub="'+id+'">'+(state.lang==='zh'?t.zh:t.en)+(locked?' ◆':'')+'</button>';
+  }).join('');
+  $$('#subnav .subtab').forEach(el=>el.onclick=()=>switchTab(el.dataset.sub));
 }
 function switchTab(id){
-  const def=TABS.find(t=>t.id===id);
+  let def=TABS.find(t=>t.id===id);
+  if(!def){ const g=GROUPS.find(x=>x.id===id); if(g) return switchTab(g.subs[0]); return; }
   state.tab=id;clearTimers();renderNav();
   const main=$('#main');
-  if(def.admin&&!state.admin){
-    main.innerHTML=`<div class="lock-card">
-      <div class="lock-icon">🔒</div>
-      <div class="lock-title">${T('仅后台可见','Admin Only')}</div>
-      <div class="lock-desc">${T('交易信号界面仅供后台管理员查看。请先进入后台。','The Signals console is admin-only. Please enter the Admin console first.')}</div>
-      <button class="btn" id="lockAdmin">${T('进入后台','Enter Admin')}</button>
-    </div>`;
-    $('#lockAdmin').onclick=()=>switchTab('admin');
-    return;
+  if(def.id==='admin'&&!state.admin){
+    main.innerHTML='<div class="lock-card"><div class="lock-icon">🔒</div><div class="lock-title">'+T('仅后台可见','Admin Only')+'</div><div class="lock-desc">'+T('后台仅供管理员使用。','Admin console is admin-only.')+'</div><button class="btn" id="lockAdmin">'+T('进入后台','Enter Admin')+'</button></div>';
+    $('#lockAdmin').onclick=()=>switchTab('admin');return;
   }
-  const _vip=state.user&&state.user.vip;const _vipLocked=!def.pub&&state.user&&_vip&&_vip.expired;if(!def.pub&&(!state.user||_vipLocked)){main.innerHTML=lockCardHtml(def,_vip);bindLockCard();return}
+  const _vip=state.user&&state.user.vip;const _vipLocked=!def.pub&&state.user&&_vip&&_vip.expired;
+  if(!def.pub&&(!state.user||_vipLocked)){main.innerHTML=lockCardHtml(def,_vip);bindLockCard();return}
+  if(typeof PANELS[id]!=='function'){main.innerHTML='<div class="card">'+T('该模块暂未开放','Module not available')+'</div>';return}
   PANELS[id]();
 }
+
 function lockCardHtml(def,vip){
   const expired=vip&&vip.expired;
   return `<div class="lock-card">
@@ -3720,3 +3748,93 @@ PANELS.research=async function(){
   }catch(e){body.innerHTML='<div class="rs-card" style="color:#b83a2e">加载失败：'+esc(e.message)+'</div>'}
 };
 
+/* ================= 新版任务型面板（2026-10-21） ================= */
+PANELS.today=async function(){
+  startTabTimer('today',PANELS.today);
+  const main=$('#main');
+  main.innerHTML='<div class="today-hero"><div class="today-title">☀️ 今日决策台</div><div class="today-sub">市场姿态 · 情绪 · 数据健康 · 今日事件</div></div>'
+    +'<div id="todayGrid" class="rs-grid"><div class="rs-card">加载中…</div></div>'
+    +'<div id="todayEvents"></div><div id="todayAlerts"></div>'
+    +'<div class="card"><div class="rs-title">快捷入口</div><div class="today-links">'
+    +'<button class="btn secondary" data-go="market-map">🗺️ 市场地图</button>'
+    +'<button class="btn secondary" data-go="funding">💸 费率/仓位</button>'
+    +'<button class="btn secondary" data-go="news">📰 新闻</button>'
+    +'<button class="btn secondary" data-go="monitor">🛰️ 监测</button>'
+    +'<button class="btn secondary" data-go="research">🔬 研究</button></div></div>';
+  $$('#main [data-go]').forEach(function(b){b.onclick=function(){switchTab(b.dataset.go)}});
+  let ov={},fg={},hs={},cal={},al={};
+  try{ const r=await Promise.all([api('/api/overview'),api('/api/fear-greed'),api('/api/health/sources'),api('/api/eco-calendar'),api('/api/alerts?state=active&limit=5')]); ov=r[0]||{};fg=r[1]||{};hs=r[2]||{};cal=r[3]||{};al=r[4]||{}; }catch(e){}
+  const v=ov.verdict||{}; const f=fg.current||{}; const src=hs.sources||[]; const ok=src.filter(function(x){return x.status==='ok'}).length;
+  const ev=(cal.future||[]).filter(function(x){return x.impact==='high'}).slice(0,4);
+  $('#todayGrid').innerHTML=[
+    rsCard('市场姿态',v.verdict_zh||v.verdict||'—',v.headline_zh||''),
+    rsCard('恐慌贪婪',f.value==null?'—':(f.value+' · '+(f.classification||'')),'数据龄 '+(fg.age_sec==null?'—':Math.round(fg.age_sec/60)+'m')),
+    rsCard('数据健康',src.length?ok+'/'+src.length:'—','正常数据源数量'),
+    rsCard('高影响事件',String(ev.length),ev.length?'今日需留意':'暂无高影响事件')
+  ].join('');
+  $('#todayEvents').innerHTML='<div class="card"><div class="rs-title">今日高影响事件</div>'+(ev.length?ev.map(function(e){return '<div class="today-row"><span class="today-time">'+esc(e.time||'')+'</span><span>'+esc(e.title_zh||e.title||'')+'</span><span class="today-impact">'+esc(e.impact||'')+'</span></div>'}).join(''):'<div class="rs-sub">暂无</div>')+'</div>';
+  $('#todayAlerts').innerHTML='<div class="card"><div class="rs-title">活动告警</div>'+(al&&al.ok?(al.alerts&&al.alerts.length?al.alerts.map(function(a){return '<div class="today-row"><span class="today-sev">'+esc(a.severity||'')+'</span><span>'+esc(a.title||'')+'</span><span>'+Math.round((a.age_sec||0)/60)+'m</span></div>'}).join(''):'<div class="rs-sub">无活动告警</div>'):'<div class="rs-sub">登录会员后可查看告警</div>')+'</div>';
+};
+
+PANELS['market-map']=async function(){
+  startTabTimer('market-map',PANELS['market-map']);
+  const main=$('#main');
+  main.innerHTML='<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><div><div class="rs-title" style="font-size:20px">🗺️ 市场地图</div><div class="rs-sub">颜色=24h 涨跌（红涨绿跌）· 点击进入 8 币立场</div></div><button class="btn secondary" id="mmRefresh">⟳ 刷新</button></div><div id="mmBody" style="margin-top:14px">加载中…</div></div>';
+  $('#mmRefresh').onclick=function(){PANELS['market-map']()};
+  const d=await api('/api/coins'); const coins=(d&&d.coins)||[];
+  if(!coins.length){$('#mmBody').innerHTML='<div class="rs-sub">暂无数据</div>';return}
+  $('#mmBody').innerHTML='<div class="mm-grid">'+coins.map(function(c){
+    const chg=Number(c.change_24h||0); const col=chg>=0?'#c0392b':'#2e7d5b';
+    return '<div class="mm-cell" data-sym="'+esc(c.symbol)+'"><div class="mm-sym">'+esc(c.symbol)+'</div><div class="mm-px">$'+Number(c.price||0).toLocaleString('en-US',{maximumFractionDigits:2})+'</div><div class="mm-chg" style="color:'+col+'">'+(chg>=0?'+':'')+chg.toFixed(2)+'%</div></div>';
+  }).join('')+'</div>';
+  $$('#mmBody .mm-cell').forEach(function(el){el.onclick=function(){switchTab('coins')}});
+};
+
+PANELS.events=async function(){
+  startTabTimer('events',PANELS.events);
+  const main=$('#main');
+  main.innerHTML='<div class="card"><div class="rs-title" style="font-size:20px">📅 事件日历</div><div class="rs-sub">宏观事件 + 最新消息面</div><div id="evBody" style="margin-top:12px">加载中…</div></div>';
+  const [cal,news]=await Promise.all([api('/api/eco-calendar'),api('/api/news?limit=20')]);
+  const future=(cal&&cal.future)||[];
+  const items=(news&&(news.news||news.items))||[];
+  const evHtml=future.length?future.slice(0,40).map(function(e){return '<div class="today-row"><span class="today-time">'+esc(e.date||'')+' '+esc(e.time||'')+'</span><span>'+esc(e.title_zh||e.title||'')+'</span><span class="today-impact '+esc(e.impact||'')+'">'+esc(e.impact||'')+'</span></div>'}).join(''):'<div class="rs-sub">暂无事件</div>';
+  const newsHtml=items.length?items.slice(0,20).map(function(n){return '<div class="today-row"><span class="today-time">'+new Date(Number(n.ts||0)*1000).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'})+'</span><span><a href="'+esc(n.url||'#')+'" target="_blank" style="color:inherit">'+esc(n.title||'')+'</a></span><span class="rs-sub">'+esc(n.source||'')+'</span></div>'}).join(''):'<div class="rs-sub">暂无新闻</div>';
+  $('#evBody').innerHTML='<div class="rs-title">未来事件</div><div class="today-list">'+evHtml+'</div><div class="rs-title" style="margin-top:18px">最新消息</div><div class="today-list">'+newsHtml+'</div>';
+};
+
+PANELS['cross-asset']=async function(){
+  startTabTimer('cross-asset',PANELS['cross-asset']);
+  const main=$('#main');
+  const d=await api('/api/research/cross-asset');
+  if(!d||!d.ok){main.innerHTML='<div class="card">'+(d&&d.__needLogin?'请先登录会员':'数据不足')+'</div>';return}
+  main.innerHTML='<div class="card"><div class="rs-title" style="font-size:20px">🌐 跨资产轮动</div><div class="rs-sub">风险偏好 · 广度 · BTC 相关性</div>'
+    +'<div class="rs-grid" style="margin-top:14px">'+rsCard('风险偏好',String(d.risk_on_score),'0 防守 / 100 进攻')+rsCard('5 日广度',d.breadth_5d_pct+'%','风险资产上涨占比')+rsCard('防御资产',d.defensives_5d_avg+'%','黄金/白银/波动率 5 日均值')+'</div>'
+    +'<div class="rs-title">5 日领涨</div>'+rsTable(['标的','类别','1 日','5 日','20 日','BTC 相关'],(d.top_5d||[]).map(function(x){return [esc(x.name),esc(x.cls),x.ret_1d==null?'—':x.ret_1d.toFixed(2)+'%',x.ret_5d==null?'—':x.ret_5d.toFixed(2)+'%',x.ret_20d==null?'—':x.ret_20d.toFixed(2)+'%',x.corr_btc_20d==null?'—':x.corr_btc_20d]}))
+    +'<div class="rs-title" style="margin-top:16px">5 日领跌</div>'+rsTable(['标的','类别','1 日','5 日','20 日','BTC 相关'],(d.bottom_5d||[]).map(function(x){return [esc(x.name),esc(x.cls),x.ret_1d==null?'—':x.ret_1d.toFixed(2)+'%',x.ret_5d==null?'—':x.ret_5d.toFixed(2)+'%',x.ret_20d==null?'—':x.ret_20d.toFixed(2)+'%',x.corr_btc_20d==null?'—':x.corr_btc_20d]}))+'</div>';
+};
+
+PANELS.watchlist=async function(){
+  startTabTimer('watchlist',PANELS.watchlist);
+  const main=$('#main');
+  let list=[]; try{list=JSON.parse(localStorage.getItem('w1_watchlist')||'["BTC","ETH","SOL"]')}catch(e){list=['BTC','ETH','SOL']}
+  if(!Array.isArray(list))list=['BTC','ETH','SOL'];
+  const d=await api('/api/coins'); const coins=(d&&d.coins)||[];
+  const map={}; coins.forEach(function(c){map[c.symbol]=c});
+  const u=state.user||{};
+  const vip=u.vip||{};
+  main.innerHTML='<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><div><div class="rs-title" style="font-size:20px">👤 我的 / 自选</div><div class="rs-sub">本地保存 · 会员状态 · 快速查看</div></div><button class="btn secondary" id="wlAccount">账户</button></div>'
+    +'<div class="today-links" style="margin-top:12px"><input id="wlInput" placeholder="输入币种，如 BTC" style="background:var(--bg2);border:1px solid var(--line);color:var(--fg);border-radius:6px;padding:7px 10px;min-width:180px"><button class="btn" id="wlAdd">+ 添加</button></div>'
+    +'<div id="wlChips" class="today-links" style="margin-top:10px"></div>'
+    +'<div id="wlGrid" class="rs-grid" style="margin-top:14px"></div></div>'
+    +'<div class="card"><div class="rs-title">会员状态</div><div class="today-row"><span>账户</span><span>'+esc(u.username||'未登录')+'</span><span>'+esc(u.status||'')+'</span></div><div class="today-row"><span>会员</span><span>'+esc(vip.expired?'已到期':(vip.expires_at?('到期 '+new Date(Number(vip.expires_at)*1000).toLocaleDateString('zh-CN')):'—'))+'</span><span></span></div><div class="rs-sub">自选列表仅保存在当前浏览器；会员数据由后端账户体系管理。</div></div>';
+  function save(){try{localStorage.setItem('w1_watchlist',JSON.stringify(list))}catch(e){}}
+  function render(){
+    $('#wlChips').innerHTML=list.map(function(s){return '<span class="wl-chip">'+esc(s)+' <b data-rm="'+esc(s)+'">×</b></span>'}).join('')||'<span class="rs-sub">尚未添加自选</span>';
+    $('#wlGrid').innerHTML=list.map(function(s){var c=map[s]; if(!c)return ''; var chg=Number(c.change_24h||0); var col=chg>=0?'#c0392b':'#2e7d5b'; return '<div class="rs-card"><div class="rs-label">'+esc(s)+'</div><div class="rs-value">$'+Number(c.price||0).toLocaleString('en-US',{maximumFractionDigits:2})+'</div><div class="rs-sub" style="color:'+col+'">'+(chg>=0?'+':'')+chg.toFixed(2)+'%</div></div>'}).join('');
+    $$('#wlChips [data-rm]').forEach(function(b){b.onclick=function(){list=list.filter(function(x){return x!==b.dataset.rm});save();render()}});
+  }
+  $('#wlAdd').onclick=function(){var v=($('#wlInput').value||'').trim().toUpperCase(); if(v&&!list.includes(v)){list.push(v);save();render();$('#wlInput').value=''}};
+  $('#wlInput').onkeydown=function(e){if(e.key==='Enter')$('#wlAdd').click()};
+  $('#wlAccount').onclick=function(){switchTab('account')};
+  render();
+};
