@@ -1,10 +1,19 @@
-# W1 Quant Board · Crypto 市场监测与交易辅助
+# W1 Quant Board · Crypto Market Monitoring & Trading Assistance
 
-> **定位**：面向交易者与社群运营者的 crypto 市场监测终端。  
-> **不做的事**：不内置交易策略、不执行实盘下单、不承诺收益、不构成投资建议。  
-> 历史策略与运行记录已移除；仅保留研究/回测框架用于数据分析。
+**中文** ｜ **English**
+
+> **定位 / Positioning**：面向交易者与社群运营者的 crypto 市场监测终端。  
+> **A crypto market-monitoring terminal for traders and community operators.**
+>
+> **不做的事 / Not doing**：不内置交易策略、不执行实盘下单、不承诺收益、不构成投资建议。  
+> **No built-in trading strategy, no live order execution, no return promise, not investment advice.**
+
+历史实盘策略与运行记录已移除；保留研究/回测框架用于数据分析。  
+The live strategy layer and its run history have been removed; the research/backtest framework is retained for analysis.
 
 ---
+
+# 中文
 
 ## 1. 这是什么
 
@@ -15,8 +24,6 @@ W1 把分散的 crypto 市场数据整理成一套可读、可查、可告警的
 - **研究者**：用保留的回测/研究框架做因子、体制、事件研究，不依赖任何“实盘策略”。
 
 数据主要来自 **Coinglass**，辅以 Gate/OKX 行情、新闻 RSS、ETF、宏观与链上公开数据。系统只做数据加工与展示，不替用户下单。
-
----
 
 ## 2. 功能矩阵
 
@@ -37,8 +44,6 @@ W1 把分散的 crypto 市场数据整理成一套可读、可查、可告警的
 | 监测 Monitor | 统一告警、SLO、评分卡 | 告警状态机 + 数据源 SLO + 前瞻结果评分 |
 | 研究 Research | 体制实验室、仓位压力、新闻冲击、跨资产、逐日回放、市场风险 | 独立研究模块，会员可见；详见第 5 节 |
 
----
-
 ## 3. 数据源与更新节奏
 
 | 数据 | 来源 | 频率 | 说明 |
@@ -53,8 +58,6 @@ W1 把分散的 crypto 市场数据整理成一套可读、可查、可告警的
 | 链上 | 公开接口 | 小时级 | 价格、市值、交易数、活跃地址 |
 
 **新鲜度纪律**：接口返回 `data_ts`/`age_sec`/`stale`，页面顶栏与 `/api/health/sources` 可直接看到数据是否过期；过期数据不会伪装成实时。
-
----
 
 ## 4. 告警与 Bot 通知工程
 
@@ -88,8 +91,6 @@ W1 把分散的 crypto 市场数据整理成一套可读、可查、可告警的
 - 可按模块组合产品：行情监测、清算/LSR、新闻、研究、告警。
 - 通知渠道可插拔：同一套告警可接 QQ 群、Telegram 频道、Discord 社区或自有 Webhook。
 
----
-
 ## 5. 研究与回测框架
 
 保留但不对外提供实盘策略。研究页签包含：
@@ -107,16 +108,12 @@ W1 把分散的 crypto 市场数据整理成一套可读、可查、可告警的
 
 **样本限制**：另类数据（费率/LSR/清算/跨资产）只有 2–7.5 个月，不能冒充长周期结论；所有页面都标注数据窗口。
 
----
-
 ## 6. 会员与权限
 
 - 注册后需管理员审批；会员状态、到期时间、额度在 `users` 表。
 - 前端 `TABS` 用 `pub:false` 控制会员栏目；后端对应接口用 `requireVip`。
 - 后台 `requireAdmin`；owner 可管理用户与公告。
 - 会话使用 httpOnly cookie，7 天有效；不在前端暴露密钥。
-
----
 
 ## 7. 技术架构
 
@@ -141,8 +138,6 @@ Express server.js (:3300, 仅监听 127.0.0.1)
 - **静态资源**：`app.css`/`app.js` 带内容哈希；改完必须更新 `index.html` 的 `?v=`。
 - **公网入口**：nginx 反代到 `127.0.0.1:3300`，HTTPS 由证书管理。
 
----
-
 ## 8. 主要 API
 
 | 接口 | 权限 | 内容 |
@@ -157,8 +152,6 @@ Express server.js (:3300, 仅监听 127.0.0.1)
 | `/metrics` | 公开 | Prometheus 指标 |
 | `/api/okx/*`、`/api/signal/*`、`/api/strategy/*`、`/api/unified/*` | — | **410 Gone：实盘策略层已移除** |
 
----
-
 ## 9. 部署
 
 ```bash
@@ -172,16 +165,12 @@ npm test                   # 语法 + 纯函数 + 告警 + 研究测试
 - 密钥只放 `.env`（600），不入库、不回显。
 - 数据备份：每日 `.backup` 到 `/home/ubuntu/backups/db/`；研究/回测产物写 `/tmp`。
 
----
-
 ## 10. 数据保留与性能
 
 - `data/w1.db`：WAL；历史 JSON payload 超过保留窗口后压缩为 gzip BLOB，读取时透明解压。
 - 保留期：行情快照/清算/费率等按表配置；访问日志 90 天；SLO 日汇总 30 天。
 - `/api/data-quality`：每表行数、最新时间、压缩行占比、DB 可回收页。
 - 重计算模块带 2–10 分钟缓存；首屏慢先看服务端耗时，不先改前端。
-
----
 
 ## 11. 限制与合规
 
@@ -194,3 +183,176 @@ npm test                   # 语法 + 纯函数 + 告警 + 研究测试
 ## 12. License
 
 PolyForm Noncommercial 1.0.0。仅限非商业研究使用；商业授权请联系仓库所有者。
+
+---
+
+# English
+
+## 1. What It Is
+
+W1 turns fragmented crypto market data into a readable, searchable and alertable monitoring system:
+
+- **For traders**: market regime, positioning stress, liquidation structure, funding, news impact and cross-asset context — decision support, not signals.
+- **For community operators**: compose products from modules and membership tiers; deliver real-time alerts to QQ, Telegram, Discord or custom webhooks.
+- **For researchers**: keep the research/backtest framework for factor, regime and event studies without any live strategy layer.
+
+Primary data comes from **Coinglass**, supplemented by Gate/OKX quotes, news RSS, ETF, macro and on-chain public data. The system processes and displays data; it never places orders.
+
+## 2. Feature Matrix
+
+| Module | What it provides | Implementation |
+|---|---|---|
+| Overview | Market view, key levels, sentiment and positioning summary | Local SQLite aggregation + rules/AI summary; every card carries data timestamp and freshness |
+| 8-Coin Stances | Long/short stance for BTC/ETH/SOL and other majors | Funding, OI, LSR, liquidation and price-structure composite |
+| Sentiment | Fear & Greed, historical percentile, trend | Daily FGI + 8.5-year history |
+| Flows | Stablecoin supply, ETF flows, capital conditions | Coinglass/ETF data + stablecoin supply collection |
+| Global Assets | US equities, commodities and crypto | OKX tokenized instruments + global indices; 67 symbols at 5-minute cadence |
+| Market Analysis | Macro, structure, regime and key events | Rule engine + macro calendar + research modules |
+| On-Chain | BTC price, market cap, transactions, active addresses | Public on-chain APIs + local cache |
+| Liquidation | 8-venue liquidations, liquidation walls, max pain | Coinglass multi-venue data + CoinGlass Pro snapshots |
+| Chip Distribution | Cost basis / chip structure | Local aggregation + charts |
+| LSR | Retail/whale long-short ratio and extremes | Coinglass LSR + historical percentile |
+| Funding | Cross-venue funding and arbitrage spread | Coinglass funding + local series |
+| News | Real-time news and sentiment from 8 sources | RSS/API collection + dedup + sentiment tags |
+| Monitor | Unified alerts, SLO, scorecards | Alert state machine + source SLO + forward-outcome scoring |
+| Research | Regime lab, positioning stress, news impact, cross-asset, daily replay, market risk | Independent research modules; members only; see Section 5 |
+
+## 3. Data Sources & Cadence
+
+| Data | Source | Frequency | Notes |
+|---|---|---|---|
+| Futures/OI/Funding | Coinglass | 5 min | 50 majors, stored as local snapshots |
+| LSR | Coinglass | 5 min | Retail/whale, historical series retained |
+| Liquidation | Coinglass (8 venues) | 30 min | Binance/OKX/Bybit/Bitget/HTX/Gate/MEXC/KuCoin |
+| Fear & Greed | alternative.me / Coinglass | 3-hour sampling | Upstream daily; history back to 2018 |
+| News | Jin10/Odaily/BlockBeats/ChainThink/WallstreetCN/CoinTelegraph/Decrypt/Cryptonews | Real-time polling | Dedup, source labels, sentiment |
+| ETF | Coinglass | 2 h | BTC ETF flow series |
+| Macro/Global | FRED / public APIs / OKX | Daily or 5 min | Rates, indices, commodities, tokenized equities |
+| On-chain | Public APIs | Hourly | Price, market cap, transactions, active addresses |
+
+**Freshness discipline**: APIs expose `data_ts`/`age_sec`/`stale`; the top bar and `/api/health/sources` show whether data is stale. Stale data is never presented as real-time.
+
+## 4. Alerts & Bot Notification Engineering
+
+### 4.1 Alert Center
+
+- Unified `alerts` table: `open → ack / silenced → resolved`, with acknowledger, silence deadline, resolution time and repeat count.
+- Severity P0/P1/P2; one active alert per `dedup_key`.
+- Scorecards: 15m/1h/4h/24h forward return, MFE/MAE and hit rate for symbol-bearing alerts.
+- SLO: per-source success rate, p95 latency and error-budget burn; `/metrics` exposes Prometheus text.
+
+### 4.2 Notification Adapters
+
+A software-agnostic notification layer (`lib/notify/`):
+
+| Channel | Adapter | Configuration |
+|---|---|---|
+| Telegram | Bot API `sendMessage` | `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID` |
+| Discord | Webhook `content` | `DISCORD_WEBHOOK_URL` |
+| Slack | Incoming Webhook `text` | `SLACK_WEBHOOK_URL` |
+| Generic Webhook | POST JSON `{text, meta}` | `GENERIC_WEBHOOK_URL` |
+| QQ Group | Existing `pushToGroup` | Existing QQ config |
+
+- Config: `config/notify.json` (see `config/notify.example.json`).
+- **Dry-run by default**: payloads are generated but no request is sent. Set `NOTIFY_LIVE=1` and provide credentials for live delivery.
+- 10-second timeout, per-channel errors, independent configuration. Actual connectivity tests are not required or performed.
+- Admin APIs: `GET /api/notify/channels`, `POST /api/notify/send` (dry-run by default).
+
+### 4.3 For Community Operators
+
+- Approval-based membership: public, member and admin layers.
+- Compose products by module: market monitoring, liquidation/LSR, news, research, alerts.
+- Pluggable delivery: the same alert can go to QQ, Telegram, Discord or a custom webhook.
+
+## 5. Research & Backtest Framework
+
+Retained for analysis; no live strategy is exposed. The Research tab includes:
+
+| Module | Data | Purpose |
+|---|---|---|
+| Regime Lab | BTC 1h, 2017→2026 (~59k bars) | Trend/range/high-vol classification; 24h forward stats; generic strategy comparison |
+| Positioning Stress | ~7.5 months funding/OI/LSR + 8-venue liquidation | 0–100 stress score, trapped side, funding-z vs forward 4h validation |
+| News Impact | ~186k news items over 30 days × BTC 5m | Source/sentiment hit rate, 1h/4h impact |
+| Cross-Asset | 67 symbols, ~2 months of 5m data | Risk appetite, breadth, BTC correlation, rotation |
+| Daily Replay | 5m candles + news + factor snapshots | Replay a day's market and events; no strategy signals |
+| Market Risk | BTC daily | Drawdown, VaR95/CVaR95, annualized volatility, Sharpe |
+
+**Backtest framework**: `lib/backtest.js`, `lib/backtest_wsl.js`, `lib/indicators.js` and related scripts are retained for research; they contain no deployed strategy and produce no trading instructions.
+
+**Sample limits**: alternative data (funding/LSR/liquidation/cross-asset) covers only 2–7.5 months; it cannot be presented as long-horizon evidence. Every page states its data window.
+
+## 6. Membership & Permissions
+
+- Registration requires admin approval; status, expiry and quota live in `users`.
+- Frontend `TABS` uses `pub:false` for member tabs; backend uses `requireVip`.
+- Admin routes use `requireAdmin`; owner can manage users and announcements.
+- Sessions use httpOnly cookies for 7 days; secrets are never exposed to the frontend.
+
+## 7. Architecture
+
+```
+Browser SPA (public/index.html + app.js + app.css)
+        │  /api/*
+        ▼
+Express server.js (:3300, bound to 127.0.0.1 only)
+        │
+        ├── Collectors lib/collectors.js + node-cron
+        │     Coinglass / Gate / news / macro / ETF / on-chain
+        ├── Storage SQLite WAL (data/w1.db)
+        │     gzip-compressed historical payloads + retention cleanup
+        ├── Analysis lib/verdict.js / research/*
+        ├── Alerts lib/alerts.js + health_guard + skyeye + market_watch
+        ├── Notifications lib/notify/ (Telegram/Discord/Slack/Webhook/QQ)
+        └── Output REST API + /metrics + QQ/community push
+```
+
+- **Single process + SQLite**: simple deployment for individuals/small teams; heavy jobs must not block the API.
+- **WAL + periodic checkpoint**: concurrent reads/writes; payload compression reduces size.
+- **Static assets**: `app.css`/`app.js` are content-hashed; update `index.html`'s `?v=` after changes.
+- **Public entry**: nginx reverse proxy to `127.0.0.1:3300`; TLS managed by certificates.
+
+## 8. Main APIs
+
+| Endpoint | Access | Content |
+|---|---|---|
+| `/api/version`, `/healthz` | Public | Version/health |
+| `/api/overview`, `/api/coins`, `/api/fear-greed` | Public | Overview/coins/sentiment |
+| `/api/health/sources`, `/api/data-quality` | Public | Data freshness/quality |
+| `/api/liquidation`, `/api/lsr`, `/api/funding`, `/api/news` | Member | Liquidation/LSR/funding/news |
+| `/api/alerts`, `/api/alerts/scorecard`, `/api/slo` | Member | Alerts/scorecards/SLO |
+| `/api/research/*` | Member | Regime/positioning/news/cross-asset/replay/risk |
+| `/api/notify/channels`, `/api/notify/send` | Admin | Notification channels and dry-run send |
+| `/metrics` | Public | Prometheus metrics |
+| `/api/okx/*`, `/api/signal/*`, `/api/strategy/*`, `/api/unified/*` | — | **410 Gone: live strategy layer removed** |
+
+## 9. Deployment
+
+```bash
+npm install
+cp .env.example .env       # Coinglass/QQ credentials, chmod 600
+npm start                  # :3300
+npm test                   # syntax + pure functions + alerts + research
+```
+
+- Production: PM2 `w1-board` + nginx reverse proxy; bind to `127.0.0.1:3300`.
+- Secrets stay in `.env` (600), never in the repo or logs.
+- Backups: daily `.backup` to `/home/ubuntu/backups/db/`; research/backtest artifacts go to `/tmp`.
+
+## 10. Retention & Performance
+
+- `data/w1.db`: WAL; historical JSON payloads are gzip-compressed after the retention window and transparently decompressed on read.
+- Retention: per-table windows for snapshots/liquidations/funding; access logs 90 days; SLO daily rollups 30 days.
+- `/api/data-quality`: per-table rows, latest timestamp, compressed-row ratio and reclaimable pages.
+- Heavy modules cache for 2–10 minutes; investigate server-side latency before changing the frontend.
+
+## 11. Limitations & Compliance
+
+- Third-party data sources may rate-limit or time out; pages mark stale data.
+- Research results are bounded by sample windows and are not return promises.
+- This project **does not provide trading advice, does not manage money, and does not place orders**.
+- Historical strategies and run history have been removed; retained backtest/research code is for analysis only.
+- Verify local laws and data-source terms before use.
+
+## 12. License
+
+PolyForm Noncommercial 1.0.0. Non-commercial research use only; contact the repository owner for commercial licensing.
