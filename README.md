@@ -1,172 +1,196 @@
-# W1 量化看板 · W1 Quant Board
+# W1 Quant Board · Crypto 市场监测与交易辅助
 
-**中文** ｜ **English** (see [English](#english) below)
+> **定位**：面向交易者与社群运营者的 crypto 市场监测终端。  
+> **不做的事**：不内置交易策略、不执行实盘下单、不承诺收益、不构成投资建议。  
+> 历史策略与运行记录已移除；仅保留研究/回测框架用于数据分析。
 
-> ⚠️ **重要声明：本仓库内置的量化交易策略均为「失败案例」。**
-> 这些策略未通过稳健性验证（实盘/回测无正收益），仅作为研究记录与反面教材保留。
-> **本项目的定位是「行情分析与实时监测」，并非可盈利的交易系统。** 全部内容仅供研究，不构成任何投资建议。
+---
 
-加密货币**行情分析与监测**看板：技术面 + 资金面 + 消息面多源监测，21 选项卡 UI + QQ 推送。
+## 1. 这是什么
 
-## 监测与研究（2026-10）
+W1 把分散的 crypto 市场数据整理成一套可读、可查、可告警的监测系统：
 
-- **监测中心 v7**：统一告警（open / ack / silenced / resolved）、SLO 与错误预算、`/metrics`、跨源基差与冻结行情检测；告警评分卡记录 15m / 1h / 4h / 24h 远期结果。
-- **研究 / 交易支持 Hub v8**：体制实验室（9 年 BTC 1h + 策略×体制）、仓位压力（费率 / OI / LSR / 清算复合压力）、新闻冲击（30 天多源新闻事件研究）、跨资产轮动（67 标的）、逐日回放、风险舱（VaR / CVaR / 回撤 / 策略归因）。
-- 前端新增「监测」「研究」页签（会员可见），桌面 / 移动端自适应；数据层 v6 将历史 payload 压缩为 gzip BLOB，w1.db 4.1GB → 1.9GB。
+- **交易者**：看市场体制、仓位压力、清算结构、资金费率、新闻冲击、跨资产联动，辅助自己做决策。
+- **社群运营者**：按模块和会员权限组合产品，接入 QQ / Telegram / Discord 等通知渠道，做实时提示与内容运营。
+- **研究者**：用保留的回测/研究框架做因子、体制、事件研究，不依赖任何“实盘策略”。
 
+数据主要来自 **Coinglass**，辅以 Gate/OKX 行情、新闻 RSS、ETF、宏观与链上公开数据。系统只做数据加工与展示，不替用户下单。
 
-## English
+---
 
-**W1 Quant Board** is a cryptocurrency **market-analysis & monitoring dashboard** — technical, capital-flow and news multi-source monitoring, a 21-tab UI, and QQ push. ⚠️ **The bundled quantitative trading strategies are documented FAILURE CASES**: they did not pass robustness validation and produced no positive live/backtest return. They are kept as research records only. This project is about **market analysis & monitoring, not a profitable trading system.** Research use only; not investment advice.
+## 2. 功能矩阵
 
-## 快速开始
+| 模块 | 提供什么 | 实现方式 |
+|---|---|---|
+| 总览 Overview | 市场判断、关键价位、情绪与仓位摘要 | 本地 SQLite 聚合 + 规则/AI 摘要；所有卡片带数据时间与新鲜度 |
+| 8 币立场 | BTC/ETH/SOL 等主流币的多空立场 | 资金费率、OI、LSR、清算、价格结构多因子合成 |
+| 情绪 Sentiment | 恐慌贪婪指数、历史分位、情绪趋势 | FGI 日更 + 8.5 年历史序列 |
+| 资金流 Flows | 稳定币供应、ETF 流入、资金面变化 | Coinglass/ETF 数据 + 稳定币供应采集 |
+| 全球资产 Global | 美股、商品、加密等跨资产行情 | OKX 代币化标的 + 全球指数；67 个标的、5 分钟级 |
+| 市场分析 Market | 宏观、结构、体制与关键事件 | 规则引擎 + 宏观日历 + 研究模块 |
+| 链上数据 On-chain | BTC 链上价格、市值、交易数、活跃地址 | 公开链上接口 + 本地缓存 |
+| 清算数据 Liquidation | 8 所清算、清算墙、最大痛点 | Coinglass 多所清算 + CoinGlass Pro 快照 |
+| 筹码分布 Chip | 持仓成本/筹码结构 | 本地聚合 + 图表 |
+| 多空 LSR | 散户/大户多空比、极值 | Coinglass LSR + 历史分位 |
+| 费率套利 Funding | 跨所资金费率与套利差 | Coinglass funding + 本地序列 |
+| 消息面 News | 8 个来源的实时新闻与情绪 | RSS/接口采集 + 去重 + 情绪标签 |
+| 监测 Monitor | 统一告警、SLO、评分卡 | 告警状态机 + 数据源 SLO + 前瞻结果评分 |
+| 研究 Research | 体制实验室、仓位压力、新闻冲击、跨资产、逐日回放、市场风险 | 独立研究模块，会员可见；详见第 5 节 |
+
+---
+
+## 3. 数据源与更新节奏
+
+| 数据 | 来源 | 频率 | 说明 |
+|---|---|---|---|
+| 合约行情/OI/费率 | Coinglass | 5 分钟 | 50 个主流币，写入本地快照 |
+| LSR 多空比 | Coinglass | 5 分钟 | 散户/大户，保留历史序列 |
+| 清算 | Coinglass（8 所） | 30 分钟 | Binance/OKX/Bybit/Bitget/HTX/Gate/MEXC/KuCoin |
+| 恐慌贪婪 | alternative.me / Coinglass | 3 小时采样 | 上游日更，历史可回溯到 2018 |
+| 新闻 | 金十/深潮/律动/链智库/华尔街见闻/CoinTelegraph/Decrypt/Cryptonews | 实时轮询 | 去重、来源标记、情绪标签 |
+| ETF | Coinglass | 2 小时 | BTC ETF 流入序列 |
+| 宏观/全球资产 | FRED / 公开接口 / OKX | 日更或 5 分钟 | 利率、指数、商品、代币化股票 |
+| 链上 | 公开接口 | 小时级 | 价格、市值、交易数、活跃地址 |
+
+**新鲜度纪律**：接口返回 `data_ts`/`age_sec`/`stale`，页面顶栏与 `/api/health/sources` 可直接看到数据是否过期；过期数据不会伪装成实时。
+
+---
+
+## 4. 告警与 Bot 通知工程
+
+### 4.1 告警中心
+
+- 统一 `alerts` 表：`open → ack / silenced → resolved`，记录确认人、静默截止、恢复时间、重复次数。
+- 严重级别 P0/P1/P2；同一 `dedup_key` 只保留一条活动告警。
+- 评分卡：每条带币种告警记录 15m/1h/4h/24h 远期收益、MFE/MAE、命中率。
+- SLO：每源成功率、p95 延迟、错误预算燃烧率；`/metrics` 输出 Prometheus 文本。
+
+### 4.2 通知适配器
+
+系统内置一套**与具体软件解耦**的通知工程层（`lib/notify/`）：
+
+| 渠道 | 适配方式 | 配置 |
+|---|---|---|
+| Telegram | Bot API `sendMessage` | `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID` |
+| Discord | Webhook `content` | `DISCORD_WEBHOOK_URL` |
+| Slack | Incoming Webhook `text` | `SLACK_WEBHOOK_URL` |
+| 通用 Webhook | POST JSON `{text, meta}` | `GENERIC_WEBHOOK_URL` |
+| QQ 群 | 复用现有 `pushToGroup` | 现有 QQ 配置 |
+
+- 配置文件：`config/notify.json`（参考 `config/notify.example.json`）。
+- 默认 **dry-run**：只生成 payload，不发真实请求；设置 `NOTIFY_LIVE=1` 且配置齐全才真实发送。
+- 统一超时 10s、错误返回、按渠道独立配置；不要求也不执行实际连接测试。
+- 管理员接口：`GET /api/notify/channels`、`POST /api/notify/send`（默认 dry-run）。
+
+### 4.3 面向社群运营
+
+- 会员/审批制：公开页、会员页、后台三层。
+- 可按模块组合产品：行情监测、清算/LSR、新闻、研究、告警。
+- 通知渠道可插拔：同一套告警可接 QQ 群、Telegram 频道、Discord 社区或自有 Webhook。
+
+---
+
+## 5. 研究与回测框架
+
+保留但不对外提供实盘策略。研究页签包含：
+
+| 模块 | 数据 | 用途 |
+|---|---|---|
+| 体制实验室 | BTC 1h，2017→2026（约 5.9 万根） | 趋势/震荡/高波动分类；未来 24h 统计；通用策略范式对比 |
+| 仓位压力 | 约 7.5 个月费率/OI/LSR + 8 所清算 | 0–100 压力分、被套方向、费率 z 与未来 4h 收益验证 |
+| 新闻冲击 | 30 天约 18.6 万条新闻 × BTC 5m | 来源/情绪命中率、1h/4h 冲击 |
+| 跨资产 | 67 个标的、约 2 个月 5m | 风险偏好、广度、BTC 相关性、轮动 |
+| 逐日回放 | 5m K线 + 新闻 + 因子快照 | 回看某日行情与事件，不含策略信号 |
+| 市场风险 | BTC 日线 | 回撤、VaR95/CVaR95、年化波动、Sharpe |
+
+**回测框架**：`lib/backtest.js`、`lib/backtest_wsl.js`、`lib/indicators.js` 与相关脚本保留，用于研究；不包含上线策略，也不产生交易指令。
+
+**样本限制**：另类数据（费率/LSR/清算/跨资产）只有 2–7.5 个月，不能冒充长周期结论；所有页面都标注数据窗口。
+
+---
+
+## 6. 会员与权限
+
+- 注册后需管理员审批；会员状态、到期时间、额度在 `users` 表。
+- 前端 `TABS` 用 `pub:false` 控制会员栏目；后端对应接口用 `requireVip`。
+- 后台 `requireAdmin`；owner 可管理用户与公告。
+- 会话使用 httpOnly cookie，7 天有效；不在前端暴露密钥。
+
+---
+
+## 7. 技术架构
+
+```
+浏览器 SPA (public/index.html + app.js + app.css)
+        │  /api/*
+        ▼
+Express server.js (:3300, 仅监听 127.0.0.1)
+        │
+        ├── 采集层 lib/collectors.js + node-cron
+        │     Coinglass / Gate / 新闻 / 宏观 / ETF / 链上
+        ├── 存储层 SQLite WAL (data/w1.db)
+        │     历史 payload gzip 压缩 + 保留期清理
+        ├── 分析层 lib/verdict.js / research/*
+        ├── 告警层 lib/alerts.js + health_guard + skyeye + market_watch
+        ├── 通知层 lib/notify/ (Telegram/Discord/Slack/Webhook/QQ)
+        └── 输出层 REST API + /metrics + QQ/社群推送
+```
+
+- **单进程 + SQLite**：部署简单，适合个人/小团队；重任务不得阻塞 API。
+- **WAL + 定期 checkpoint**：读写并发；历史 payload 压缩降低体积。
+- **静态资源**：`app.css`/`app.js` 带内容哈希；改完必须更新 `index.html` 的 `?v=`。
+- **公网入口**：nginx 反代到 `127.0.0.1:3300`，HTTPS 由证书管理。
+
+---
+
+## 8. 主要 API
+
+| 接口 | 权限 | 内容 |
+|---|---|---|
+| `/api/version`、`/healthz` | 公开 | 版本/健康 |
+| `/api/overview`、`/api/coins`、`/api/fear-greed` | 公开 | 总览/币种/情绪 |
+| `/api/health/sources`、`/api/data-quality` | 公开 | 数据新鲜度/质量 |
+| `/api/liquidation`、`/api/lsr`、`/api/funding`、`/api/news` | 会员 | 清算/LSR/费率/新闻 |
+| `/api/alerts`、`/api/alerts/scorecard`、`/api/slo` | 会员 | 告警/评分卡/SLO |
+| `/api/research/*` | 会员 | 体制/仓位/新闻/跨资产/回放/风险 |
+| `/api/notify/channels`、`/api/notify/send` | 管理员 | 通知渠道与 dry-run 发送 |
+| `/metrics` | 公开 | Prometheus 指标 |
+| `/api/okx/*`、`/api/signal/*`、`/api/strategy/*`、`/api/unified/*` | — | **410 Gone：实盘策略层已移除** |
+
+---
+
+## 9. 部署
 
 ```bash
 npm install
-cp .env.example .env   # 填入真实密钥
-npm start              # 启动服务 (:3300)
-npm test               # 跑自动化测试（node --test tests/）
-npm run smoke           # 信号引擎 smoke test（7 用例）
-node scripts/health_check.js      # 系统健康检查（PM2/API/实盘心跳/磁盘，异常推群）
+cp .env.example .env       # 填入 Coinglass/QQ 等密钥，chmod 600
+npm start                  # :3300
+npm test                   # 语法 + 纯函数 + 告警 + 研究测试
 ```
 
-## 架构总览
+- 生产：PM2 `w1-board` + nginx 反代；服务器仅监听 `127.0.0.1:3300`。
+- 密钥只放 `.env`（600），不入库、不回显。
+- 数据备份：每日 `.backup` 到 `/home/ubuntu/backups/db/`；研究/回测产物写 `/tmp`。
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                      server.js (:3300)                  │
-│   express + nginx 80→3300 反代 + pm2 (w1-board)          │
-├──────────────┬──────────────────────────────────────────┤
-│  采集层       │  lib/collectors.js                       │
-│  node-cron   │  gate现货60s / coinglass 5min / LSR 5min  │
-│              │  KOL共识10min / FGI 30min / 新闻/清算      │
-├──────────────┼──────────────────────────────────────────┤
-│  分析层       │  lib/verdict.js / market_analyzer.js     │
-│              │  daily_analysis.js / macro_alert.js       │
-├──────────────┼──────────────────────────────────────────┤
-│  决策层       │  lib/engine.js (给单引擎主循环)            │
-│              │  scripts/alpha1_live.js ★当前实盘(15m)  │
-│              │  ├─ lib/regime.js    体制分类 TREND/RANGE │
-│              │  ├─ lib/evalctx.js   WSL 求值上下文+FN    │
-│              │  ├─ lib/indicators.js 指标库(纯函数)      │
-│              │  ├─ lib/kline.js     K线获取+30min缓存    │
-│              │  ├─ lib/risk.js      风控(冷却/熔断/事件)  │
-│              │  └─ lib/wsl.js       WSL 表达式解析器     │
-│              └─ strategies/*.yaml   策略配置(FR/ST)      │
-├──────────────┼──────────────────────────────────────────┤
-│  验证层       │  lib/backtest_wsl.js 同引擎回测          │
-│              │  tests/*.test.js      31 回归测试         │
-│              │  scripts/ci-test.js   CI 守护(cron)       │
-├──────────────┼──────────────────────────────────────────┤
-│  存储层       │  data/w1.db (SQLite WAL)                │
-│              │  schema_version 版本化迁移                │
-├──────────────┼──────────────────────────────────────────┤
-│  输出层       │  public/index.html 看板 / lib/qqbot.js   │
-│              │  QQ 群推送 (pushToGroup)                  │
-└──────────────┴──────────────────────────────────────────┘
-```
+---
 
-## 核心模块职责
+## 10. 数据保留与性能
 
-| 模块 | 职责 |
-|------|------|
-| `lib/engine.js` | 主循环：体制门控 → 策略求值 → 风控 → 推送 → 出场引擎 |
-| `lib/wsl.js` | WSL 表达式语言（tokenize/parse/evaluate），策略逻辑可配置化 |
-| `lib/evalctx.js` | 求值上下文 + FN 函数库（ema/rsi/atr/highest/ref/cross 等 20+） |
-| `lib/backtest_wsl.js` | 回测引擎，复用 buildCtx/FN/dirFixAst，出场与 runExits 对齐 |
-| `lib/regime.js` | ADX + 布林带宽 + 波动率分位 → TREND/RANGE/STORM/OFF |
-| `lib/risk.js` | 冷却、日限、日亏熔断、事件风控、策略熔断 |
-| `lib/indicators.js` | ema/sma/rsi/atr/adx/zscore 纯函数指标库 |
+- `data/w1.db`：WAL；历史 JSON payload 超过保留窗口后压缩为 gzip BLOB，读取时透明解压。
+- 保留期：行情快照/清算/费率等按表配置；访问日志 90 天；SLO 日汇总 30 天。
+- `/api/data-quality`：每表行数、最新时间、压缩行占比、DB 可回收页。
+- 重计算模块带 2–10 分钟缓存；首屏慢先看服务端耗时，不先改前端。
 
-## 策略体系（WSL DSL + YAML）
+---
 
-- **ST 趋势回调追踪**（`strategies/st_evo.wsl.yaml`，TREND 体制专用）
-  日线定方向 → 1h 回调入场 → 1R 半仓+保本 → 吊灯追踪 → 趋势破坏离场
-- **FR 极端费率反转**（`strategies/funding_reversal.wsl.yaml`，RANGE 体制专用）
-  散户仓位极端拥挤 → 均值回归，funding_z30 + RSI 极端 + LSR 确认
+## 11. 限制与合规
 
-策略逻辑全在 YAML，改策略不改代码：
+- 依赖第三方数据源，上游限流/超时会导致短时缺口；页面会标记 stale。
+- 研究结论受样本窗口限制，不构成收益承诺。
+- 本项目**不提供交易建议、不代客理财、不执行下单**。
+- 历史策略与运行记录已删除；保留的回测/研究代码仅用于分析。
+- 使用前请自行确认当地法律与数据源条款。
 
-```yaml
-entry:
-  long: >
-    close_1d > ema(50,'1d') and ema(20,'1d') > ema(50,'1d')
-    and adx(14,'1d') >= 22
-    and abs(close - ema(20,'1h')) <= 0.5 * atr(14,'1h')
-```
+## 12. License
 
-## 给单链路（一次信号的生命周期）
-
-```
-regime 体制分类（15min）
-  → run(): WSL 求值入场条件（hits）
-  → 风控过滤（冷却/日限/事件/熔断）
-  → 写 signal_track + 推送群（paper 期带测试标签）
-  → runExits(): 每轮检查出场
-      partial(1R减半+保本) → structure(趋势破坏)
-      → time_stop → chandelier(吊灯) → stop → target
-  → 结算 WIN/LOSS，日亏累计熔断
-```
-
-## 测试与 CI
-
-```bash
-npm test    # 自动化测试（node --test tests/*.test.js，零依赖）
-npm run smoke  # 信号引擎 smoke test（7 用例，纯函数只读）
-```
-
-- `tests/signal.smoke.test.js` — 信号引擎核心纯函数（bollinger/trendFilter/stopScale/momentumCheck）
-- crontab 每 5 分钟跑健康检查：`node scripts/health_check.js`（4服务/API/实盘心跳/磁盘，异常推群）
-
-## 数据表
-
-### 实盘库 `data/w1.db`
-| 表 | 内容 | 保留策略 |
-|----|------|---------|
-| prices | gate 现货行情 | 滚动清理 |
-| futures_markets | 合约费率/持仓 | 90 天 |
-| lsr_rankings / lsr_signals | 多空比 | 滚动清理 |
-| liquidation | 爆仓聚合 | 90 天 |
-| signal_track | 给单记录 | 永久 |
-| schema_version | 迁移版本 | 永久 |
-
-### 回测库 `data/tianji_full.sqlite`（五维度全量 · 与实盘同源）
-| 维度 | 表 | 时间字段/单位 | 更新频率 |
-|------|----|-------------|---------|
-| ① 技术面 K线 | klines（symbol/interval/time=毫秒） | 4h 全史 2018起 + 5m 2026/8/11起 | 每小时 |
-| ② 资金面 | lsr_account / lsr_top / oi_history / funding_hist | time=毫秒 | 每天 12:20 |
-| ③ 清算 | liquidation_hist | time=毫秒 | 每天 12:20 |
-| ④ FGI | fgi_hist | ts=秒 | 每天 12:20 |
-| ⑤ 消息+共识 | news_hist / consensus_hist | ts=秒 | 每天 12:20 |
-| 实盘因子快照 | factor_snapshots（ts=秒） | oi/funding/lsr/qibao | 每 5 分钟 |
-
-> 数据源约定：因子表 exchange='OKX'（与实盘 Coinglass markets 同源）；time=毫秒 vs ts=秒 不可混用（回测引擎按各自单位读取）。
-
-## 部署与运维
-
-详见 `README_部署说明.txt`。生产环境：腾讯云 2C4G + pm2 + nginx。
-
-**实盘运行（2026-08 现状）：**
-- 当前实盘 = `scripts/alpha1_live.js`（α1 破浪 v3.1，BTC-USDT-SWAP，cron 每 5 分钟）
-- 实盘日志：`/tmp/alpha1_live.log`；看板服务：PM2 `w1-board`（:3300）
-- 提现规则：可用余额 ≥ 基准×2 时提利润 15%（冻结资金不计入，基准存 `kv.alpha1:wdBase`）
-- 日志轮转：`/etc/logrotate.d/w1-logs`（每日 7 份压缩）
-- 每日 03:17 数据库备份 → `backups/db/`（保留 7 天）+ 每周 VACUUM
-
-**故障排查：**
-1. 服务挂 → `pm2 restart w1-board`；看板 API → `curl 127.0.0.1:3300/api/signal/overview`
-2. 实盘不跑 → 查 `/tmp/alpha1_live.log` 末行时间戳（>15min 即异常，health_check 会推群）
-3. 数据源报错 → `logs/w1-board.err.log`（odaily 偶发失败属已知噪音）
-
-## 版本历史
-
-- v5.1.0 — 2026-08-12：系统规整（归档88文件/日志轮转/权限收紧）+ 健康检查告警 + smoke test
-- v5.0.0 — 算法缺陷修复 + 模块化重构 + 测试/CI + 同引擎回测
-
-## License
-
-**PolyForm Noncommercial License 1.0.0** —— 仅限**非商业用途**（个人学习、研究、教育、爱好项目、非营利/政府用途）。**未经作者单独授权，禁止任何商业化、盈利性使用或转售**。详见 [LICENSE](LICENSE)。
-
-Required Notice: Copyright (c) 2026 William-Trader (https://github.com/William-Trader)
-
-> 本仓库为**框架与代码**开源版：不含运行数据（SQLite/K 线/日志）、不含任何真实密钥或账号配置。密钥请从 `.env.example` 拷贝后自行填写。
+PolyForm Noncommercial 1.0.0。仅限非商业研究使用；商业授权请联系仓库所有者。
