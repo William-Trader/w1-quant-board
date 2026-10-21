@@ -8,6 +8,13 @@
 
 加密货币**行情分析与监测**看板：技术面 + 资金面 + 消息面多源监测，21 选项卡 UI + QQ 推送。
 
+## 监测与研究（2026-10）
+
+- **监测中心 v7**：统一告警（open / ack / silenced / resolved）、SLO 与错误预算、`/metrics`、跨源基差与冻结行情检测；告警评分卡记录 15m / 1h / 4h / 24h 远期结果。
+- **研究 / 交易支持 Hub v8**：体制实验室（9 年 BTC 1h + 策略×体制）、仓位压力（费率 / OI / LSR / 清算复合压力）、新闻冲击（30 天多源新闻事件研究）、跨资产轮动（67 标的）、逐日回放、风险舱（VaR / CVaR / 回撤 / 策略归因）。
+- 前端新增「监测」「研究」页签（会员可见），桌面 / 移动端自适应；数据层 v6 将历史 payload 压缩为 gzip BLOB，w1.db 4.1GB → 1.9GB。
+
+
 ## English
 
 **W1 Quant Board** is a cryptocurrency **market-analysis & monitoring dashboard** — technical, capital-flow and news multi-source monitoring, a 21-tab UI, and QQ push. ⚠️ **The bundled quantitative trading strategies are documented FAILURE CASES**: they did not pass robustness validation and produced no positive live/backtest return. They are kept as research records only. This project is about **market analysis & monitoring, not a profitable trading system.** Research use only; not investment advice.
