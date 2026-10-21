@@ -1,21 +1,26 @@
 # 依赖
 node_modules/
-
 # 数据（大文件，不入库）
 data/
-*.sqlite
-*.db
-
-# 日志与备份
+# 日志
 logs/
 *.log
-backups/
+# 备份
 *.bak*
-
+# 临时
+/tmp/
 # 密钥与环境变量（绝不入库）
 .env
 .env.*
 !.env.example
+health.db
+index.html
+collectors.js
+routes.js
+patch_routes.js
+backups/
 
-# 系统
-.DS_Store
+# 本地 sqlite 产物
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm

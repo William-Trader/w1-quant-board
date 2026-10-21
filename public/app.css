@@ -1,0 +1,16 @@
+
+/* ===== Research Hub (2026-10-21) ===== */
+.rs-nav{display:flex;gap:6px;overflow-x:auto;padding:10px 0 2px;scrollbar-width:thin}
+.rs-tab{flex:0 0 auto;background:transparent;border:1px solid var(--line,#2a2f3a);color:var(--muted,#8b93a7);border-radius:999px;padding:6px 12px;font-size:12px;cursor:pointer}
+.rs-tab.active{background:var(--accent,#4da6ff);border-color:transparent;color:#fff;font-weight:700}
+.rs-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-bottom:12px}
+.rs-card{background:rgba(255,255,255,.03);border:1px solid var(--line,#2a2f3a);border-radius:10px;padding:14px;margin-bottom:12px}
+.rs-label{color:var(--muted,#8b93a7);font-size:11px;letter-spacing:.04em;text-transform:uppercase}
+.rs-value{font-size:22px;font-weight:800;margin-top:4px}
+.rs-sub{color:var(--muted,#8b93a7);font-size:11px;margin-top:6px;line-height:1.5}
+.rs-title{font-weight:800;margin-bottom:8px;font-size:14px}
+.rs-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.rs-table{width:100%;border-collapse:collapse;font-size:12px;min-width:520px}
+.rs-table th{text-align:left;color:var(--muted,#8b93a7);font-weight:600;padding:6px 8px;border-bottom:1px solid var(--line,#2a2f3a);white-space:nowrap}
+.rs-table td{padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.05);white-space:nowrap}
+@media(max-width:640px){.rs-grid{grid-template-columns:1fr}.rs-value{font-size:19px}.rs-card{padding:12px}.rs-table{font-size:11px}}

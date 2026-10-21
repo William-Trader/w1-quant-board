@@ -3,7 +3,7 @@
 # 用法: ./deploy.sh
 set -euo pipefail
 
-REMOTE_HOST="YOUR_SERVER_HOST"
+REMOTE_HOST="49.232.251.21"
 REMOTE_USER="ubuntu"
 REMOTE_DIR="~/w1-board"
 LOCAL_DIR="$(cd "$(dirname "$0")" && pwd)"
