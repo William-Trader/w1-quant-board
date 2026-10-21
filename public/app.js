@@ -63,7 +63,7 @@ async function api(path,opts){
 function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),2600)}
 function dataTsHtml(ts,stale){return `<span class="data-ts${stale?' stale':''}">数据 ${fmtTs(ts)}</span>${stale?'<span class="stale-tag">STALE</span>':''}`}
 function clearTimers(){Object.values(state.timers).forEach(clearTimeout);state.timers={}}
-const tabRefresh={overview:120000,coins:300000,sentiment:1800000,flows:300000,markets:60000,liquidation:1800000,'chip-distribution':300000,signals:900000,access:60000,assets:300000,news:60000,lsr:300000,funding:300000,consensus:600000,countdown:60000,messages:60000};
+const tabRefresh={overview:120000,coins:300000,sentiment:1800000,flows:300000,markets:60000,liquidation:1800000,'chip-distribution':300000,signals:900000,access:60000,assets:300000,news:60000,lsr:300000,funding:300000,consensus:600000,countdown:60000,messages:60000,monitor:60000};
 function startTabTimer(id,fn){clearTimeout(state.timers[id+'_t']);state.timers[id+'_t']=setTimeout(()=>{if(state.tab===id)fn();startTabTimer(id,fn)},tabRefresh[id]||120000)}
 
 /* ================= Tab 定义 ================= */
@@ -106,6 +106,7 @@ const TABS=[
   {id:'lsr',zh:'多空LSR',en:'LSR',pub:false},
   {id:'funding',zh:'费率套利',en:'Funding Arb',pub:false},
   {id:'news',zh:'消息面',en:'News',pub:false},
+  {id:'monitor',zh:'监测',en:'Monitor',pub:false},
   {id:'messages',zh:'留言',en:'Messages',pub:true,hide:true}, // 2026-09-06 暂时隐藏留言板（恢复: 删 hide:true）
   {id:'account',zh:'登录/注册',en:'Account',pub:true},
   {id:'admin',zh:'后台',en:'Admin',pub:true,hide:true},
@@ -433,6 +434,63 @@ function barChartSVG(items,opts){ // items:[{label,value,color?}]
 
 /* ================= PANEL: 总览 ================= */
 const PANELS={};
+
+/* ================= PANEL: 监测中心（2026-10-21 v7） ================= */
+PANELS.monitor=async function(){
+  startTabTimer('monitor',PANELS.monitor);
+  const main=$('#main');
+  main.innerHTML='<div class="card" style="margin-bottom:14px">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">'
+    +'<div><div style="font-size:20px;font-weight:800">🛰️ 监测中心</div>'
+    +'<div style="color:var(--muted);font-size:12px;margin-top:4px">统一告警 · SLO · 跨源一致性 · 评分卡</div></div>'
+    +'<button class="btn secondary" id="monRefresh">⟳ 刷新</button></div>'
+    +'<div id="monStats" style="margin-top:14px;color:var(--muted);font-size:12px">加载中…</div></div>'
+    +'<div class="card" style="margin-bottom:14px"><div style="font-weight:800;margin-bottom:8px">活动告警</div><div id="monAlerts">加载中…</div></div>'
+    +'<div class="card" style="margin-bottom:14px"><div style="font-weight:800;margin-bottom:8px">数据源 SLO（24h）</div><div id="monSlo">加载中…</div></div>'
+    +'<div class="card"><div style="font-weight:800;margin-bottom:8px">告警评分卡（30d）</div><div id="monScore">加载中…</div></div>';
+  $('#monRefresh').onclick=function(){PANELS.monitor()};
+  const res=await Promise.all([api('/api/alerts?state=active&limit=100'),api('/api/slo?hours=24'),api('/api/alerts/scorecard?days=30')]);
+  const a=res[0],s=res[1],c=res[2];
+  if(a&&a.__needLogin){main.innerHTML='<div class="lock-card"><div class="lock-title">请先登录</div></div>';return}
+  const st=(a&&a.stats)||{};
+  const sev=(st.by_severity||{});
+  $('#monStats').innerHTML='<span style="color:var(--up);font-weight:800">活动 '+(st.open||0)+'</span> · P0 '+(sev.P0||0)+' · P1 '+(sev.P1||0)+' · P2 '+(sev.P2||0)+' · 24h '+(st.last_24h||0)+' · MTTA '+(st.ack&&st.ack.mtta_sec!=null?Math.round(st.ack.mtta_sec/60)+'m':'—')+' · MTTR '+(st.resolved&&st.resolved.mttr_sec!=null?Math.round(st.resolved.mttr_sec/60)+'m':'—');
+  const sevColor={P0:'#b83a2e',P1:'#d99e2b',P2:'#4da6ff'};
+  const rows=(a&&a.alerts)||[];
+  if(!rows.length){$('#monAlerts').innerHTML='<div style="color:var(--muted)">当前无活动告警</div>'}
+  else{
+    $('#monAlerts').innerHTML=rows.map(function(x){
+      const col=sevColor[x.severity]||'#888';
+      const ack=x.state==='ack'?'<span style="color:var(--up)">已确认</span>':'';
+      const detail=x.detail?'<div style="color:var(--muted);font-size:12px;margin-top:6px;white-space:pre-wrap">'+esc(x.detail)+'</div>':'';
+      return '<div style="border-left:4px solid '+col+';padding:10px 12px;margin-bottom:8px;background:rgba(255,255,255,.03);border-radius:6px">'
+        +'<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><div>'
+        +'<span style="color:'+col+';font-weight:800;font-size:12px">'+esc(x.severity)+'</span>'
+        +'<span style="font-weight:700;margin-left:8px">'+esc(x.title)+'</span>'
+        +'<span style="color:var(--muted);font-size:11px;margin-left:8px">'+esc(x.rule||'')+' · '+Math.round((x.age_sec||0)/60)+'m前 · ×'+(x.count||1)+' '+ack+'</span></div>'
+        +'<div style="display:flex;gap:6px"><button class="btn secondary" data-ack="'+x.id+'" style="font-size:11px;padding:3px 10px">确认</button>'
+        +'<button class="btn secondary" data-silence="'+x.id+'" style="font-size:11px;padding:3px 10px">静默1h</button></div></div>'
+        +detail+'</div>';
+    }).join('');
+    $$('#monAlerts [data-ack]').forEach(function(b){b.onclick=async function(){await api('/api/alerts/'+b.dataset.ack+'/ack',{method:'POST',body:'{}'});PANELS.monitor()}});
+    $$('#monAlerts [data-silence]').forEach(function(b){b.onclick=async function(){await api('/api/alerts/'+b.dataset.silence+'/silence',{method:'POST',body:JSON.stringify({minutes:60})});PANELS.monitor()}});
+  }
+  const sl=(s&&s.sources)||[];
+  if(!sl.length){$('#monSlo').innerHTML='<div style="color:var(--muted)">暂无数据</div>'}
+  else{
+    $('#monSlo').innerHTML='<table style="width:100%;font-size:12px;border-collapse:collapse"><thead><tr style="color:var(--muted);text-align:left"><th>源</th><th>成功</th><th>目标</th><th>燃烧率</th><th>p95</th></tr></thead><tbody>'
+      +sl.map(function(x){return '<tr style="border-top:1px solid rgba(255,255,255,.06)"><td>'+esc(x.source)+'</td><td style="color:'+(x.status==='ok'?'var(--up)':'#d99e2b')+'">'+x.success_pct+'%</td><td>'+x.target_pct+'%</td><td>'+x.burn_rate+'</td><td>'+(x.p95_ms==null?'—':x.p95_ms+'ms')+'</td></tr>'}).join('')
+      +'</tbody></table>';
+  }
+  const sc=(c&&c.rows)||[];
+  if(!sc.length){$('#monScore').innerHTML='<div style="color:var(--muted)">暂无已评估告警（需先产生带币种的告警）</div>'}
+  else{
+    $('#monScore').innerHTML='<table style="width:100%;font-size:12px;border-collapse:collapse"><thead><tr style="color:var(--muted);text-align:left"><th>规则</th><th>级别</th><th>周期</th><th>样本</th><th>命中率</th><th>平均收益</th></tr></thead><tbody>'
+      +sc.map(function(x){return '<tr style="border-top:1px solid rgba(255,255,255,.06)"><td>'+esc(x.rule)+'</td><td>'+esc(x.severity)+'</td><td>'+(x.horizon_sec/60)+'m</td><td>'+x.samples+'</td><td>'+(x.hit_rate_pct==null?'—':x.hit_rate_pct+'%')+'</td><td>'+(x.avg_ret_pct==null?'—':x.avg_ret_pct+'%')+'</td></tr>'}).join('')
+      +'</tbody></table>';
+  }
+};
+
 
 /* ================= PANEL: 消息面 ================= */
 PANELS.news=async function(){startTabTimer("news",PANELS.news);
