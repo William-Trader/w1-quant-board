@@ -2234,7 +2234,7 @@ PANELS.flows=async function(){startTabTimer('flows',PANELS.flows);
         +'<span style="font-size:9px;color:#5f9e7a">\u4e50\u89c2</span></div>'
         +'<div style="font-size:10px;color:#888;margin-top:4px">\u57fa\u4e8e ETF \u8fd13\u65e5\u6d41\u5165/\u6d41\u51fa\u603b\u989d\uff0c\u8303\u56f4 -1000M ~ +1000M</div></div>';
     })()
-    +'<div class="card" id="flows-oi-card"><div class="card-title">\u6301\u4ed3\u91cf\uff08OI\uff09\u6458\u8981<span style="margin-left:auto" id="flows-oi-ts"></span></div><div id="flows-oi-data" class="empty">\u52a0\u8f7d\u4e2d\u2026</div></div>'+'<div class="card" id="flows-mg-card"><div class="card-title">'+T('\u5e02\u573a\u5168\u5c40 \u00b7 30 \u65e5','Market Global \u00b7 30d')+'</div><div class="empty">'+T('\u52a0\u8f7d\u4e2d\u2026','Loading...')+'</div></div>'+'<div class="card" id="altseason-card"><div class="card-title">'+T('\u5c71\u5be8\u5b63 / \u4e3b\u6d41\u5b63','Altseason / BTC Season')+'</div><div class="empty">'+T('\u52a0\u8f7d\u4e2d\u2026','Loading...')+'</div></div>'+'<div class="card" id="btc-chain-data"><div class="card-title">BTC \u94fe\u4e0a\u6307\u6807\u52a0\u8f7d\u4e2d\u2026</div></div>';
+    +'</div><div class="card" id="flows-oi-card"><div class="card-title">\u6301\u4ed3\u91cf\uff08OI\uff09\u6458\u8981<span style="margin-left:auto" id="flows-oi-ts"></span></div><div id="flows-oi-data" class="empty">\u52a0\u8f7d\u4e2d\u2026</div></div>'+'<div class="card" id="flows-mg-card"><div class="card-title">'+T('\u5e02\u573a\u5168\u5c40 \u00b7 30 \u65e5','Market Global \u00b7 30d')+'</div><div class="empty">'+T('\u52a0\u8f7d\u4e2d\u2026','Loading...')+'</div></div>'+'<div class="card" id="altseason-card"><div class="card-title">'+T('\u5c71\u5be8\u5b63 / \u4e3b\u6d41\u5b63','Altseason / BTC Season')+'</div><div class="empty">'+T('\u52a0\u8f7d\u4e2d\u2026','Loading...')+'</div></div>'+'<div class="card" id="btc-chain-data"><div class="card-title">BTC \u94fe\u4e0a\u6307\u6807\u52a0\u8f7d\u4e2d\u2026</div></div>';
   
 fetch('/api/oi-summary').then(function(r){return r.json()}).then(function(oi){
     if(!oi||!oi.ok){var el0=document.getElementById('flows-oi-data');if(el0)el0.innerHTML='<div class="empty">OI 数据暂不可得</div>';return;}
@@ -3752,28 +3752,63 @@ PANELS.research=async function(){
 PANELS.today=async function(){
   startTabTimer('today',PANELS.today);
   const main=$('#main');
-  main.innerHTML='<div class="today-hero"><div class="today-title">☀️ 今日决策台</div><div class="today-sub">市场姿态 · 情绪 · 数据健康 · 今日事件</div></div>'
-    +'<div id="todayGrid" class="rs-grid"><div class="rs-card">加载中…</div></div>'
-    +'<div id="todayEvents"></div><div id="todayAlerts"></div>'
-    +'<div class="card"><div class="rs-title">快捷入口</div><div class="today-links">'
-    +'<button class="btn secondary" data-go="market-map">🗺️ 市场地图</button>'
-    +'<button class="btn secondary" data-go="funding">💸 费率/仓位</button>'
-    +'<button class="btn secondary" data-go="news">📰 新闻</button>'
-    +'<button class="btn secondary" data-go="monitor">🛰️ 监测</button>'
-    +'<button class="btn secondary" data-go="research">🔬 研究</button></div></div>';
-  $$('#main [data-go]').forEach(function(b){b.onclick=function(){switchTab(b.dataset.go)}});
-  let ov={},fg={},hs={},cal={},al={};
-  try{ const r=await Promise.all([api('/api/overview'),api('/api/fear-greed'),api('/api/health/sources'),api('/api/eco-calendar'),api('/api/alerts?state=active&limit=5')]); ov=r[0]||{};fg=r[1]||{};hs=r[2]||{};cal=r[3]||{};al=r[4]||{}; }catch(e){}
-  const v=ov.verdict||{}; const f=fg.current||{}; const src=hs.sources||[]; const ok=src.filter(function(x){return x.status==='ok'}).length;
-  const ev=(cal.future||[]).filter(function(x){return x.impact==='high'}).slice(0,4);
-  $('#todayGrid').innerHTML=[
-    rsCard('市场姿态',v.verdict_zh||v.verdict||'—',v.headline_zh||''),
-    rsCard('恐慌贪婪',f.value==null?'—':(f.value+' · '+(f.classification||'')),'数据龄 '+(fg.age_sec==null?'—':Math.round(fg.age_sec/60)+'m')),
-    rsCard('数据健康',src.length?ok+'/'+src.length:'—','正常数据源数量'),
-    rsCard('高影响事件',String(ev.length),ev.length?'今日需留意':'暂无高影响事件')
-  ].join('');
-  $('#todayEvents').innerHTML='<div class="card"><div class="rs-title">今日高影响事件</div>'+(ev.length?ev.map(function(e){return '<div class="today-row"><span class="today-time">'+esc(e.time||'')+'</span><span>'+esc(e.title_zh||e.title||'')+'</span><span class="today-impact">'+esc(e.impact||'')+'</span></div>'}).join(''):'<div class="rs-sub">暂无</div>')+'</div>';
-  $('#todayAlerts').innerHTML='<div class="card"><div class="rs-title">活动告警</div>'+(al&&al.ok?(al.alerts&&al.alerts.length?al.alerts.map(function(a){return '<div class="today-row"><span class="today-sev">'+esc(a.severity||'')+'</span><span>'+esc(a.title||'')+'</span><span>'+Math.round((a.age_sec||0)/60)+'m</span></div>'}).join(''):'<div class="rs-sub">无活动告警</div>'):'<div class="rs-sub">登录会员后可查看告警</div>')+'</div>';
+  main.innerHTML='<div class="today-hero"><div class="today-title">☀️ 今日决策台</div><div class="today-sub">加载中…</div></div>';
+  const res=await Promise.all([api('/api/today'),api('/api/today/deep')]);
+  const b=res[0],d=res[1];
+  if(!b||!b.ok){main.innerHTML='<div class="card">今日简报暂不可用：'+esc((b&&b.error)||'数据不足')+'</div>';return}
+  function p(n,s){return n==null?'—':(Number(n)>=0?'+':'')+Number(n).toFixed(s==null?2:s)+'%'}
+  const bias=b.bias||{}, col=bias.code==='long'?'#c0392b':bias.code==='short'?'#2e7d5b':'#d9a441';
+  const hero='<div class="today-hero"><div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start"><div><div class="today-title">☀️ 今日决策台</div><div class="today-sub">BTC 盘前/盘中简报 · '+new Date((b.as_of||0)*1000).toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})+'</div></div><div style="text-align:right"><span class="today-bias" style="background:'+col+'">'+esc(bias.label_zh||'中性')+'</span><div class="rs-sub" style="margin-top:6px">置信 '+esc(bias.confidence||0)+'% · 评分 '+esc(bias.score||0)+'</div></div></div><div style="margin-top:14px;font-size:16px;font-weight:700;line-height:1.6">'+esc(b.headline||'')+'</div></div>';
+  const cards=rsGrid([
+    rsCard('BTC 现价','$'+esc(b.price==null?'—':b.price),'24h '+(b.change_24h==null?'—':p(b.change_24h))),
+    rsCard('市场体制',b.regime?esc(b.regime.regime):'—','EMA20 '+esc(b.regime?b.regime.ema20:'—')+' / EMA60 '+esc(b.regime?b.regime.ema60:'—')),
+    rsCard('恐慌贪婪',b.fgi?esc(b.fgi.value)+' · '+esc(b.fgi.classification):'—','变化 '+(b.fgi&&b.fgi.change!=null?p(b.fgi.change,0):'—')+' · '+(b.fgi?Math.round((b.fgi.age_sec||0)/3600)+'h 前':'—')),
+    rsCard('ETF 3 日',b.etf_3d?esc(b.etf_3d.sum)+'M':'-','较前 3 日 '+(b.etf_3d?p(b.etf_3d.sum-b.etf_3d.prev,1):'—'))
+  ]);
+  const comp=b.components||{};
+  const compHtml='<div class="card"><div class="rs-title">评分构成</div>'+rsTable(['趋势','新闻','情绪','ETF 流','仓位'],[[comp.trend==null?'—':comp.trend,comp.news==null?'—':comp.news,comp.sentiment==null?'—':comp.sentiment,comp.flow==null?'—':comp.flow,comp.positioning==null?'—':comp.positioning]])+'</div>';
+  const dl=b.delta||{};
+  const deltaHtml='<div class="card"><div class="rs-title">相比昨天变了什么</div>'+rsTable(['指标','当前/变化'],[
+    ['价格 24h',p(dl.price_24h_pct)],
+    ['EMA20 变化',p(dl.ema20_change_pct)],
+    ['EMA60 变化',p(dl.ema60_change_pct)],
+    ['FGI 变化',p(dl.fgi_change,0)],
+    ['ETF 3 日变化',p(dl.etf_3d_change,1)],
+    ['新闻多空差变化',p(dl.news_balance_change,0)],
+    ['前一日体制',esc(dl.regime_prev||'—')]
+  ])+'</div>';
+  const checks='<div class="card"><div class="rs-title">交易者清单</div>'+(b.checklist||[]).map(function(x,i){return '<div class="today-row"><span class="today-sev">'+(i+1)+'</span><span>'+esc(x)+'</span></div>'}).join('')+'</div>';
+  const levels=b.key_levels||{};
+  const levelHtml='<div class="card"><div class="rs-title">关键价位</div>'+rsTable(['支撑','阻力','EMA20','EMA60','下方清算墙','上方清算墙'],[[esc(levels.support),esc(levels.resistance),esc(levels.ema20),esc(levels.ema60),esc(levels.liquidation_long),esc(levels.liquidation_short)]])+'</div>';
+  const s=b.sessions||{};
+  const sessHtml='<div class="card"><div class="rs-title">亚/欧/美盘高低点</div>'+rsTable(['时段','高点','低点','K线数'],[
+    ['亚洲',s.asia?esc(s.asia.high):'—',s.asia?esc(s.asia.low):'—',s.asia?esc(s.asia.bars):'0'],
+    ['伦敦',s.london?esc(s.london.high):'—',s.london?esc(s.london.low):'—',s.london?esc(s.london.bars):'0'],
+    ['纽约',s.ny?esc(s.ny.high):'—',s.ny?esc(s.ny.low):'—',s.ny?esc(s.ny.bars):'0'],
+    ['尾盘',s.late?esc(s.late.high):'—',s.late?esc(s.late.low):'—',s.late?esc(s.late.bars):'0']
+  ])+'</div>';
+  const watch='<div class="card"><div class="rs-title">自选行动板</div>'+rsTable(['币','价格','24h','支撑','阻力','状态','触发','失效','压力'],(b.symbols||[]).map(function(x){return [esc(x.symbol),x.price==null?'—':x.price,x.change_24h==null?'—':p(x.change_24h),x.support==null?'—':x.support,x.resistance==null?'—':x.resistance,esc(x.state),x.trigger==null?'—':x.trigger,x.invalidation==null?'—':x.invalidation,x.stress==null?'—':x.stress]}))+'</div>';
+  const rb=b.risk_budget||{};
+  const riskBox='<div class="card"><div class="rs-title">风险预算</div><div id="todayRiskBox">'+rsGrid([
+    rsCard('账户',rb.account_size+' U','1% 风险 = '+rb.max_loss+' U'),
+    rsCard('止损距离',rb.stop_pct==null?'—':rb.stop_pct+'%','ATR '+(rb.atr==null?'—':rb.atr)),
+    rsCard('名义仓位',rb.position_size==null?'—':rb.position_size+' U','按 1% 风险/止损距离'),
+    rsCard('BTC-ETH 20d 相关',rb.corr_btc_eth==null?'—':rb.corr_btc_eth,'组合集中度参考')
+  ])+'<div class="today-links" style="margin-top:8px"><input id="todayAccount" type="number" value="'+esc(rb.account_size||1000)+'" min="100" style="background:var(--bg2);border:1px solid var(--line);color:var(--fg);border-radius:6px;padding:6px 10px;min-width:140px"><button class="btn secondary" id="todayRiskCalc">按账户重算</button></div></div></div>';
+  const scenarios='<div class="card"><div class="rs-title">情景推演</div>'+(b.scenarios||[]).map(function(x){return '<div class="today-scenario '+(x.type==='down'?'down':'up')+'">'+esc(x.text)+'</div>'}).join('')+'</div>';
+  const flags='<div class="card"><div class="rs-title">风险提示</div><div class="today-links">'+(b.risk_flags||[]).map(function(x){return '<span class="today-flag">'+esc(x)+'</span>'}).join('')+'</div></div>';
+  const evHtml='<div class="card"><div class="rs-title">事件时间轴</div>'+((b.events||[]).length?(b.events||[]).map(function(e){var cd=Number(e.countdown_sec||0);var t=cd<0?'已过':cd<3600?Math.round(cd/60)+'分钟后':cd<86400?(cd/3600).toFixed(1)+'小时后':Math.round(cd/86400)+'天后';return '<div class="today-row"><span class="today-time">'+esc(e.time||'')+'</span><span>'+esc(e.title||'')+'</span><span class="today-impact '+esc(e.impact||'')+'">'+esc(e.impact||'')+'</span><span class="'+(e.blackout?'today-impact high':'rs-sub')+'">'+t+(e.blackout?' · 禁交易窗口':'')+'</span></div>'}).join(''):'<div class="rs-sub">未来 24h 无高影响事件</div>')+'</div>';
+  const n=b.news||{};
+  const newsHtml='<div class="card"><div class="rs-title">最近消息（6h）</div><div class="today-row"><span>利多 '+esc((n.counts&&n.counts.bullish)||0)+'</span><span>利空 '+esc((n.counts&&n.counts.bearish)||0)+'</span><span>中性 '+esc((n.counts&&n.counts.neutral)||0)+' · 前 6h 多空差 '+(n.prev_total?p((n.counts.bullish-n.counts.bearish)-(n.prev_counts.bullish-n.prev_counts.bearish)):'—')+'</span></div>'+((n.top||[]).slice(0,4).map(function(x){return '<div class="today-row"><span class="today-time">'+esc(x.source||'')+'</span><span>'+esc(x.title||'')+'</span></div>'}).join(''))+'</div>';
+  let deepHtml='<div class="card"><div class="rs-title">仓位 / 告警（会员）</div><div class="rs-sub">登录会员后解锁仓位压力、被套方向与活动告警。</div></div>';
+  if(d&&d.ok){const rows=(d.positioning&&d.positioning.rows)||[];const alerts=d.alerts||{};deepHtml='<div class="card"><div class="rs-title">仓位压力 / 告警</div>'+rsTable(['币','压力','判断'],rows.slice(0,5).map(function(r){return [esc(r.symbol),r.stress,esc(r.trapped)]}))+'<div class="today-row" style="margin-top:8px"><span>活动告警</span><span>'+esc(alerts.open||0)+' 条</span><span>P0 '+(alerts.by_severity&&alerts.by_severity.P0||0)+' / P1 '+(alerts.by_severity&&alerts.by_severity.P1||0)+'</span></div></div>';}
+  const trust='<div class="card"><div class="rs-title">数据可信度</div>'+rsTable(['数据源','年龄','状态'],(b.data_trust||[]).map(function(x){return [esc(x.name),x.age_sec==null?'—':Math.round(x.age_sec/60)+'m',esc(x.status)]}))+'</div>';
+  const ask='<div class="card"><div class="rs-title">问今日简报</div><div class="today-links"><input id="todayAsk" placeholder="例如：为什么偏多？关键位在哪？" style="background:var(--bg2);border:1px solid var(--line);color:var(--fg);border-radius:6px;padding:7px 10px;min-width:240px;flex:1"><button class="btn" id="todayAskBtn">提问</button></div><div id="todayAnswer" class="rs-sub" style="margin-top:10px">会员可问：为什么、关键位、事件、止损/失效、风险。</div></div>';
+  const review='<div class="card"><div class="rs-title">盘后复盘</div><div class="today-links"><input id="todayReviewDate" type="date" value="'+new Date(Date.now()-86400000).toISOString().slice(0,10)+'" style="background:var(--bg2);border:1px solid var(--line);color:var(--fg);border-radius:6px;padding:6px 10px"><button class="btn secondary" id="todayReviewBtn">复盘</button></div><div id="todayReviewOut" class="rs-sub" style="margin-top:8px">对比当日快照与实际涨跌。</div></div>';
+  main.innerHTML=hero+cards+compHtml+deltaHtml+checks+levelHtml+sessHtml+watch+riskBox+scenarios+flags+evHtml+newsHtml+deepHtml+trust+ask+review+'<div class="card"><div class="rs-sub">'+esc(b.notes||'')+'</div></div>';
+  const calc=$('#todayRiskCalc'); if(calc) calc.onclick=async function(){const v=($('#todayAccount').value||'').trim();const r=await api('/api/today?accountSize='+encodeURIComponent(v));if(r&&r.ok&&r.risk_budget){const x=r.risk_budget;$('#todayRiskBox').innerHTML=rsGrid([rsCard('账户',x.account_size+' U','1% 风险 = '+x.max_loss+' U'),rsCard('止损距离',x.stop_pct==null?'—':x.stop_pct+'%','ATR '+(x.atr==null?'—':x.atr)),rsCard('名义仓位',x.position_size==null?'—':x.position_size+' U','按 1% 风险/止损距离'),rsCard('BTC-ETH 20d 相关',x.corr_btc_eth==null?'—':x.corr_btc_eth,'组合集中度参考')]);}};
+  const askBtn=$('#todayAskBtn'); if(askBtn) askBtn.onclick=async function(){const q=($('#todayAsk').value||'').trim();if(!q)return;const r=await api('/api/today/ask?q='+encodeURIComponent(q));$('#todayAnswer').textContent=(r&&r.ok)?r.answer:((r&&r.error==='login_required')?'会员专属问答，请先登录。':'暂时无法回答');};
+  const rv=$('#todayReviewBtn'); if(rv) rv.onclick=async function(){const date=$('#todayReviewDate').value;const r=await api('/api/today/review?date='+encodeURIComponent(date));const out=$('#todayReviewOut');if(!r||!r.ok){out.textContent='复盘数据不足：'+((r&&r.error)||'');return}out.innerHTML='当日 BTC '+r.day.open+' → '+r.day.close+'（'+r.day.ret_pct+'%），快照 '+esc(r.snapshot.bias)+'，判定 '+(r.hit?'✅ 命中':'❌ 未命中');};
 };
 
 PANELS['market-map']=async function(){

@@ -1204,3 +1204,9 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#22d3ee;box-sh
 .today-flag{background:rgba(217,164,65,.12);border:1px solid rgba(217,164,65,.3);color:var(--amber);border-radius:999px;padding:3px 9px;font-size:11px}
 .today-scenario{padding:10px 12px;border-radius:8px;font-size:12px;line-height:1.6;margin-bottom:8px;background:rgba(59,158,255,.08);border-left:3px solid var(--accent)}
 .today-scenario.down{background:rgba(192,57,43,.08);border-left-color:#c0392b}
+
+/* ===== Flows chart/table layout fix (2026-10-21) ===== */
+.chart-box>svg{width:100%;height:auto;display:block;max-width:100%}
+#flows-mg-card .chart-box{overflow:hidden}
+#flows-mg-card div[style*="grid-template-columns:1fr 1fr 1fr"]{grid-template-columns:repeat(auto-fit,minmax(100px,1fr))!important}
+@media(max-width:640px){#flows-mg-card div[style*="grid-template-columns:1fr 1fr 1fr"]{grid-template-columns:1fr 1fr!important}.chart-box{padding:8px}}
