@@ -361,6 +361,19 @@ PolyForm Noncommercial 1.0.0. Non-commercial research use only; contact the repo
 
 ## 更新日志 / Changelog
 
+### 2026-10-25
+
+- **Coinglass 断连治理 + 自动修复**：新增自适应限流（429 自动降档、连续成功自动回升）、每端点熔断退避、401 冷却自愈、超时 8s→12s；新增 `scripts/cg_selfheal.js`（crontab 每 5 分钟）做 key 冷却探活自愈与源健康汇总。
+  **Coinglass reliability & self-heal**: adaptive rate limit (auto-throttle on 429, auto-recover on success), per-endpoint circuit breaker, 401 cooldown self-heal, 8s→12s timeout; added `scripts/cg_selfheal.js` (cron every 5 min) for key-cooldown probe/self-heal and source-health summary.
+- **Coinglass 新网关**：切换至 `https://vip2.coinglass.site`；LSR 专业版字段扩展至 48 项、排行榜翻页、共识信号恢复、`code=40300` 业务判定、`CG_RPM` 自适应。
+  **New Coinglass gateway**: switched to `https://vip2.coinglass.site`; LSR v4 fields (48), ranking pagination, consensus signals restored, `code=40300` handling, adaptive `CG_RPM`.
+- **今日决策台增强**：新增 AI 解读（会员）、评分构成、相比昨日变化、事件倒计时/禁交易窗口、自选行动板、亚欧美股盘高低点、风险预算、数据可信度。
+  **Today dashboard enhancements**: AI interpretation (member), score breakdown, day-over-day delta, event countdown/blackout, watchlist action board, session high/low, risk budget, data trust.
+- **单币技术分析 + 观点演化**：市场地图合并 8 币立场，点击进入单币技术分析；新增观点演化页。
+  **Coin technical analysis + view evolution**: market map merges 8-coin stances with click-through coin analysis; added view-evolution page.
+- **情报页面卡片流**：消息面改为摘要 + 主题卡片流，事件日历按日期分组，跨资产增加领涨领跌卡片；修复资金流页面卡片嵌套与成交额单位。
+  **Intel card flow**: news redesigned to digest + topic card grid, events grouped by date, cross-asset top/bottom cards; fixed Flows card nesting and volume unit.
+
 ### 2026-10-21
 
 - **任务型导航 v9**：主导航从 16 个入口重组为 7 个任务型 Tab（今日 / 市场 / 衍生品 / 情报 / 研究 / 监测 / 我的），新增二级 subnav；新增今日决策台、市场地图、事件日历、跨资产、自选/我的；会员入口保留锁定状态，requireVip 与锁卡逻辑不变。
