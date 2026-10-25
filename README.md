@@ -373,6 +373,8 @@ PolyForm Noncommercial 1.0.0. Non-commercial research use only; contact the repo
   **Coin technical analysis + view evolution**: market map merges 8-coin stances with click-through coin analysis; added view-evolution page.
 - **情报页面卡片流**：消息面改为摘要 + 主题卡片流，事件日历按日期分组，跨资产增加领涨领跌卡片；修复资金流页面卡片嵌套与成交额单位。
   **Intel card flow**: news redesigned to digest + topic card grid, events grouped by date, cross-asset top/bottom cards; fixed Flows card nesting and volume unit.
+- **自愈触发机制强化**：清算 watchdog 每小时→每 15 分钟、阈值 40→35min；断供告警阈值 90→60min；清算采集 cron 补 `.catch`；`scripts/health_check.js` 新增死手开关（外部 cron 检测清算表超 50min 且无采集尝试 → 自动 `pm2 restart` 恢复调度，冷却 30min）。
+  **Self-heal trigger hardening**: liquidation watchdog hourly→15min, threshold 40→35min; outage-alert threshold 90→60min; liquidation cron added `.catch`; `scripts/health_check.js` dead-man switch (external cron: liquidation stale >50min with no collection attempts → auto `pm2 restart`, 30min cooldown).
 
 ### 2026-10-21
 

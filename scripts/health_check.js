@@ -61,6 +61,28 @@ async function main() {
       } catch (e) { sections.push(w.zh + ':查询失败'); }
     }
   } catch (e) { sections.push('分段巡检不可用'); }
+  // 6) 死手开关（2026-10-25）：进程内 */30 调度器死亡时，外部 cron 兜底自动重启 board
+  //    触发条件：清算表超 50min + 近 50min 无采集尝试(source_health 无记录，排除上游故障) + 冷却 30min
+  try {
+    const nowS2 = Math.floor(Date.now() / 1000);
+    const liq = db.prepare("SELECT MAX(ts) m FROM liquidation").get();
+    const liqAge = liq && liq.m != null ? nowS2 - Number(liq.m) : 1e9;
+    const HARD = 3000;
+    if (liqAge > HARD) {
+      const att = db.prepare("SELECT COUNT(*) n FROM source_health WHERE source LIKE 'cg_liquidation%' AND ts >= ?").get(nowS2 - HARD);
+      if (!(att && att.n > 0)) {
+        const cd = db.prepare("SELECT value FROM kv WHERE key='deadman:last_restart'").get();
+        let lastTs = 0;
+        try { lastTs = JSON.parse(cd.value).ts || 0; } catch (e) {}
+        if (Date.now() - lastTs > 30 * 60 * 1000) {
+          db.prepare("INSERT OR REPLACE INTO kv(key,value) VALUES('deadman:last_restart',?)").run(JSON.stringify({ ts: Date.now() }));
+          sh('pm2 restart w1-board --update-env 2>&1');
+          problems.push('爆仓清算采集停摆(调度器死亡)，已自动重启 w1-board');
+          console.log(new Date().toISOString(), '[deadman] 清算断供' + Math.floor(liqAge / 60) + '分且无采集尝试 → 自动重启 board');
+        }
+      }
+    }
+  } catch (e) { console.log(new Date().toISOString(), '[deadman] error:', e.message); }
   const status = problems.length
     ? '🔴 ' + problems.join(' | ') + ' ｜分区: ' + sections.join(' ')
     : '🟢 W1 系统健康: 4服务在线/API正常/磁盘OK ｜分区: ' + sections.join(' ');
