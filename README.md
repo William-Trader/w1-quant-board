@@ -375,6 +375,8 @@ PolyForm Noncommercial 1.0.0. Non-commercial research use only; contact the repo
   **Intel card flow**: news redesigned to digest + topic card grid, events grouped by date, cross-asset top/bottom cards; fixed Flows card nesting and volume unit.
 - **自愈触发机制强化**：清算 watchdog 每小时→每 15 分钟、阈值 40→35min；断供告警阈值 90→60min；清算采集 cron 补 `.catch`；`scripts/health_check.js` 新增死手开关（外部 cron 检测清算表超 50min 且无采集尝试 → 自动 `pm2 restart` 恢复调度，冷却 30min）。
   **Self-heal trigger hardening**: liquidation watchdog hourly→15min, threshold 40→35min; outage-alert threshold 90→60min; liquidation cron added `.catch`; `scripts/health_check.js` dead-man switch (external cron: liquidation stale >50min with no collection attempts → auto `pm2 restart`, 30min cooldown).
+- **node-cron 根修 + 死手开关泛化**：将 `*/30`、`0 */2`、`0 */3` 等步进式 cron 改为显式枚举（`0,30 * * * *`、`0 0,2,4,...`、`0 0,3,6,...`），规避 node-cron 3.0.3 慢节奏任务静默死亡的已知问题；死手开关增加 `prices` 60s 心跳守卫（区分「进程存活但 */30 调度死亡」vs「进程/上游故障」），只在心跳新鲜但清算断供时自动 `pm2 restart`。
+  **node-cron root fix + dead-man generalization**: step-value crons (`*/30`, `0 */2`, `0 */3`) → explicit enumeration (`0,30 * * * *`, `0 0,2,4,...`, `0 0,3,6,...`) to dodge node-cron 3.0.3's silent stall on slow-cadence tasks; dead-man switch gains a `prices` 60s heartbeat guard (distinguishes "process alive but */30 scheduler dead" from "process/upstream failure"), auto `pm2 restart` only when heartbeat is fresh but liquidation is stale.
 
 ### 2026-10-21
 

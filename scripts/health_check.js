@@ -62,13 +62,19 @@ async function main() {
     }
   } catch (e) { sections.push('分段巡检不可用'); }
   // 6) 死手开关（2026-10-25）：进程内 */30 调度器死亡时，外部 cron 兜底自动重启 board
-  //    触发条件：清算表超 50min + 近 50min 无采集尝试(source_health 无记录，排除上游故障) + 冷却 30min
+  //    触发条件：prices(60s 心跳) 仍新鲜→进程存活；清算表超 50min 且近 50min 无采集尝试→*/30 调度死亡；冷却 30min
   try {
     const nowS2 = Math.floor(Date.now() / 1000);
+    const px = db.prepare("SELECT MAX(ts) m FROM prices").get();
+    const pv = px && px.m != null ? Number(px.m) : 0;
+    const psec = String(Math.floor(pv)).length > 10 ? Math.floor(pv / 1000) : pv;
+    const pxAge = nowS2 - psec;
     const liq = db.prepare("SELECT MAX(ts) m FROM liquidation").get();
-    const liqAge = liq && liq.m != null ? nowS2 - Number(liq.m) : 1e9;
+    const lv = liq && liq.m != null ? Number(liq.m) : 0;
+    const lsec = String(Math.floor(lv)).length > 10 ? Math.floor(lv / 1000) : lv;
+    const liqAge = nowS2 - lsec;
     const HARD = 3000;
-    if (liqAge > HARD) {
+    if (pxAge < 300 && liqAge > HARD) {
       const att = db.prepare("SELECT COUNT(*) n FROM source_health WHERE source LIKE 'cg_liquidation%' AND ts >= ?").get(nowS2 - HARD);
       if (!(att && att.n > 0)) {
         const cd = db.prepare("SELECT value FROM kv WHERE key='deadman:last_restart'").get();
