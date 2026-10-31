@@ -39,6 +39,9 @@ async function get(p, timeout = 8000) {
   add('HTTP', '/healthz', hz.ok && hz.body && hz.body.ok, hz.status + ' ' + hz.ms + 'ms');
   const perf = await get('/api/perf');
   add('HTTP', '/api/perf', perf.ok && perf.body && perf.body.ok, perf.status + ' ' + perf.ms + 'ms');
+  const src = await get('/api/sources');
+  const sb = src.body || {};
+  add('源路由', '/api/sources', src.ok && sb.ok === true && Array.isArray(sb.routes), src.ok ? `routes=${sb.routes ? sb.routes.length : '?'} stale=${sb.summary ? sb.summary.stale : '?'}` : src.error);
   const dq = await get('/api/data-quality', 20000);
   const dqb = dq.body || {};
   add('数据', '/api/data-quality', dq.ok && dqb.ok && dqb.quality_score >= 90 && dqb.summary && dqb.summary.stale === 0,
@@ -65,6 +68,29 @@ async function get(p, timeout = 8000) {
       add('表龄', w.zh, age <= w.secs, `${age}s / 阈值 ${w.secs}s`);
     } catch (e) { add('表龄', w.zh, false, e.message); }
   }
+
+  // 2b) 两个 CG 源：必须分离 + 各自负责的数据类型新鲜
+  try {
+    const readEnv = (p) => { try { return fs.readFileSync(p, 'utf8'); } catch (e) { return ''; } };
+    const w1e = readEnv(path.join(ROOT, '.env'));
+    const cge = readEnv('/home/ubuntu/cglass-pro/.env');
+    const keyOf = (txt, k) => { const m = txt.match(new RegExp('^' + k + '=(.+)$', 'm')); return m ? m[1].replace(/^["']|["']$/g, '').trim() : ''; };
+    const k1 = keyOf(w1e, 'COINGLASS_API_KEY');
+    const k2 = keyOf(cge, 'CGLASS_PRO_KEY');
+    add('源路由', '两个 CG 源 key 已分离', !!k1 && !!k2 && k1 !== k2, k1 && k2 ? (k1 !== k2 ? 'fast/full separate' : 'SAME KEY') : 'missing key');
+    const base1 = keyOf(w1e, 'COINGLASS_BASE');
+    add('源路由', 'fast 源 base', /vip2\.coinglass\.site/.test(base1), base1 || 'missing');
+  } catch (e) { add('源路由', 'CG 源分离检查', false, e.message); }
+  try {
+    const r = db.prepare("SELECT MAX(ts) m FROM liquidation WHERE exchange='AGG'").get();
+    const age = r && r.m != null ? now - Number(r.m) : null;
+    add('源路由', 'fast 聚合清算', age != null && age <= 900, age == null ? 'no AGG row' : `${age}s / 阈值 900s`);
+  } catch (e) { add('源路由', 'fast 聚合清算', false, e.message); }
+  try {
+    const r = db.prepare("SELECT MAX(ts) m FROM cgpro_snapshots WHERE endpoint IN ('liq_agg_map','liq_map','liq_max_pain')").get();
+    const age = r && r.m != null ? now - Number(r.m) : null;
+    add('源路由', 'full 清算墙', age != null && age <= 1800, age == null ? 'no wall row' : `${age}s / 阈值 1800s`);
+  } catch (e) { add('源路由', 'full 清算墙', false, e.message); }
 
   // 3) 资源
   let diskFreeGb = null, diskPct = null;

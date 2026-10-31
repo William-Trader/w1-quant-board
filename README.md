@@ -263,7 +263,23 @@ node scripts/tianji_deflated_sharpe.js --trials 12   # Deflated Sharpe
 node scripts/tianji_walkforward.js --from 2026-03-08 --to 2026-08-31
 ```
 
-### 5A.5 每条固定推送现在带什么
+### 5A.5 两个 Coinglass 源的职责分离与选源（2026-10-31）
+
+系统里有两个**独立 key / 独立 base** 的 Coinglass 上游，禁止交叉使用：
+
+| 源 | 上游 | 配额/节奏 | 负责的数据 |
+|---|---|---|---|
+| `fast` | `vip2.coinglass.site`（w1-board 自有 key） | 自适应 3–10 rpm；5min | 现价、多空 LSR、费率、OI、**实时爆仓聚合**、ETF、FGI |
+| `full` | `api.alphanode.work`（cglass-pro 自有 key） | 约 1 rpm；端点轮转 | 清算墙、清算热力图、最大痛点、鲸鱼仓位分布 |
+
+**选源规则**（`lib/source_router.js`，公开 `GET /api/sources`）：
+
+1. **同类型数据优先更快/更省者**：实时爆仓从「8 所 8 次调用」改为 vip2 一次聚合 `coin-list`（覆盖 8 所），耗时与配额都下降一个量级；多空 LSR 主流币走 1 次 `lsr_signals` 批量，不再依赖可能不含 BTC/ETH 的榜单。
+2. **需要更全数据时用 full**：清算墙/热力图/最大痛点/鲸鱼仓位优先读 cglass-pro 的 `cgpro_snapshots`（全量 Pro 端点），缺失或超过 30min 才回退 fast 聚合。
+3. **主源过期自动回退**：fast 阈值 900s、full 阈值 1800s；`/api/sources` 返回每个数据类型的 `chosen/age_sec/stale/fallback_used/reason`。
+4. **请求错峰**：LSR 榜单降到 10min/轮且只看 1 页；signals 5min、费率 10min、清算聚合 10min、共识 10min 分散到不同分钟，避免整点叠加 429。
+
+### 5A.6 每条固定推送现在带什么
 
 | 推送 | 触发 | 计算 | 证据字段 |
 |---|---|---|---|
@@ -544,6 +560,14 @@ PolyForm Noncommercial 1.0.0. Non-commercial research use only; contact the repo
 ---
 
 ## 更新日志 / Changelog
+
+### 2026-10-31 · 双 CG 源分离与选源（v5.1.2）
+
+- 明确 `fast`（vip2，w1-board key）与 `full`（alphanode，cglass-pro key）职责，新增 `lib/source_router.js` 与 `GET /api/sources`。
+- 实时爆仓改用 vip2 一次聚合 `coin-list`（8 所→1 次调用）；失败才回退逐所。
+- 清算墙/热力图/最大痛点/鲸鱼仓位优先 full 源（cglass-pro），过期回退 fast，并在推送标注墙源与龄期。
+- LSR 榜单 5min→10min、只取 1 页；signals/费率/清算/共识错峰调度，降低 429。
+- 体检新增：两源 key 分离、fast 聚合清算新鲜度、full 清算墙新鲜度、`/api/sources`。
 
 ### 2026-10-31 · 全系统优化（v5.1.1）
 
