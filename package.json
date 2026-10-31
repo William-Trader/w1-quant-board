@@ -1,6 +1,6 @@
 {
   "name": "william-quant-board-w1",
-  "version": "5.1.4",
+  "version": "5.2.0",
   "description": "W1 量化看板 — 加密货币市场监测终端：行情/多空 LSR/费率/清算/新闻/宏观/研究与回测，QQ·Telegram·Discord 告警。",
   "main": "server.js",
   "private": true,

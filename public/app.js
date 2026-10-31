@@ -543,6 +543,7 @@ PANELS.news=async function(){startTabTimer("news",PANELS.news);
       <span class="news-refresh" id="newsRefreshBtn">⟳ ${T("刷新","Refresh")}</span>
     </div>
   </div>
+  <div id="newsBias" class="news-bias"></div>
   <div id="newsList"><div class="news-loading">${T("加载中…","Loading...")}</div></div>`;
   loadEcoCalendar();
   const render=(src)=>{loadNews(src)};
@@ -661,11 +662,32 @@ async function loadEcoCalendar(){
 }
 function ecodayLabelSafe(ds){try{return ecoDayLabel(ds)}catch(e){return ds}}
 
+function renderNewsBias(b){
+  const el=$('#newsBias'); if(!el) return;
+  if(!b||!b.scored){ el.innerHTML=''; return; }
+  const share=Number(b.bull_share);
+  const cls=share>=58?'up':share<=42?'down':'mid';
+  const biasZh=b.bias==='bullish'?'偏多':b.bias==='bearish'?'偏空':'中性';
+  const cats=(b.categories||[]).slice(0,5).map(c=>{
+    const s=c.share==null?null:Number(c.share);
+    const cl=s==null?'':s>=58?'up':s<=42?'down':'mid';
+    return '<span class="nb-cat '+(cl||'')+'" title="'+esc(c.label)+'：多 '+c.bull.toFixed(2)+' / 空 '+c.bear.toFixed(2)+'">'+esc(c.label)+' '+(s==null?'—':s.toFixed(0)+'%')+'</span>';
+  }).join('');
+  const tops=(b.top_points||[]).slice(0,3).map(p=>'<span class="nb-point '+(p.side==='bull'?'up':'down')+'" title="'+esc(p.title||'')+'">'+(p.side==='bull'?'多':'空')+' · '+esc(p.text||p.category)+'</span>').join('');
+  el.innerHTML='<div class="nb-head"><span class="nb-title">'+T('消息面多空权重点','News bull/bear points')+' · 24h</span>'
+    +'<span class="nb-count">'+b.scored+'/'+b.count+' 条已评分 · 来源按类别去重</span></div>'
+    +'<div class="nb-bar"><i class="up" style="width:'+share+'%"></i><i class="down" style="width:'+(100-share)+'%"></i><b style="left:'+share+'%"></b></div>'
+    +'<div class="nb-meta"><span class="'+cls+'">多头 '+share.toFixed(1)+'% · 空头 '+(100-share).toFixed(1)+'% · '+biasZh+'</span><span>多权重 '+b.bull_weight+' / 空权重 '+b.bear_weight+'</span></div>'
+    +(cats?'<div class="nb-cats">'+cats+'</div>':'')
+    +(tops?'<div class="nb-points">'+tops+'</div>':'');
+}
+
 async function loadNews(src){
   const el=$("#newsList");
   if(!el)return;
   const r=await api("/api/news");
   if(!r.ok||!r.items){el.innerHTML=`<div class="news-empty">${T("加载失败","Load failed")}</div>`;return}
+  renderNewsBias(r.bias_24h);
   let items=r.items;
   if(src!=="all")items=items.filter(i=>i.source===src);
   if(!items.length){el.innerHTML=`<div class="news-empty">${T("暂无消息","No news")}</div>`;return}
@@ -678,10 +700,13 @@ async function loadNews(src){
     const inf=Math.max(0,Math.min(5,Math.round(n.influence||1)));
     const stars="★".repeat(inf)+"☆".repeat(5-inf);
     const url=n.url||n.sourceUrl||"";
+    const share=n.bull_share!=null?Number(n.bull_share):null;
+    const shareCls=share==null?'':share>=58?'up':share<=42?'down':'mid';
+    const shareHtml=share==null?'':`<span class="news-share ${shareCls}" title="${T('多空权重点占比：多头','Bull/bear weighted share: long')} ${share}% / ${T('空头','short')} ${(100-share).toFixed(1)}%">多 ${share.toFixed(0)}% · 空 ${(100-share).toFixed(0)}%</span>`;
     return '<div class="news-item" style="animation:fadeIn .25s '+(i*0.03)+'s both">'
       +'<div class="news-influence"><div class="stars">'+stars+'</div><div style="font-size:9px;margin-top:2px">'+inf+'</div></div>'
       +'<div class="news-body">'
-      +'<div><span class="news-tag '+sentCls+'">'+sentEmo+' '+sentLabel+'</span>'
+      +'<div><span class="news-tag '+sentCls+'">'+sentEmo+' '+sentLabel+'</span>'+shareHtml
       +'<a class="news-title" href="'+esc(url)+'" target="_blank" rel="noopener">'+(inf>=4?'⚡':'')+esc(n.title||n.content.slice(0,60))+'</a></div>'
       +'<div class="news-content">'+esc(n.content?n.content.slice(0,200):"")+'</div>'
       +'<div class="news-meta">'
@@ -1898,7 +1923,53 @@ PANELS.onchain=async function(){startTabTimer('onchain',PANELS.onchain);
       return "<tr><td class=\"num\">"+(i+1)+"</td><td title=\""+esc(txid)+"\" style=\"font-family:mono;font-size:10px\">"+txShort+"</td><td class=\"num\">"+Number(tx.value_btc).toFixed(2)+"</td><td class=\"num\">"+usdVal+"</td><td>"+froms+"</td><td>"+tos+"</td></tr>";
     }).join("");
 var tsHtml=(d.data_ts?'<span class="data-ts">数据 '+fmtTs(d.data_ts)+'</span>':'');
-    main.innerHTML='<div class="card"><div class="card-title">🔍 '+T('大户链上地址追踪','Whale Address Tracker')+'</div>'
+    /* ===== 链上总览（v5.2 新增）：全市场多空 / 稳定币铸造 / 交易所净流 ===== */
+    var ml=d.market_ls||{}, sc=d.stablecoin||{}, ef=d.exchange_flow||{}, lt=d.large_transfers||{};
+    var longPct=ml.oi_weighted_long_pct, volLongPct=ml.volume_long_pct;
+    var biasCls=longPct==null?'mid':longPct>=60?'up':longPct<=40?'down':'mid';
+    var biasZh=longPct==null?'—':longPct>=65?'多头拥挤':longPct>=55?'偏多':longPct>45?'均衡':longPct>35?'偏空':'空头拥挤';
+    var distBars=(ml.distribution||[]).map(function(b){
+      return '<div class="ls-dist-row"><span class="k">'+esc(b.label)+'</span><div class="track"><i style="width:'+Math.min(100,b.pct)+'%"></i></div><span class="v">'+b.pct+'%</span></div>';
+    }).join('');
+    var extremeRows=function(arr,cls){
+      return (arr||[]).slice(0,5).map(function(x){
+        return '<tr><td>'+esc(x.symbol)+'</td><td class="num" style="color:'+(cls==='up'?'var(--up)':'var(--down)')+'">'+x.share+'%</td><td class="num">'+fmtUsd(x.oi_usd)+'</td></tr>';
+      }).join('');
+    };
+    var stableTop=(sc.top||[]).slice(0,6).map(function(a){
+      var total=sc.total_usd||1; var pct=Math.max(0,Math.min(100,a.usd/total*100));
+      return '<div class="ls-dist-row"><span class="k">'+esc(a.symbol)+'</span><div class="track"><i style="width:'+pct+'%"></i></div><span class="v">'+fmtUsd(a.usd)+'</span></div>';
+    }).join('');
+    var mintClr=function(v){return v>=0?'var(--up)':'var(--down)'};
+    var netClr=ef.net_usd>=0?'var(--up)':'var(--down)';
+    var flowEnt=(ef.by_entity||[]).slice(0,6).map(function(e){
+      return '<tr><td>'+esc(e.entity)+'</td><td class="num" style="color:var(--down)">'+fmtUsd(e.inflow)+'</td><td class="num" style="color:var(--up)">'+fmtUsd(e.outflow)+'</td><td class="num" style="color:'+(e.outflow-e.inflow>=0?'var(--up)':'var(--down)')+'">'+(e.outflow-e.inflow>=0?'+':'-')+fmtUsd(Math.abs(e.outflow-e.inflow))+'</td></tr>';
+    }).join('');
+    var chainOverview='<div class="grid2" style="margin-bottom:12px">'
+      +'<div class="card"><div class="card-title">🌐 '+T('全市场多空','Market Long/Short')+'<span class="data-ts" style="margin-left:auto">OI 加权 · '+(ml.coins||0)+' 币'+(ml.as_of?' · '+fmtTs(ml.as_of):'')+'</span></div>'
+        +'<div class="big-metric"><div class="big-v '+biasCls+'">'+(longPct!=null?longPct.toFixed(1)+'%':'—')+'</div><div class="big-l">'+T('多头 OI 占比','Long OI share')+' · '+biasZh+'</div></div>'
+        +'<div class="split-bar"><i class="up" style="width:'+(longPct||0)+'%"></i><i class="down" style="width:'+(100-(longPct||0))+'%"></i></div>'
+        +'<div class="kv-strip" style="margin-top:8px"><span>'+T('主动买量占比','Taker buy share')+' <b class="'+(volLongPct>=50?'up':'down')+'">'+(volLongPct!=null?volLongPct.toFixed(1)+'%':'—')+'</b></span><span>'+T('总持仓','Total OI')+' <b>'+fmtUsd(ml.total_oi_usd)+'</b></span></div>'
+        +'<div class="ls-dist" style="margin-top:10px">'+distBars+'</div>'
+        +'<div class="mini-tables"><div><div class="mini-t">'+T('多头最拥挤','Most long')+'</div><table class="mini-table"><tbody>'+extremeRows(ml.top_long,'up')+'</tbody></table></div>'
+        +'<div><div class="mini-t">'+T('空头最拥挤','Most short')+'</div><table class="mini-table"><tbody>'+extremeRows(ml.top_short,'down')+'</tbody></table></div></div>'
+        +'<div class="data-ts" style="margin-top:6px">'+T('多空比来自 Coinglass 合约市场；占比=多/(多+空)，按 OI 加权','Ratio from Coinglass futures; OI-weighted')+'</div></div>'
+      +'<div class="card"><div class="card-title">💵 '+T('稳定币供应与铸造','Stablecoin Supply')+(sc.as_of?'<span class="data-ts" style="margin-left:auto">'+fmtTs(sc.as_of)+'</span>':'')+'</div>'
+        +'<div class="big-metric"><div class="big-v amber">'+fmtUsd(sc.total_usd)+'</div><div class="big-l">'+T('美元稳定币总供应','USD stablecoin total')+'</div></div>'
+        +'<div class="kv-strip" style="margin-top:8px;flex-wrap:wrap;gap:10px">'
+        +'<span>24h '+T('新增','Mint')+' <b style="color:'+mintClr(sc.mint_24h_usd||0)+'">'+(sc.mint_24h_usd>=0?'+':'-')+fmtUsd(Math.abs(sc.mint_24h_usd||0))+' ('+(sc.change_24h_pct>=0?'+':'')+(sc.change_24h_pct||0).toFixed(2)+'%)</b></span>'
+        +'<span>7d '+T('变化','7d')+' <b style="color:'+mintClr(sc.mint_7d_usd||0)+'">'+(sc.mint_7d_usd>=0?'+':'-')+fmtUsd(Math.abs(sc.mint_7d_usd||0))+'</b></span></div>'
+        +'<div class="ls-dist" style="margin-top:10px">'+stableTop+'</div>'
+        +'<div class="data-ts" style="margin-top:6px">'+T('来源 DefiLlama；24h 新增=当前供应-前一日供应','Source DefiLlama; mint=supply delta')+'</div></div>'
+      +'<div class="card"><div class="card-title">🏦 '+T('大额钱包转账 · BTC','Large Wallet Transfers · BTC')+'<span class="data-ts" style="margin-left:auto">mempool 实时 · ≥0.5 BTC</span></div>'
+        +'<div class="big-metric"><div class="big-v amber">'+fmtUsd(lt.total_usd||0)+'</div><div class="big-l">'+T('大额转账总额','Large transfer volume')+' · '+(lt.count||0)+' '+T('笔','txs')+'</div></div>'
+        +'<div class="kv-strip" style="margin-top:8px;flex-wrap:wrap;gap:10px"><span>'+T('最大单笔','Largest')+' <b>'+fmtUsd(lt.largest_usd||0)+'</b></span><span>'+T('命中机构标签','Labeled')+' <b>'+(lt.labeled_count||0)+'</b></span>'+(ef.sample?'<span>'+T('交易所净流','Netflow')+' <b style="color:'+netClr+'">'+(ef.net_usd>=0?'+':'-')+fmtUsd(Math.abs(ef.net_usd||0))+'</b></span>':'')+'</div>'
+        +(ef.sample?('<div class="kv-strip" style="margin-top:8px;flex-wrap:wrap;gap:10px"><span>'+T('流入交易所','Inflow')+' <b class="down">'+fmtUsd(ef.inflow_usd)+'</b></span><span>'+T('流出交易所','Outflow')+' <b class="up">'+fmtUsd(ef.outflow_usd)+'</b></span><span>'+T('窗口','Window')+' <b>'+(ef.coverage_hours!=null?ef.coverage_hours+'h':'—')+'</b></span></div>'+flowEnt?'<div style="overflow-x:auto;margin-top:8px"><table><thead><tr><th>'+T('机构','Entity')+'</th><th>'+T('流入','In')+'</th><th>'+T('流出','Out')+'</th><th>'+T('净额','Net')+'</th></tr></thead><tbody>'+flowEnt+'</tbody></table></div>':'')
+          :'<div class="data-ts" style="margin-top:8px">'+T('当前内存池大额转账未命中交易所标签；净流仅在命中标签时统计，不估算。','No labeled exchange transfer in the current mempool window; netflow is only reported on matches, never estimated.')+'</div>')
+        +(lt.top&&lt.top.length?'<div class="mini-t" style="margin-top:10px">'+T('最大 8 笔','Top 8')+'</div><div class="mini-list">'+lt.top.map(function(t){var f=(t.from&&(t.from.entity||(t.from.addr||'').slice(0,8)+'…'))||'—';var to=(t.to&&(t.to.entity||(t.to.addr||'').slice(0,8)+'…'))||'—';return '<div class="mini-row"><span>'+fmtUsd(t.usd)+'</span><span>'+f+' → '+to+'</span></div>';}).join('')+'</div>':'')
+        +'<div class="data-ts" style="margin-top:6px">'+T('来源 mempool.space；每 10 分钟入库积累净流窗口','Source mempool.space; 10min ingest')+'</div></div>'
+      +'</div>';
+    main.innerHTML=chainOverview+'<div class="card"><div class="card-title">🔍 '+T('大户链上地址追踪','Whale Address Tracker')+'</div>'
       +(btcRows?'<div style="overflow-x:auto"><table><thead><tr><th>#</th><th>交易ID</th><th>BTC</th><th>价值</th><th>发送方地址</th><th>接收方地址</th></tr></thead><tbody>'+btcRows+'</tbody></table></div>':'<div class="empty">暂无巨鲸交易</div>')
       +'<div class="data-ts" style="margin-top:6px">来源: mempool.space 实时内存池</div></div>'
       +'<div class="card"><div class="card-title">🏛️ '+T('知名机构资金动向','Known Entity Activity')+'</div>'
@@ -2265,11 +2336,15 @@ fetch('/api/oi-summary').then(function(r){return r.json()}).then(function(oi){
     var s=g.series||{};
     var fmtCap=function(v){return v==null?'\u2014':(v>=1e12?(v/1e12).toFixed(2)+'T':(v/1e9).toFixed(0)+'B')};
     var mk=function(pts,color,fmt,ymin,ymax,gn,extras){
+      // 先剔除 0/负数/非数值点：成交额历史估算失败会留下 0，折线会突然垂直砸到 0
+      pts=(pts||[]).filter(function(p){return p&&p.y!=null&&isFinite(p.y)&&p.y>0});
       if(!pts||pts.length<2)return '<div class="empty">\u2014</div>';
-      var opt={color:color,yLabel:fmt,gridN:gn||5,xTickStep:Math.max(1,Math.ceil(pts.length/6)),xTickFmt:function(i){return pts[i].x.slice(5)},smooth:true,smoothTension:0.6};
+      var ys=pts.map(function(p){return Number(p.y)});
+      if(ymin==null)ymin=Math.max(0,Math.min.apply(null,ys)*0.95);
+      if(ymax==null)ymax=Math.max.apply(null,ys)*1.08;
+      if(ymax<=ymin)ymax=ymin+1;
+      var opt={color:color,yLabel:fmt,gridN:gn||5,xTickStep:Math.max(1,Math.ceil(pts.length/6)),xTickFmt:function(i){return pts[i].x.slice(5)},smooth:true,smoothTension:0.6,yMin:ymin,yMax:ymax};
       if(extras&&extras.length)opt.extras=extras;
-      if(ymin!=null)opt.yMin=ymin;
-      if(ymax!=null)opt.yMax=ymax;
       return '<div class="chart-box">'+lineChartSVG(pts,opt)+'</div>';
     };
     el.innerHTML='<div class="card-title">'+T('\u5e02\u573a\u5168\u5c40 \u00b7 30 \u65e5','Market Global \u00b7 30d')+'<span style="margin-left:auto" class="data-ts">CoinGecko</span></div>'
@@ -2278,10 +2353,10 @@ fetch('/api/oi-summary').then(function(r){return r.json()}).then(function(oi){
       +'<div class="oi-i"><div class="oi-l">'+T('24h \u6210\u4ea4\u989d','24h Volume')+'</div><div class="oi-v" style="color:#6ea8d8">'+fmtCap(cur.total_volume_usd)+'</div></div>'
       +'<div class="oi-i"><div class="oi-l">'+T('BTC \u5e02\u503c\u5360\u6bd4','BTC Dom')+'</div><div class="oi-v" style="color:#8aa37a">'+(cur.btc_dom_pct!=null?cur.btc_dom_pct.toFixed(1)+'%':'\u2014')+'</div></div>'
       +'</div>'
-      +'<div style="font-size:11px;color:var(--text3);margin:8px 0 2px">'+T('\u52a0\u5bc6\u603b\u5e02\u503c','Total Market Cap')+'</div>'+mk(s.mcap,'#d9a441',fmtCap,2e12,3e12)
-      +'<div style="font-size:11px;color:var(--text3);margin:10px 0 2px">'+T('24h \u6210\u4ea4\u989d','24h Volume')+'</div>'+mk(s.volume,'#6ea8d8',fmtCap,0,200e9,10,(function(){
+      +'<div style="font-size:11px;color:var(--text3);margin:8px 0 2px">'+T('\u52a0\u5bc6\u603b\u5e02\u503c','Total Market Cap')+'</div>'+mk(s.mcap,'#d9a441',fmtCap,null,null)
+      +'<div style="font-size:11px;color:var(--text3);margin:10px 0 2px">'+T('24h \u6210\u4ea4\u989d','24h Volume')+'</div>'+mk(s.volume,'#6ea8d8',fmtCap,null,null,8,(function(){
         // 高点连接 + 低点下拉：峰-低-峰交替序列，红线随高低点真实波动
-        var vp=s.volume||[];if(vp.length<6)return[];
+        var vp=(s.volume||[]).filter(function(p){return p&&p.y!=null&&isFinite(p.y)&&p.y>0});if(vp.length<6)return[];
         // 相对高点（span=2）
         var raw=[];
         for(var vi=2;vi<vp.length-2;vi++){
@@ -3153,11 +3228,12 @@ function refreshUserChip(){
 /* ========== 系统蓝图 SVG 拓扑图（工程级 v2 2026-08-22 方案一）========== */
 /* ========== 系统蓝图 v3 双端响应式（大卡片+主线拓扑）2026-08-22 ========== */
 let bpGraphData = null;
-function bpColor(ok, minutes){
+function bpColor(ok, minutes, sla){
   if (ok === false) return '#c06a5e';
   if (minutes == null) return '#888';
-  if (minutes > 120) return '#e0b36a';
-  if (minutes > 60) return '#c9a24a';
+  const lim = sla || 60;
+  if (minutes > lim) return '#c06a5e';
+  if (minutes > lim * 0.75) return '#e0b36a';
   return '#5f9e7a';
 }
 function bpSvgArrow(uid,x1,y1,x2,y2,color){
@@ -3173,7 +3249,8 @@ function renderBlueprint(bp){
   const procsAll = (bp.processes||[]);
   const procs = procsAll.filter(p=>p.status==='running');
   const stats = (bp.tianji&&bp.tianji.stats)||{}, okx = bp.okx||{};
-  const staleN = sources.filter(s=>s.minutes!=null&&s.minutes>60).length;
+  const srcStale = (s)=>s.minutes!=null && s.minutes > (s.sla_min||60);
+  const staleN = sources.filter(srcStale).length;
   const badN = sources.filter(s=>s.ok===false).length;
   const okN = sources.filter(s=>s.ok).length;
   const connRate = sources.length?Math.round(okN/sources.length*100):0;
@@ -3184,9 +3261,9 @@ function renderBlueprint(bp){
 
   /* 智能摘要条（一眼看全局） */
   const sumCls = (badN||staleN)?'warn':'ok';
-  const sumTxt = badN? `⚠️ ${badN} 源连接失败 · ${staleN} 源滞后 · 连通度 ${connRate}%`
-    : staleN? `⚠️ ${staleN} 源滞后(>1h) · 连通度 ${connRate}%`
-    : `✅ 系统健康 · ${okN}/${sources.length} 源在线 · 连通度 ${connRate}% · 无滞后`;
+  const sumTxt = badN? `⚠️ ${badN} 源连接失败 · ${staleN} 源超出采集节奏 · 连通度 ${connRate}%`
+    : staleN? `⚠️ ${staleN} 源超出采集节奏 · 连通度 ${connRate}%`
+    : `✅ 系统健康 · ${okN}/${sources.length} 源在线 · 连通度 ${connRate}% · 全部按节奏更新`;
   html += `<div class="bp-summary ${sumCls}">${sumTxt}</div>`;
 
   /* ① KPI（点击显示详情） */
@@ -3200,9 +3277,12 @@ function renderBlueprint(bp){
   html += `</div>`;
 
   /* ② 主线拓扑（节点可点击看层详情） */
-  const F={w:860,h:150};
+  const F={w:900,h:160};
   function laneBox(cx,cy,w,txt,sub,color,lay){return `<g style="cursor:pointer" onclick="bpShowLayer('${lay}')"><rect x="${cx-w/2}" y="${cy}" width="${w}" height="40" rx="10" fill="var(--bg1)" stroke="${color}" stroke-width="2"/><text x="${cx}" y="${cy+18}" font-size="13" fill="${color}" font-weight="700" text-anchor="middle" font-family="var(--mono)">${txt}</text><text x="${cx}" y="${cy+32}" font-size="9" fill="#7d8590" text-anchor="middle" font-family="var(--mono)">${sub}</text></g>`;}
-  const l1=60,l2=200,l3=340,l4=480,l5=620,wN=150;
+  // 5 个节点等距：宽 158 × 5 + 间距 22 × 4 + 左右 20 = 900
+  const wN=158, gapN=22, x0=20;
+  const cxN = (i) => x0 + wN/2 + i*(wN+gapN);
+  const l1=cxN(0),l2=cxN(1),l3=cxN(2),l4=cxN(3),l5=cxN(4);
   let svg=`<svg viewBox="0 0 ${F.w} ${F.h}" style="width:100%;height:auto">`;
   svg+=`<rect width="${F.w}" height="${F.h}" fill="transparent"/>`;
   svg+=laneBox(l1,55,wN,'📡 数据源',sources.length+' 节点','#4da6ff','src');
@@ -3221,15 +3301,16 @@ function renderBlueprint(bp){
   html += `<div class="bp-section"><div class="bp-section-title">📡 ${T('数据源层','Data Sources')}<span class="bp-tag">${sources.length} 节点 · 点击查看详情</span></div>`;
   for(const gname of groupOrder){
     const items=byGroup[gname]; if(!items||!items.length) continue;
-    const gStale=items.filter(s=>s.minutes!=null&&s.minutes>60).length;
+    const gStale=items.filter(srcStale).length;
     const gBad=items.filter(s=>s.ok===false).length;
     html += `<div style="margin-bottom:12px"><div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:6px">${gname} <span style="color:var(--text3);font-weight:400">${items.length} 源${gBad?' · 🔴'+gBad+' 失败':''}${gStale?' · '+gStale+' 滞后':''}</span></div>`;
     html += `<div class="bp-src-grid">`;
     for(const s of items){
-      const c=bpColor(s.ok,s.minutes);
-      const meta = s.ok===false?`🔴 失败 · ${s.ms}ms`
-        : s.minutes==null?`🟢 正常 · 无时间戳`
-        : `🟢 正常 · ${s.ms}ms · ${s.minutes}m前`;
+      const c=bpColor(s.ok,s.minutes,s.sla_min);
+      const meta = s.ok===false?`🔴 失败 · ${s.ms}ms · ${s.cadence||''}节奏`
+        : s.minutes==null?`⚪ 无时间戳 · ${s.cadence||''}节奏`
+        : s.stale?`⚠️ 超时 · ${s.ms}ms · ${s.minutes}m前 · 应≤${s.cadence||''}`
+        : `🟢 正常 · ${s.ms}ms · ${s.minutes}m前 · ${s.cadence||''}节奏`;
       html += `<div class="bp-src-card" style="border-left-color:${c}" onclick="bpShowSource('${s.source}')">
         <div class="name"><span class="dot" style="background:${c};color:${c}"></span>${s.source}<span class="grp">${s.up_rate}%</span></div>
         <div class="meta">${meta}</div>
@@ -3252,7 +3333,7 @@ function renderBlueprint(bp){
   html += `<div class="bp-section"><div class="bp-section-title">🧠 ${T('策略引擎层','Strategy Engines')}<span class="bp-tag">${engines.length} 核心引擎 · 点击看详情</span></div><div class="bp-eng-grid">`;
   for(const e of engines){
     const inPlace = e.mod && mods.has(e.mod);
-    html += `<div class="bp-eng-card" onclick="bpShowEngine('${e.id}','${e.name}','${e.mod||''}')"><div><span class="id">${e.id}</span><span class="name">${e.name}</span><span class="bp-eng-status">${e.live?'🟢':'⚪'}</span></div><div class="mod">${inPlace?'模块在位':'模块缺失'} · ${e.mod||'—'}</div></div>`;
+    html += `<div class="bp-eng-card" onclick="bpShowEngine('${e.id}','${e.name}','${e.mod||''}')" style="border-left-color:${inPlace?'#5f9e7a':'#c06a5e'}"><div><span class="id" style="background:${inPlace?'#5f9e7a':'#c06a5e'}">${e.id}</span><span class="name">${e.name}</span></div><div class="mod">${inPlace?'✅ 模块在位':'⚠️ 模块缺失'} · ${e.mod||'—'}</div></div>`;
   }
   html += `</div></div>`;
 
@@ -3282,12 +3363,12 @@ function bpShowKpi(kind){
     bpOpenModal(`<div class="bp-modal-t">📶 整体连通度<button class="bp-modal-x" onclick="this.closest('.bp-modal-ov').remove()">✕</button></div>
       <div class="bp-mini-list">${conn.map(c=>`<div class="bp-mini-row"><span class="k">${c.group}</span><span>${c.ok}/${c.total} 通</span><span class="v2">${c.rate}%</span></div>`).join('')}</div>`);
   } else if(kind==='stale'){
-    const st=sources.filter(s=>s.minutes!=null&&s.minutes>60);
+    const st=sources.filter(s=>s.minutes!=null && s.minutes > (s.sla_min||60));
     bpOpenModal(`<div class="bp-modal-t">⏳ 滞后源 (>1h) · ${st.length}<button class="bp-modal-x" onclick="this.closest('.bp-modal-ov').remove()">✕</button></div>
-      ${st.length?`<div class="bp-mini-list">${st.map(s=>`<div class="bp-mini-row"><span class="k">${s.source}</span><span>${s.ok?'🟢':'🔴'}</span><span class="v2">${s.minutes}m前</span></div>`).join('')}</div>`:'<div class="b">✅ 无滞后源</div>'}`);
+      ${st.length?`<div class="bp-mini-list">${st.map(s=>`<div class="bp-mini-row"><span class="k">${s.source}</span><span>${s.ok?'🟢':'🔴'}</span><span class="v2">${s.minutes}m前 / 应≤${s.cadence||''}</span></div>`).join('')}</div>`:'<div class="b">✅ 全部按节奏更新</div>'}`);
   } else if(kind==='eng'){
     bpOpenModal(`<div class="bp-modal-t">🧠 策略引擎 · ${engines.length}<button class="bp-modal-x" onclick="this.closest('.bp-modal-ov').remove()">✕</button></div>
-      <div class="bp-mini-list">${engines.map(e=>`<div class="bp-mini-row" style="cursor:pointer" onclick="bpShowEngine('${e.id}','${e.name}','${e.mod||''}')"><span class="k">${e.id}</span><span>${e.name}</span><span class="v2">${e.live?'🟢':'⚪'}</span></div>`).join('')}</div>`);
+      <div class="bp-mini-list">${engines.map(e=>`<div class="bp-mini-row" style="cursor:pointer" onclick="bpShowEngine('${e.id}','${e.name}','${e.mod||''}')"><span class="k">${e.id}</span><span>${e.name}</span><span class="v2">${e.present?'🟢':'⚪'}</span></div>`).join('')}</div>`);
   } else if(kind==='proc'){
     bpShowProcs();
   } else if(kind==='tianji'){
@@ -3304,7 +3385,7 @@ function bpShowLayer(lay){
   let b='';
   if(lay==='src'){
     const sources=g.sources||[];
-    const bad=sources.filter(s=>s.ok===false), stale=sources.filter(s=>s.minutes!=null&&s.minutes>60);
+    const bad=sources.filter(s=>s.ok===false), stale=sources.filter(s=>s.minutes!=null&&s.minutes>(s.sla_min||60));
     b=`<div class="bp-kv2"><div>节点 <b>${sources.length}</b></div><div>失败 <b style="color:${bad.length?'#c06a5e':'#5f9e7a'}">${bad.length}</b></div><div>滞后 <b>${stale.length}</b></div><div>健康率 <b>${sources.length?Math.round(sources.filter(s=>s.ok).length/sources.length*100):0}%</b></div></div>`;
   } else if(lay==='sched'){
     b=`<div class="b">cron 定时采集 · SQLite WAL 模式 · 各源按自身节奏入库（5min~24h）<br>价格/合约/清算/共识等高频表 5~10min 一更，宏观/新闻低频</div>`;
@@ -3327,7 +3408,7 @@ function bpShowConn(group){
 function bpShowSource(src){
   if(!bpGraphData) return;
   const n=(bpGraphData.graph.sources||[]).find(s=>s.source===src); if(!n) return;
-  const c=bpColor(n.ok,n.minutes);
+  const c=bpColor(n.ok,n.minutes,n.sla_min);
   const dots=(n.history||[]).slice(0,16).map(h=>`<i style="background:${h.ok?'#5f9e7a':'#c06a5e'}" title="${h.ms}ms"></i>`).join('');
   bpOpenModal(`<div class="bp-modal-t">📡 ${esc(n.source)} <span style="font-size:11px;color:var(--text3);font-weight:400">${esc(n.group)}</span><button class="bp-modal-x" onclick="this.closest('.bp-modal-ov').remove()">✕</button></div>
     <div class="bp-kv2">
@@ -3544,9 +3625,9 @@ PANELS.admin=async function(){
   </div>
   <div style="grid-column:1/-1">
     <div class="card">
-      <div class="card-title">🏗️ ${T('系统蓝图 · William Cloud 云端架构','Blueprint · William Cloud')}</div>
+      <div class="card-title">🏗️ ${T('系统蓝图 · 生产架构','Blueprint · Production')}</div>
       <div class="blueprint" id="bpRoot"><div class="empty">${T('加载系统蓝图…','Loading blueprint…')}</div></div>
-      <div class="data-ts" style="margin-top:10px">WILLIAM QUANT BOARD W1 v5.1.4 · 自 2026-07 持续迭代 · 全球宏观数据接入 2026-08-14 · 全部数据仅供研究</div>
+      <div class="data-ts" style="margin-top:10px">WILLIAM QUANT BOARD W1 v5.2.0 · 自 2026-07 持续迭代 · 全球宏观数据接入 2026-08-14 · 全部数据仅供研究</div>
     </div>
   </div>
 `;

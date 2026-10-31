@@ -1,5 +1,19 @@
 # W1 Quant Board · Crypto Market Monitoring Terminal
 
+<p align="center">
+  <a href="https://www.7baobtc.com"><img alt="Live Demo" src="https://img.shields.io/badge/LIVE%20DEMO-www.7baobtc.com-22d3ee?style=for-the-badge"></a>
+  <img alt="License" src="https://img.shields.io/badge/LICENSE-Non--Commercial%20Only-red?style=for-the-badge">
+  <img alt="Commercial" src="https://img.shields.io/badge/COMMERCIAL-Written%20License%20Required-black?style=for-the-badge">
+</p>
+
+> ### 🟢 实机演示 / Live Demo
+> **<https://www.7baobtc.com>** — 公开可访问的实机运行面板（生产环境，非录屏、非静态图）。
+>
+> ### ⚠️ 授权 / License
+> 本项目**仅授权非商业用途**。**任何商业使用（含 SaaS、付费产品、企业内部生产、二次销售、托管服务）必须事先取得作者书面授权**；未获授权即商用，作者将依法追究法律责任。
+> **Commercial use of any kind requires a prior written license. Unauthorized commercial use will be pursued to the fullest extent permitted by law.**
+> 授权联系 / Licensing: <https://www.7baobtc.com> · GitHub [@William-Trader](https://github.com/William-Trader)
+
 **中文** ｜ **English**
 
 > **定位 / Positioning**：面向交易者与社群运营者的 crypto 市场监测终端：行情、多空 LSR、费率、清算、新闻、宏观、研究与回测，支持 QQ / Telegram / Discord 告警。  
@@ -7,6 +21,20 @@
 >
 > **边界 / Scope**：只做数据加工、校验与展示；所有数据标注来源与新鲜度，不构成投资建议。  
 > **Data processing, validation and presentation only; every data point carries its source and freshness. Not investment advice.**
+
+---
+
+## 实机截图 · Live Screenshots
+
+> 以下截图来自 <https://www.7baobtc.com> 实机运行环境（2026-10-31）。
+
+| 总览 Overview | 消息面 News |
+|---|---|
+| ![Overview](docs/screenshots/overview.png) | ![News](docs/screenshots/news.png) |
+
+| 链上 / 鲸鱼 On-chain | 资金流 Flows |
+|---|---|
+| ![On-chain](docs/screenshots/onchain.png) | ![Flows](docs/screenshots/flows.png) |
 
 ---
 

@@ -27,7 +27,7 @@
   PANELS.news = async function(){
     startTabTimer('news', PANELS.news);
     var main = $('#main');
-    main.innerHTML = '<div class="intel-hero"><div><div class="intel-hero-title">📰 情报 · 消息面</div><div class="intel-hero-sub">先看摘要与高影响，再看卡片流；不要逐条扫列表。</div></div><div id="intelSummary" class="intel-stats"></div></div><div class="intel-toolbar"><input id="intelNewsQ" class="intel-search" placeholder="搜索标题/内容"><select id="intelNewsSrc" class="intel-select"><option value="all">全部来源</option></select><span class="intel-chip" data-sent="all">全部</span><span class="intel-chip" data-sent="bullish">利多</span><span class="intel-chip" data-sent="bearish">利空</span><span class="intel-chip" data-sent="neutral">中性</span><span class="intel-chip" data-high="1">仅高影响</span><select id="intelNewsSort" class="intel-select"><option value="time">按时间</option><option value="impact">按影响力</option></select><span id="intelNewsCount" class="rs-sub"></span></div><div id="intelTopics" class="intel-toolbar" style="margin-top:0"></div><div id="intelTop"></div><div id="intelNewsBody"></div>';
+    main.innerHTML = '<div class="intel-hero"><div><div class="intel-hero-title">📰 情报 · 消息面</div><div class="intel-hero-sub">先看摘要与高影响，再看卡片流；权重按类别去重，不按关键词次数叠加。</div></div><div id="intelSummary" class="intel-stats"></div></div><div id="newsBiasPro"></div><div class="intel-toolbar"><input id="intelNewsQ" class="intel-search" placeholder="搜索标题/内容"><select id="intelNewsSrc" class="intel-select"><option value="all">全部来源</option></select><span class="intel-chip" data-sent="all">全部</span><span class="intel-chip" data-sent="bullish">利多</span><span class="intel-chip" data-sent="bearish">利空</span><span class="intel-chip" data-sent="neutral">中性</span><span class="intel-chip" data-high="1">仅高影响</span><select id="intelNewsSort" class="intel-select"><option value="time">按时间</option><option value="impact">按影响力</option></select><span id="intelNewsCount" class="rs-sub"></span></div><div id="intelTopics" class="intel-toolbar" style="margin-top:0"></div><div id="intelTop"></div><div id="intelNewsBody"></div>';
     $('#intelNewsQ').value = state.intelNews.q || '';
     $('#intelNewsSort').value = state.intelNews.sort || 'time';
     var data = null;
@@ -43,6 +43,7 @@
       var d = await api('/api/news');
       if (!d || !d.ok) { $('#intelNewsBody').innerHTML = '<div class="intel-empty">加载失败 <button class="btn secondary" id="intelNewsRetry">重试</button></div>'; var b=$('#intelNewsRetry'); if(b)b.onclick=load; return; }
       data = d;
+      renderBiasPro(d.bias_24h);
       var sel = $('#intelNewsSrc');
       sel.innerHTML = '<option value="all">全部来源</option>' + (d.sources || []).map(function(s){ return '<option value="' + esc(s.source) + '">' + esc(s.source) + ' (' + s.count + ')</option>'; }).join('');
       sel.value = state.intelNews.source || 'all';
@@ -54,6 +55,22 @@
       var keys = ['all'].concat(Object.keys(counts).sort(function(a,b){return counts[b]-counts[a]}));
       $('#intelTopics').innerHTML = keys.map(function(k){ var active=state.intelNews.topic===k; return '<span class="intel-topic'+(active?' active':'')+'" data-topic="'+esc(k)+'">'+(k==='all'?'全部':esc(k))+' '+(k==='all'?all.length:(counts[k]||0))+'</span>'; }).join('');
       $$('#intelTopics [data-topic]').forEach(function(x){ x.onclick=function(){ state.intelNews.topic=x.dataset.topic; renderTopics(); render(); }; });
+    }
+    function renderBiasPro(b){
+      var el=$('#newsBiasPro'); if(!el) return;
+      if(!b||!b.scored){ el.innerHTML=''; return; }
+      var share=Number(b.bull_share)||0;
+      var cls=share>=58?'up':share<=42?'down':'mid';
+      var cats=(b.categories||[]).slice(0,5).map(function(c){
+        var s=c.share==null?null:Number(c.share); var cl=s==null?'':s>=58?'up':s<=42?'down':'mid';
+        return '<span class="nb-cat '+(cl||'')+'" title="多 '+c.bull.toFixed(2)+' / 空 '+c.bear.toFixed(2)+'">'+esc(c.label)+' '+(s==null?'—':s.toFixed(0)+'%')+'</span>';
+      }).join('');
+      var tops=(b.top_points||[]).slice(0,4).map(function(p){ return '<span class="nb-point '+(p.side==='bull'?'up':'down')+'" title="'+esc(p.title||'')+'">'+(p.side==='bull'?'多':'空')+' · '+esc(p.text||p.category)+'</span>'; }).join('');
+      el.innerHTML='<div class="news-bias"><div class="nb-head"><span class="nb-title">消息面多空权重点 · 24h</span><span class="nb-count">'+b.scored+'/'+b.count+' 条已评分 · 同类去重</span></div>'
+        +'<div class="nb-bar"><i class="up" style="width:'+share+'%"></i><i class="down" style="width:'+(100-share)+'%"></i><b style="left:'+share+'%"></b></div>'
+        +'<div class="nb-meta"><span class="'+cls+'">多头 '+share.toFixed(1)+'% · 空头 '+(100-share).toFixed(1)+'%</span><span>多权重 '+b.bull_weight+' / 空权重 '+b.bear_weight+'</span></div>'
+        +(cats?'<div class="nb-cats">'+cats+'</div>':'')
+        +(tops?'<div class="nb-points">'+tops+'</div>':'')+'</div>';
     }
     function renderSummary(items){
       var counts={bullish:0,bearish:0,neutral:0}; items.forEach(function(n){ counts[n.sentiment||'neutral']++; });
@@ -85,7 +102,7 @@
       var shown = arr.slice(0, state.intelNews.limit || 24);
       $('#intelNewsBody').innerHTML = '<div class="intel-card-grid">' + shown.map(function(n){
         var sm = sentMeta(n.sentiment); var topic = topicOf(n);
-        return '<div class="intel-card"><div class="meta"><span>'+new Date(Number(n.ts||0)*1000).toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})+'</span><span>'+esc(n.source||'')+'</span><span class="intel-pill" style="color:'+sm.col+';border:1px solid '+sm.col+'">'+sm.zh+'</span><span class="intel-topic">'+esc(topic)+'</span></div><div class="title"><a href="'+esc(n.url||'#')+'" target="_blank">'+esc(n.title||'')+'</a></div><div class="excerpt">'+esc((n.content||'').slice(0,180))+'</div><div class="meta"><span>影响力 '+esc(n.influence||1)+'/5</span><span>'+stars(n.influence)+'</span></div></div>';
+        return '<div class="intel-card"><div class="meta"><span>'+new Date(Number(n.ts||0)*1000).toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})+'</span><span>'+esc(n.source||'')+'</span><span class="intel-pill" style="color:'+sm.col+';border:1px solid '+sm.col+'">'+sm.zh+'</span><span class="intel-topic">'+esc(topic)+'</span></div><div class="title"><a href="'+esc(n.url||'#')+'" target="_blank">'+esc(n.title||'')+'</a></div><div class="excerpt">'+esc((n.content||'').slice(0,180))+'</div><div class="meta"><span>影响力 '+esc(n.influence||1)+'/5</span><span>'+stars(n.influence)+'</span>'+(n.bull_share!=null?'<span class="news-share '+(n.bull_share>=58?'up':n.bull_share<=42?'down':'')+'">多 '+Number(n.bull_share).toFixed(0)+'% · 空 '+(100-Number(n.bull_share)).toFixed(0)+'%</span>':'')+'</div></div>';
       }).join('') + '</div>' + (arr.length > shown.length ? '<div class="intel-load"><button class="btn secondary" id="intelMore">加载更多（'+(arr.length-shown.length)+'）</button></div>' : '');
       var more=$('#intelMore'); if(more) more.onclick=function(){ state.intelNews.limit=(state.intelNews.limit||24)+24; render(); };
     }
