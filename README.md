@@ -548,6 +548,13 @@ PolyForm Noncommercial 1.0.0. Non-commercial research use only; contact the repo
 
 ## 更新日志 / Changelog
 
+### 2026-10-31 · 全系统优化（v5.1.1）
+
+- `/api/version` 前端指纹改为「薄壳 index + app.js + app.css」合计判定，修复 `is_full_terminal` 恒为 false 的误报（旧判定只看 index≥50KB，而本项目是薄壳+外部 315KB app.js）。
+- 新增 `/api/perf`：进程内存/CPU、Node 版本、DB/WAL、负载、Coinglass rpm、密钥冷却等轻量快照。
+- 新增 `scripts/system_audit.js`：一键体检 HTTP 接口、数据表龄、价格/LSR 精度、磁盘/内存、QQ 群配置；有失败项返回非 0。
+- 清理 2026-10-21 一次性 DB 快照约 7.9G；备份脚本补充 `w1-pre*.db` 与 `data/w1.db.precompact-*` 保留期，防止再次堆积。
+
 ### 2026-10-31 · 推送精度重构（v5.1）
 
 - 新增 `lib/precision.js`：多源价格加权（Gate + Coinglass）、跨源偏差/置信度/龄期、LSR 三口径与 60 日分位；新增 `/api/precision/price`、`/api/precision/lsr`。

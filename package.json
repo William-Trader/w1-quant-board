@@ -1,6 +1,6 @@
 {
   "name": "william-quant-board-w1",
-  "version": "5.1.0",
+  "version": "5.1.1",
   "description": "William 量化看板 W1 — William 运算核心，审批制用户系统",
   "main": "server.js",
   "private": true,
@@ -8,7 +8,8 @@
     "start": "node server.js",
     "smoke": "node tests/signal.smoke.test.js",
     "verify-cg": "node scripts/verify-coinglass.js",
-    "test": "node tests/precision.core.test.js && node tests/core.pure.test.js && node tests/signal.core.test.js && node tests/signal.smoke.test.js && node tests/payload.codec.test.js && node tests/monitoring.test.js && node tests/research.test.js && node tests/notify.test.js"
+    "test": "node tests/precision.core.test.js && node tests/core.pure.test.js && node tests/signal.core.test.js && node tests/signal.smoke.test.js && node tests/payload.codec.test.js && node tests/monitoring.test.js && node tests/research.test.js && node tests/notify.test.js",
+    "audit": "node scripts/system_audit.js"
   },
   "engines": {
     "node": ">=20"
