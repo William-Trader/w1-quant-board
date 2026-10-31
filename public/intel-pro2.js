@@ -18,8 +18,8 @@
     return '其他';
   }
   function sentMeta(s){
-    if (s === 'bullish') return { zh:'利多', col:'#c0392b' };
-    if (s === 'bearish') return { zh:'利空', col:'#2e7d5b' };
+    if (s === 'bullish') return { zh:'利多', col:'var(--up)' };
+    if (s === 'bearish') return { zh:'利空', col:'var(--down)' };
     return { zh:'中性', col:'#8b93a7' };
   }
   function stars(n){ var k=Math.max(1,Math.min(5,Number(n)||1)); return '●'.repeat(k)+'○'.repeat(5-k); }
@@ -76,7 +76,7 @@
       var counts={bullish:0,bearish:0,neutral:0}; items.forEach(function(n){ counts[n.sentiment||'neutral']++; });
       var total=items.length||1;
       var topBull=items.find(function(n){return n.sentiment==='bullish'}); var topBear=items.find(function(n){return n.sentiment==='bearish'});
-      $('#intelSummary').innerHTML = '<div class="intel-stat"><b style="color:#c0392b">'+counts.bullish+'</b><span>利多</span></div><div class="intel-stat"><b style="color:#2e7d5b">'+counts.bearish+'</b><span>利空</span></div><div class="intel-stat"><b>'+counts.neutral+'</b><span>中性</span></div><div class="intel-stat"><b>'+((data&&data.age_sec!=null)?data.age_sec+'s':'—')+'</b><span>'+(data&&data.stale?'STALE':'新鲜度')+'</span></div><div style="min-width:180px;flex:1"><div class="rs-sub">多空占比</div><div class="intel-sentbar"><i style="width:'+(counts.bullish/total*100)+'%;background:#c0392b"></i><i style="width:'+(counts.neutral/total*100)+'%;background:#8b93a7"></i><i style="width:'+(counts.bearish/total*100)+'%;background:#2e7d5b"></i></div></div>';
+      $('#intelSummary').innerHTML = '<div class="intel-stat"><b style="color:var(--up)">'+counts.bullish+'</b><span>利多</span></div><div class="intel-stat"><b style="color:var(--down)">'+counts.bearish+'</b><span>利空</span></div><div class="intel-stat"><b>'+counts.neutral+'</b><span>中性</span></div><div class="intel-stat"><b>'+((data&&data.age_sec!=null)?data.age_sec+'s':'—')+'</b><span>'+(data&&data.stale?'STALE':'新鲜度')+'</span></div><div style="min-width:180px;flex:1"><div class="rs-sub">多空占比</div><div class="intel-sentbar"><i style="width:'+(counts.bullish/total*100)+'%;background:var(--up)"></i><i style="width:'+(counts.neutral/total*100)+'%;background:#8b93a7"></i><i style="width:'+(counts.bearish/total*100)+'%;background:var(--down)"></i></div></div>';
       $('#intelTop').innerHTML = '<div class="intel-top-grid">'
         + '<div class="intel-top-card"><div class="k">最重要 · 利多</div><div class="t">'+(topBull?esc(topBull.title):'暂无明确利多')+'</div><div class="d">'+(topBull?esc((topBull.content||'').slice(0,120)):'')+'</div></div>'
         + '<div class="intel-top-card"><div class="k">最重要 · 利空</div><div class="t">'+(topBear?esc(topBear.title):'暂无明确利空')+'</div><div class="d">'+(topBear?esc((topBear.content||'').slice(0,120)):'')+'</div></div>'
@@ -134,7 +134,7 @@
       arr.sort(function(a,b){var order={high:0,medium:1,low:2};return (order[a.impact]||3)-(order[b.impact]||3)||String(a.date+a.time).localeCompare(String(b.date+b.time));});
       var high=arr.filter(function(e){return e.impact==='high'}).length;
       var now=Date.now(); var next=arr.map(function(e){var t=new Date((e.date||'')+'T'+(e.time||'00:00')+':00+08:00').getTime();return {e:e,t:t}}).filter(function(x){return x.t>now}).sort(function(a,b){return a.t-b.t})[0];
-      $('#eventStats').innerHTML='<div class="intel-stat"><b>' + arr.length + '</b><span>事件</span></div><div class="intel-stat"><b style="color:#c0392b">' + high + '</b><span>高影响</span></div><div class="intel-stat"><b>' + (next?esc(next.e.time||'—'):'—') + '</b><span>下一个</span></div>';
+      $('#eventStats').innerHTML='<div class="intel-stat"><b>' + arr.length + '</b><span>事件</span></div><div class="intel-stat"><b style="color:var(--up)">' + high + '</b><span>高影响</span></div><div class="intel-stat"><b>' + (next?esc(next.e.time||'—'):'—') + '</b><span>下一个</span></div>';
       $('#intelEvCount').textContent=arr.length+' 条';
       if(!arr.length){$('#intelEvBody').innerHTML='<div class="intel-empty">没有符合条件的事件</div>';return;}
       var groups={}; arr.forEach(function(e){var k=e.date||'未知';(groups[k]=groups[k]||[]).push(e);});
@@ -142,7 +142,7 @@
         return '<div class="rs-title" style="margin-top:14px">'+esc(k)+'</div><div class="intel-card-grid">'+groups[k].map(function(e){
           var t=new Date((e.date||'')+'T'+(e.time||'00:00')+':00+08:00').getTime(); var cd=isFinite(t)?Math.round((t-Date.now())/60000):null;
           var cdTxt=cd==null?'':cd<0?'已过':cd<60?cd+' 分钟后':(cd/60).toFixed(1)+' 小时后';
-          var col=e.impact==='high'?'#c0392b':e.impact==='medium'?'#d99e2b':'#8b93a7';
+          var col=e.impact==='high'?'var(--up)':e.impact==='medium'?'#d99e2b':'#8b93a7';
           return '<div class="intel-card"><div class="meta"><span>'+esc(e.time||'')+'</span><span>'+esc(e.country||'')+'</span><span class="intel-pill" style="color:'+col+';border:1px solid '+col+'">'+esc(e.impact||'')+'</span><span>' + cdTxt + '</span></div><div class="title">'+esc(e.title_zh||e.title||'')+'</div></div>';
         }).join('')+'</div>';
       }).join('');
@@ -168,7 +168,7 @@
       arr.sort(function(a,b){return (b[key]||-999)-(a[key]||-999);});
       $('#crossCount').textContent=arr.length+' / '+rows.length;
       var top=arr.slice(0,3), bot=arr.slice(-3).reverse();
-      function mini(x){var v=x.ret_5d;var col=v==null?'#8b93a7':v>=0?'#c0392b':'#2e7d5b';return '<div class="intel-card"><div class="meta"><span>'+esc(x.name||x.symbol)+'</span><span>'+esc(x.cls||'')+'</span></div><div class="title" style="color:'+col+'">'+(v==null?'—':(v>=0?'+':'')+v.toFixed(2)+'%')+'</div><div class="meta"><span>1日 '+(x.ret_1d==null?'—':x.ret_1d.toFixed(2)+'%')+'</span><span>20日 '+(x.ret_20d==null?'—':x.ret_20d.toFixed(2)+'%')+'</span></div></div>';}
+      function mini(x){var v=x.ret_5d;var col=v==null?'#8b93a7':v>=0?'var(--up)':'var(--down)';return '<div class="intel-card"><div class="meta"><span>'+esc(x.name||x.symbol)+'</span><span>'+esc(x.cls||'')+'</span></div><div class="title" style="color:'+col+'">'+(v==null?'—':(v>=0?'+':'')+v.toFixed(2)+'%')+'</div><div class="meta"><span>1日 '+(x.ret_1d==null?'—':x.ret_1d.toFixed(2)+'%')+'</span><span>20日 '+(x.ret_20d==null?'—':x.ret_20d.toFixed(2)+'%')+'</span></div></div>';}
       $('#crossTop').innerHTML='<div class="intel-top-grid"><div><div class="rs-title">5 日领涨</div><div class="intel-card-grid">'+top.map(mini).join('')+'</div></div><div><div class="rs-title">5 日领跌</div><div class="intel-card-grid">'+bot.map(mini).join('')+'</div></div></div>';
       $('#crossBody').innerHTML=rsTable(['标的','类别','1 日','5 日','20 日','BTC 相关'],arr.map(function(x){return [esc(x.name),esc(x.cls),x.ret_1d==null?'—':x.ret_1d.toFixed(2)+'%',x.ret_5d==null?'—':x.ret_5d.toFixed(2)+'%',x.ret_20d==null?'—':x.ret_20d.toFixed(2)+'%',x.corr_btc_20d==null?'—':x.corr_btc_20d];}));
     }

@@ -41,7 +41,7 @@
       $('#intelNewsCount').textContent = arr.length + ' / ' + (data.items || []).length + ' 条 · age ' + (data.age_sec == null ? '—' : data.age_sec + 's') + (data.stale ? ' · STALE' : '');
       if (!arr.length) { $('#intelNewsBody').innerHTML = '<div class="intel-empty">没有符合条件的新闻</div>'; return; }
       $('#intelNewsBody').innerHTML = arr.map(function(n){
-        var s = n.sentiment || 'neutral'; var col = s === 'bullish' ? '#c0392b' : s === 'bearish' ? '#2e7d5b' : '#8b93a7';
+        var s = n.sentiment || 'neutral'; var col = s === 'bullish' ? 'var(--up)' : s === 'bearish' ? 'var(--down)' : '#8b93a7';
         var sl = s === 'bullish' ? '利多' : s === 'bearish' ? '利空' : '中性';
         return '<div class="intel-item"><div class="intel-meta"><span>' + new Date(Number(n.ts || 0) * 1000).toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}) + '</span><span>' + esc(n.source || '') + '</span><span class="intel-sent" style="color:' + col + ';border:1px solid ' + col + '">' + sl + '</span><span>影响力 ' + esc(n.influence || 1) + '/5</span></div><div class="intel-title"><a href="' + esc(n.url || '#') + '" target="_blank">' + esc(n.title || '') + '</a></div>' + (n.content ? '<div class="intel-body">' + esc(String(n.content).slice(0, 180)) + '</div>' : '') + '</div>';
       }).join('');
@@ -86,7 +86,7 @@
           var ts = new Date((e.date || '') + 'T' + (e.time || '00:00') + ':00+08:00').getTime();
           var cd = isFinite(ts) ? Math.round((ts - Date.now()) / 60000) : null;
           var cdTxt = cd == null ? '' : cd < 0 ? '已过' : cd < 60 ? cd + ' 分钟后' : (cd / 60).toFixed(1) + ' 小时后';
-          var col = e.impact === 'high' ? '#c0392b' : e.impact === 'medium' ? '#d99e2b' : '#8b93a7';
+          var col = e.impact === 'high' ? 'var(--up)' : e.impact === 'medium' ? '#d99e2b' : '#8b93a7';
           return '<div class="intel-item"><div class="intel-meta"><span>' + esc(e.time || '') + '</span><span>' + esc(e.country || '') + '</span><span style="color:' + col + '">' + esc(e.impact || '') + '</span><span>' + cdTxt + '</span></div><div class="intel-title">' + esc(e.title_zh || e.title || '') + '</div></div>';
         }).join('');
       }).join('');
