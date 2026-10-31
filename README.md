@@ -108,6 +108,184 @@ W1 把分散的 crypto 市场数据整理成一套可读、可查、可告警的
 
 **样本限制**：另类数据（费率/LSR/清算/跨资产）只有 2–7.5 个月，不能冒充长周期结论；所有页面都标注数据窗口。
 
+
+## 5A. 价格源、计算公式与回测严谨性（2026-10-31 精度升级）
+
+> 这一节回答三个问题：**每个推送数字从哪来、怎么算、凭什么可信**。所有公式都可按文中命令复算。
+
+### 5A.1 价格：多源加权 + 跨源校验
+
+W1 的价格不再由单一接口直接给出。`lib/precision.js` 把两路独立报价合并：
+
+| 源 | 采集 | 字段 | 用途 |
+|---|---|---|---|
+| Gate 现货 | 60s | `prices.price` | 现货基准 |
+| Coinglass 合约聚合 | 5min | `futures_markets.current_price` | 合约基准 |
+
+**加权公式**
+
+```
+dev_i   = (p_i - median(p)) / median(p) × 100          # 偏离中位数
+q_i     = 1.0  if |dev_i| ≤ 0.3%
+        = 0.25 if 0.3% < |dev_i| ≤ 1%
+        = 0.0  if |dev_i| > 1%                          # 异常源剔除
+w_i     = (v_i × q_i) / Σ(v_j × q_j)                    # v_i = 24h 成交额
+cap     = 0.60                                          # 单源权重上限
+p_price = Σ(w_i × p_i)
+```
+
+三条防退化规则：
+
+1. **任一源缺成交量 → 全源等权**（Coinglass `volume_24h_usd` 实测缺失，旧代码把缺失当 0，导致加权价只剩单源的 60%，BTC 曾算出 46,432 而真实价约 77,400）。
+2. **两源互相矛盾（都偏离中位数 >1%）→ 不平均**，只采用成交量最大的源，并标 `data_warn`。
+3. **单源时权重必须为 1**，60% 上限只在 ≥2 个有效源时生效。
+
+**校验阈值**：跨源偏差 >0.5% 标 `DATA_WARN`；最新源龄期 >900s 标 `stale`。置信度：
+
+- `high`：≥2 源、最大偏差 ≤0.15%、最新源 ≤300s
+- `medium`：≥2 源且偏差 ≤0.5%，或单源但新鲜
+- `low`：其它（含无共识、滞后）
+
+**24 小时实测（2026-10-31，243 个对齐快照）**
+
+| 币 | 平均绝对偏差 | p95 | 最大 |
+|---|---|---|---|
+| BTC | 0.0193% | 0.0457% | 0.0903% |
+| ETH | 0.0543% | 0.0899% | 0.1449% |
+
+结论：0.5% 告警线约为常态偏差的 5–10 倍，不会天天误报；两源一致性足以支撑推送报价。
+
+### 5A.2 多空比：三个分母，禁止混用
+
+Coinglass 返回的 `ratio` 不是「人数多空」，而是**持仓名义价值多空比**：
+
+```
+持仓名义多空 notional = long_notional / short_notional
+账户数多空   account  = long_traders  / short_traders
+大户持仓多空 whaleQty = whale_long_qty / whale_short_qty
+全市场持仓   ovQty    = ov_long_qty   / ov_short_qty
+```
+
+**实测对账（BTC，2026-10-31 11:00 北京）**
+
+| 口径 | 值 | 说明 |
+|---|---|---|
+| notional | 0.2458 | `693,369,428.86 / 2,821,105,178.34` |
+| vendor `ratio` | 0.2458 | 与重算完全一致（cross-check 0.000%） |
+| account | 0.6489 | `1,081 / 1,666` |
+| whaleQty | 0.2165 | 大户持仓量比 |
+| ovQty | 0.2458 | 与 notional 偏差 0.027% |
+
+**口径纪律**
+
+- 推送与 `/多空` 命令：同时展示三个分母，并注明「名义 / 账户 / 大户」。
+- 评分层（SmartSignal 资金维度）：使用 `futures_markets.long_short_ratio_4h`（OKX 4h **账户**口径），因为固定阈值 1.6/0.6 是按该口径与回测 `lsr_account` 标定的；**不能**拿持仓名义比套 1.6/0.6，两者中位数差 3–10 倍。
+- 交叉校验：`|notional − vendor| / vendor > 0.5%` → `data_warn`。
+- 榜单盲区：`lsr_rankings` 按 `delta_2m` 排序，实测前 50/100 行不含 BTC/ETH；主流币必须走 `lsr_signals`（显式请求）。旧 `/多空` 只读榜单，会把山寨当主流。
+
+**4 小时前瞻验证（BTC，20,042 个对齐样本，2026-08→10）**
+
+| 分位桶 | n | 平均 4h 收益 | 中位数 | 胜率 | t |
+|---|---|---|---|---|---|
+| ≤ p5（空头极拥挤） | 1,003 | **+0.321%** | +0.134% | 63.7% | **10.96** |
+| p5–p25 | 4,008 | +0.021% | -0.014% | 49.5% | 1.67 |
+| p25–p75 | 10,021 | +0.064% | +0.037% | 54.3% | 8.53 |
+| p75–p95 | 4,008 | -0.021% | -0.003% | 49.7% | -1.90 |
+| ≥ p95（多头极拥挤） | 1,002 | +0.019% | +0.022% | 54.5% | 0.62 |
+
+`corr(log LSR, 4h 收益) = -0.0377`。结论：**极端空头拥挤有统计显著的正向反弹（t=10.96），极端多头拥挤没有对称的下跌证据**。因此 LSR 只作为拥挤度上下文与小权重因子，不单独构成交易信号。
+
+### 5A.3 其它口径修正（本次一并修掉的隐性 bug）
+
+| 项目 | 旧问题 | 现在 |
+|---|---|---|
+| 资金费率 | `avg_funding_rate_by_oi` 已是百分数（0.009474 = 0.009474%/8h），推送又 ×100 → 显示 0.95%，放大 100 倍；默认阈值 0.0015 比正常费率低一个量级，正常行情天天报「多头拥挤」 | 直接显示 `0.009%/8h`；阈值 `max(0.03, p95×1.5)`、极端 `max(0.06, ×1.5)`、上限 0.2%；自适应按该币 90 日 p95 |
+| 恐惧贪婪 | 上游日更，旧代码把相邻两条（可能同一天）叫「突变」 | 只有间隔 ≥20h 才算「日变动」，文案标注「对比前一交易日」 |
+| 清算汇总 | 8 所采集节奏不同（实测 MEXC/KuCoin 曾滞后 30min、值为 0），旧代码把旧 24h 值一起相加 | 只汇总 45min 内新鲜快照，推送写「参与交易所 N 家」并列出被剔除的所 |
+| 宏观 FRED | `observations` 是**最新在前**的降序数组，旧代码取 `o[length-1]` 拿到最旧一条（VIX 差 3 天、美元指数更久） | 按 `date` 降序取第 1/2 条，并校验观测龄期（T10Y3M/VIX ≤10 天，美元 ≤14 天），推送带观测日期 |
+| 健康巡检 | `futures_markets` 5min 采集却设 90min 阈值，一小时断供不报警；`funding_arb` 同样过宽；consensus 被误移出巡检 | 合约 20min、费率套利 30min、KOL 共识 2h；恢复 consensus 巡检 |
+| SmartSignal 盈亏比 | `rr = CFG.t2_mult`，但 T1/T2 被止盈缓冲下调，实际 RR 被虚报 | 按真实价位重算 `rr=(t2-entry)/(entry-stop)`，并同时给 `rr1`；实测 2.34–2.38 而非配置的 2.5 |
+| SmartSignal 仓位 | 文案写「建议 X% 仓位 / 单笔风险≤2%」，与实际风险定仓不是同一套数 | 推送直接给：名义 $、名义/权益倍数、保证金 $、风险 $、风险占权益 %，全部由 `notional` 与止损距离复算 |
+| SmartSignal 数据完整度 | 缺维度时静默按 0 分参与，五维显示成「0」 | 每维带 `ok` 标记；缺 ≥2 维直接不出单；推送显示 `五维(4/5)` 与缺失项，缺失维度显示 `—` |
+| 方向引擎风险 | 只写配置 `R=2%`，未反映 `posPct` 上限截断后的真实风险 | 推送写「风险预算 R=2%（实际 x.xx% 权益）」、止损距离、保证金/名义占权益 |
+| 平仓播报 | 只有盈亏 %，没有 R 倍数 | 增加 `≈±x.xxR（止损距离 y%）`，与风险定仓同口径 |
+| β1 引擎入库 | `margin_usd` 被误当 `risk_usd` 回退值写入，风险金额被高估 | 分别写 `margin_usd` 与 `risk_usd`，缺值写 NULL |
+
+### 5A.4 回测严谨性证明
+
+**数据覆盖（必须先看，否则会误读收益）**
+
+| 数据 | 覆盖 | 备注 |
+|---|---|---|
+| BTC 1h K 线 | 2018-01-01 → 2026-10-31（59,845 根） | 回测主数据 |
+| 五维因子 | 2026-03-08 → 2026-08-21 | 完整五维仅约 5.5 个月 |
+| 新闻历史 | **0 条**（回测内 `news null→null`） | 消息面维度实际缺失，回测是 3–4 维 |
+| KOL 共识 | 2026-08-11 → 2026-10-30 | |
+| OKX 账户 LSR | 至 **2026-08-21** | 之后 `nearestMap` 会复用 1.1 旧值，不能当有效信号 |
+| FGI | 2018-02-01 → 2026-10-30 | 日更 |
+
+**当前回测结果（窗口 2026-08-11 → 2026-10-31，9 标的 × 4h，复利 1000U、50x、双边 8bps）**
+
+| 指标 | 值 |
+|---|---|
+| 交易数 | 9（6W / 3L） |
+| 胜率 | 66.7% |
+| 总盈亏 | +256.41U（+25.64%） |
+| 盈亏比 / PF | 6.05 / 12.10 |
+| 最大回撤 | 2.22% |
+| 夏普 / 索提诺 / 卡玛 | 4.04 / 2.19 / 81.04 |
+| 年化 CAGR | 179.9% |
+| 平均持仓 | 40.9h |
+| BTC 买入持有 | +20.67% |
+
+**统计检验（脚本可复跑）**
+
+| 检验 | 结果 | 解读 |
+|---|---|---|
+| 符号置换 `p(胜率≥66.7%)` | **0.2604** | 胜率不显著，9 笔样本太小 |
+| 符号置换 `p(总盈亏≥+256U)` | 0.0336 | 盈亏幅度显著 |
+| 符号置换 `p(PF≥12.1)` | 0.0324 | PF 显著 |
+| Bootstrap 胜率 95%CI | [33.3%, 100.0%] | 区间极宽，不能当稳定胜率 |
+| Bootstrap 总盈亏 95%CI | [+58.34U, +463.10U] | 方向为正但区间宽 |
+| Deflated Sharpe（N=12 次试验） | DSR = 100.0%（观测 SR 3.40，SR₀ 0.251） | 多重检验校正后仍 >95% |
+
+**结论（不美化）**
+
+1. 9 笔、全部集中在 2026-08，且新闻维度为空、OKX LSR 在 08-21 后失效——**这不是“长期稳定盈利”的证明，只是链路与统计方法的验证**。
+2. 胜率检验 `p=0.26`，不显著；显著的是盈亏幅度与 PF，但由少数大盈利单驱动，`n<30` 时极易翻转。
+3. DSR 100% 只说明「考虑 12 次调参后，观测 SR 不太可能是纯运气」，不说明未来可复制。
+4. 因此 README 不把回测年化当业绩承诺；实盘/影子盘继续独立记账，样本 ≥30 后再做胜率结论。
+
+**复跑命令**
+
+```bash
+cd /home/ubuntu/w1-board
+node scripts/tianji_backtest.js --ui                 # 生成 data/tianji_bt_latest.json
+node scripts/tianji_permutation.js --n 5000          # 置换检验 + Bootstrap
+node scripts/tianji_deflated_sharpe.js --trials 12   # Deflated Sharpe
+node scripts/tianji_walkforward.js --from 2026-03-08 --to 2026-08-31
+```
+
+### 5A.5 每条固定推送现在带什么
+
+| 推送 | 触发 | 计算 | 证据字段 |
+|---|---|---|---|
+| SkyEye 价格异动 | 15min 变动 ≥ 自适应阈值 | 首末各 3 点中位数，≥5 样本 | 起止价、样本数、2 源加权偏差、时间 |
+| SkyEye 爆仓风暴 | 单币 24h 清算 ≥$1 亿 | 8 所只计 45min 内快照 | 多/空爆仓额、参与所数、剔除名单 |
+| SkyEye 情绪日变动 | FGI 日变动 ≥10 | 仅比较间隔 ≥20h 的两条 | 前值→今值、间隔小时 |
+| SkyEye 多空极端 | 持仓名义 ≥2 或 ≤0.5 | notional + account 双口径 | 两口径数值、口径说明 |
+| 市场监测·费率拥挤 | 费率 ≥ 自适应阈值 | 原始百分数，阈值=max(0.03, p95×1.5) | 费率 %/8h、阈值 |
+| 市场监测·OI 异动 | 24h OI 变动 ≥5% | 百分比 + 绝对 OI + 增量 $ | 三项齐全，缺值写 — |
+| 市场监测·多空结构 | 名义/账户背离，或 30m Δ≥0.15 | 三口径 + 60 日上下文 | 名义/账户/大户、30m 变化 |
+| 市场监测·爆仓雷达 | 30min 新增爆仓 ≥$3000 万 | 增量 + 上下方墙 + 距离 + 清算比 | 墙价位、距现价 %、参与所数 |
+| 市场监测·宏观 | 状态翻转/VIX/美元异动 | 最新观测（按日期降序）+ 龄期校验 | 观测日期、现值 |
+| 市场监测·KOL 翻转 | 共识 long↔short | 只读 ≤2h 数据 | 置信度、数据龄期 |
+| SmartSignal | 五维共振 | 缺 ≥2 维不出单；RR 实算；风险定仓 | 五维完成度、RR/T1 RR、名义/保证金/风险、LSR 三口径、报价源 |
+| 方向引擎给单 | 策略表达式触发 | 1h 收盘 vs 实时价偏差；风险复算 | 策略价、实时价、偏差、止损距离、实际风险 % |
+| 数据断供 | 表龄超阈值 | 每表独立阈值 + 去重冷却 | 表名、断供时长 |
+| 自动平仓 | 止盈/止损/超时 | 60% T1 + 40% 剩余；R 倍数 | 盈亏 %、R 倍数、止损距离、原因 |
+
+
 ## 6. 会员与权限
 
 - 注册后需管理员审批；会员状态、到期时间、额度在 `users` 表。
@@ -281,6 +459,15 @@ Retained for analysis; no live strategy is exposed. The Research tab includes:
 
 **Sample limits**: alternative data (funding/LSR/liquidation/cross-asset) covers only 2–7.5 months; it cannot be presented as long-horizon evidence. Every page states its data window.
 
+
+## 5A. Price Sources, Formulas & Backtest Rigor (2026-10-31)
+
+- **Price** = volume-weighted Gate spot + Coinglass futures mark, with quality tiers (≤0.3% dev = 1.0, ≤1% = 0.25, >1% = 0), 60% single-source cap, equal weights when any volume is missing, and a single-source fallback when the two venues disagree by >1% (`data_warn`). 24h live check: BTC mean absolute deviation 0.0193% (p95 0.0457%, max 0.0903%); ETH 0.0543% (p95 0.0899%).
+- **Long/short ratio has three denominators**: notional (`long_notional/short_notional`), account (`long_traders/short_traders`), whale quantity (`whale_long_qty/whale_short_qty`). The vendor `ratio` equals the notional ratio (BTC live: 0.2458 vs recomputed 0.2458, 0.000% mismatch). Scoring uses the OKX 4h **account** ratio with its calibrated 1.6/0.6 thresholds; pushes always label the basis.
+- **LSR 4h study** (BTC, n=20,042): extreme short crowding (≤p5) delivered +0.321% mean 4h return (t=10.96, win 63.7%); extreme long crowding (≥p95) delivered +0.019% (t=0.62). Asymmetric — LSR is crowding context, not a standalone signal.
+- **Backtest honesty**: latest run has 9 trades (6W/3L, +256.41U, PF 12.10, max DD 2.22%). Sign-permutation p(win rate)=0.2604 (not significant), p(PnL)=0.0336, bootstrap win-rate CI [33.3%, 100%], Deflated Sharpe 100% with 12 trials. News history is empty and OKX LSR ends 2026-08-21, so this validates the pipeline, not a durable edge. Sample <30 is explicitly not treated as proof.
+
+
 ## 6. Membership & Permissions
 
 - Registration requires admin approval; status, expiry and quota live in `users`.
@@ -360,6 +547,13 @@ PolyForm Noncommercial 1.0.0. Non-commercial research use only; contact the repo
 ---
 
 ## 更新日志 / Changelog
+
+### 2026-10-31 · 推送精度重构（v5.1）
+
+- 新增 `lib/precision.js`：多源价格加权（Gate + Coinglass）、跨源偏差/置信度/龄期、LSR 三口径与 60 日分位；新增 `/api/precision/price`、`/api/precision/lsr`。
+- 修复：资金费率 ×100 显示与阈值量级错误；FRED 观测取到最旧值；FGI「突变」实为日变动；清算跨所旧快照混加；健康巡检阈值过宽；SmartSignal RR 虚报；β1 `risk_usd` 误用 `margin_usd`；QQ `/行情` `/多空` `/简报` 缺 `db` 上下文。
+- 推送升级：所有固定播报带数据源、时间、跨源偏差、样本数/参与所数/观测日期；五维缺失显示 `—` 并拦截半盲信号；仓位/风险改为可复算字段。
+- README 新增 §5A 公式与回测严谨性证明（含 4h LSR 前瞻检验、置换/Bootstrap/DSR、数据覆盖限制）。
 
 ### 2026-10-25
 
