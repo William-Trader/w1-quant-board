@@ -39,6 +39,16 @@ async function get(p, timeout = 8000) {
   add('HTTP', '/healthz', hz.ok && hz.body && hz.body.ok, hz.status + ' ' + hz.ms + 'ms');
   const perf = await get('/api/perf');
   add('HTTP', '/api/perf', perf.ok && perf.body && perf.body.ok, perf.status + ' ' + perf.ms + 'ms');
+  const alt = await get('/api/alt-radar');
+  const ab = alt.body || {};
+  add('山寨雷达', '/api/alt-radar', alt.ok && ab.ok !== false && Array.isArray(ab.hot) && Array.isArray(ab.anomalies),
+    alt.ok ? `universe=${ab.universe || 0} hot=${ab.hot ? ab.hot.length : '?'} anomalies=${ab.anomalies ? ab.anomalies.length : '?'}` : alt.error);
+  try {
+    const r = db.prepare("SELECT value FROM kv WHERE key='alt_radar:last_scan'").get();
+    const last = r ? Number(r.value) : null;
+    const age = last ? now - last : null;
+    add('山寨雷达', '最近扫描', age != null && age <= 1800, age == null ? 'no scan yet' : `${age}s / 阈值 1800s`);
+  } catch (e) { add('山寨雷达', '最近扫描', false, e.message); }
   const src = await get('/api/sources');
   const sb = src.body || {};
   add('源路由', '/api/sources', src.ok && sb.ok === true && Array.isArray(sb.routes), src.ok ? `routes=${sb.routes ? sb.routes.length : '?'} stale=${sb.summary ? sb.summary.stale : '?'}` : src.error);
