@@ -1,15 +1,12 @@
-# W1 Quant Board · Crypto Market Monitoring & Trading Assistance
+# W1 Quant Board · Crypto Market Monitoring Terminal
 
 **中文** ｜ **English**
 
-> **定位 / Positioning**：面向交易者与社群运营者的 crypto 市场监测终端。  
-> **A crypto market-monitoring terminal for traders and community operators.**
+> **定位 / Positioning**：面向交易者与社群运营者的 crypto 市场监测终端：行情、多空 LSR、费率、清算、新闻、宏观、研究与回测，支持 QQ / Telegram / Discord 告警。  
+> **A crypto market-monitoring terminal for traders and community operators: quotes, LSR, funding, liquidations, news, macro, research and backtesting, with QQ / Telegram / Discord alerts.**
 >
-> **不做的事 / Not doing**：不内置交易策略、不执行实盘下单、不承诺收益、不构成投资建议。  
-> **No built-in trading strategy, no live order execution, no return promise, not investment advice.**
-
-历史实盘策略与运行记录已移除；保留研究/回测框架用于数据分析。  
-The live strategy layer and its run history have been removed; the research/backtest framework is retained for analysis.
+> **边界 / Scope**：只做数据加工、校验与展示；所有数据标注来源与新鲜度，不构成投资建议。  
+> **Data processing, validation and presentation only; every data point carries its source and freshness. Not investment advice.**
 
 ---
 
@@ -21,7 +18,7 @@ W1 把分散的 crypto 市场数据整理成一套可读、可查、可告警的
 
 - **交易者**：看市场体制、仓位压力、清算结构、资金费率、新闻冲击、跨资产联动，辅助自己做决策。
 - **社群运营者**：按模块和会员权限组合产品，接入 QQ / Telegram / Discord 等通知渠道，做实时提示与内容运营。
-- **研究者**：用保留的回测/研究框架做因子、体制、事件研究，不依赖任何“实盘策略”。
+- **研究者**：用内置的回测/研究框架做因子、体制、事件研究，独立于任何交易执行。
 
 数据主要来自 **Coinglass**，辅以 Gate/OKX 行情、新闻 RSS、ETF、宏观与链上公开数据。系统只做数据加工与展示，不替用户下单。
 
@@ -93,7 +90,7 @@ W1 把分散的 crypto 市场数据整理成一套可读、可查、可告警的
 
 ## 5. 研究与回测框架
 
-保留但不对外提供实盘策略。研究页签包含：
+研究页签只做数据分析与回测，不提供交易执行：
 
 | 模块 | 数据 | 用途 |
 |---|---|---|
@@ -328,7 +325,7 @@ Express server.js (:3300, 仅监听 127.0.0.1)
 | `/api/research/*` | 会员 | 体制/仓位/新闻/跨资产/回放/风险 |
 | `/api/notify/channels`、`/api/notify/send` | 管理员 | 通知渠道与 dry-run 发送 |
 | `/metrics` | 公开 | Prometheus 指标 |
-| `/api/okx/*`、`/api/signal/*`、`/api/strategy/*`、`/api/unified/*` | — | **410 Gone：实盘策略层已移除** |
+| `/api/okx/*`、`/api/signal/*`、`/api/strategy/*`、`/api/unified/*` | — | **410 Gone：交易执行接口未开放** |
 
 ## 9. 部署
 
@@ -372,7 +369,7 @@ W1 turns fragmented crypto market data into a readable, searchable and alertable
 
 - **For traders**: market regime, positioning stress, liquidation structure, funding, news impact and cross-asset context — decision support, not signals.
 - **For community operators**: compose products from modules and membership tiers; deliver real-time alerts to QQ, Telegram, Discord or custom webhooks.
-- **For researchers**: keep the research/backtest framework for factor, regime and event studies without any live strategy layer.
+- **For researchers**: use the built-in research/backtest framework for factor, regime and event studies, independent of any trade execution.
 
 Primary data comes from **Coinglass**, supplemented by Gate/OKX quotes, news RSS, ETF, macro and on-chain public data. The system processes and displays data; it never places orders.
 
@@ -510,7 +507,7 @@ Express server.js (:3300, bound to 127.0.0.1 only)
 | `/api/research/*` | Member | Regime/positioning/news/cross-asset/replay/risk |
 | `/api/notify/channels`, `/api/notify/send` | Admin | Notification channels and dry-run send |
 | `/metrics` | Public | Prometheus metrics |
-| `/api/okx/*`, `/api/signal/*`, `/api/strategy/*`, `/api/unified/*` | — | **410 Gone: live strategy layer removed** |
+| `/api/okx/*`, `/api/signal/*`, `/api/strategy/*`, `/api/unified/*` | — | **410 Gone: trade execution API not exposed** |
 
 ## 9. Deployment
 
@@ -537,7 +534,7 @@ npm test                   # syntax + pure functions + alerts + research
 - Third-party data sources may rate-limit or time out; pages mark stale data.
 - Research results are bounded by sample windows and are not return promises.
 - This project **does not provide trading advice, does not manage money, and does not place orders**.
-- Historical strategies and run history have been removed; retained backtest/research code is for analysis only.
+- The research/backtest code is retained for analysis only.
 - Verify local laws and data-source terms before use.
 
 ## 12. License
