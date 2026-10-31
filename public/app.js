@@ -63,7 +63,7 @@ async function api(path,opts){
 function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),2600)}
 function dataTsHtml(ts,stale){return `<span class="data-ts${stale?' stale':''}">数据 ${fmtTs(ts)}</span>${stale?'<span class="stale-tag">STALE</span>':''}`}
 function clearTimers(){Object.values(state.timers).forEach(clearTimeout);state.timers={}}
-const tabRefresh={overview:120000,coins:300000,sentiment:1800000,flows:300000,markets:60000,liquidation:1800000,'chip-distribution':300000,signals:900000,access:60000,assets:300000,news:60000,lsr:300000,funding:300000,consensus:600000,countdown:60000,messages:60000,monitor:60000,research:120000,today:120000,'market-map':300000,events:300000,'cross-asset':300000,watchlist:300000};
+const tabRefresh={overview:120000,coins:300000,sentiment:1800000,flows:300000,markets:60000,liquidation:1800000,'chip-distribution':300000,signals:900000,access:60000,assets:300000,news:60000,lsr:300000,funding:300000,consensus:600000,countdown:60000,messages:60000,monitor:60000,research:120000,today:120000,'market-map':900000,events:300000,'cross-asset':300000,watchlist:300000};
 function startTabTimer(id,fn){clearTimeout(state.timers[id+'_t']);state.timers[id+'_t']=setTimeout(()=>{if(state.tab===id)fn();startTabTimer(id,fn)},tabRefresh[id]||120000)}
 
 /* ================= Tab 定义 ================= */
