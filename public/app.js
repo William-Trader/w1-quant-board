@@ -3170,7 +3170,8 @@ function renderBlueprint(bp){
   bpGraphData = bp;
   const g = bp.graph||{};
   const sources = g.sources||[], conn = g.connectivity||[], engines = g.engine_nodes||[];
-  const procs = (bp.processes||[]).filter(p=>p.status==='running');
+  const procsAll = (bp.processes||[]);
+  const procs = procsAll.filter(p=>p.status==='running');
   const stats = (bp.tianji&&bp.tianji.stats)||{}, okx = bp.okx||{};
   const staleN = sources.filter(s=>s.minutes!=null&&s.minutes>60).length;
   const badN = sources.filter(s=>s.ok===false).length;
@@ -3256,11 +3257,12 @@ function renderBlueprint(bp){
   html += `</div></div>`;
 
   /* ⑥ 运行进程（点击详情） */
-  html += `<div class="bp-section"><div class="bp-section-title">🖥 ${T('运行进程','Processes')}<span class="bp-tag">${procs.length} 个 · 点击看详情</span></div><div class="bp-eng-grid">`;
-  for(const p of procs){
-    const cpuCls = p.cpu>80?'#c06a5e':p.cpu>50?'#e0b36a':'#5f9e7a';
+  html += `<div class="bp-section"><div class="bp-section-title">🖥 ${T('运行进程','Processes')}<span class="bp-tag">${procs.length}/${procsAll.length} 在线${procsAll.length-procs.length?` · ${procsAll.length-procs.length} 异常`:''} · 点击看详情</span></div><div class="bp-eng-grid">`;
+  for(const p of procsAll.slice().sort((a,b)=>(a.status==='running'?0:1)-(b.status==='running'?0:1))){
+    const bad = p.status!=='running';
+    const cpuCls = bad?'#c06a5e':p.cpu>80?'#c06a5e':p.cpu>50?'#e0b36a':'#5f9e7a';
     const upH = p.uptime_sec? (p.uptime_sec/3600).toFixed(1)+'h':'—';
-    html += `<div class="bp-eng-card" onclick="bpShowProc('${p.name}')" style="border-left-color:#7c4dff"><div><span class="id" style="background:#7c4dff">${p.pid||'?'}</span><span class="name">${p.name}</span></div><div class="mod" style="color:${cpuCls}">CPU ${p.cpu}% · MEM ${p.mem_mb}MB · 重启${p.restarts||0}次 · ${upH}</div></div>`;
+    html += `<div class="bp-eng-card" onclick="bpShowProc('${p.name}')" style="border-left-color:${bad?'#c06a5e':'#7c4dff'}"><div><span class="id" style="background:${bad?'#c06a5e':'#7c4dff'}">${p.pid||'?'}</span><span class="name">${esc(p.name)}</span></div><div class="mod" style="color:${cpuCls}">${bad?'⚠ '+(p.status_raw||p.status)+' · ':''}CPU ${p.cpu||0}% · MEM ${p.mem_mb||0}MB · 重启${p.restarts||0}次 · ${upH}</div></div>`;
   }
   html += `</div></div>`;
 
@@ -3364,22 +3366,24 @@ function bpShowProc(name){
   bpOpenModal(`<div class="bp-modal-t">🖥 ${esc(p.name)}<button class="bp-modal-x" onclick="this.closest('.bp-modal-ov').remove()">✕</button></div>
   <div class="bp-kv2">
     <div>PID <b>${p.pid||'—'}</b></div>
-    <div>状态 <b>${p.status==='running'?'🟢 运行中':'🔴 '+(p.status||'停止')}</b></div>
+    <div>状态 <b>${p.status==='running'?'🟢 运行中':'🔴 '+(p.status||'停止')}${p.status_raw&&p.status_raw!==p.status?' ('+esc(p.status_raw)+')':''}</b></div>
     <div>CPU <b style="color:${cpuC}">${p.cpu||0}%</b></div>
     <div>内存 <b>${p.mem_mb||0}MB</b></div>
-    <div>重启 <b>${p.restarts||0} 次</b></div>
+    <div>重启 <b>${p.restarts||0} 次</b>${p.unstable_restarts?` · 不稳定 <b>${p.unstable_restarts}</b>`:''}</div>
     <div>运行时长 <b>${upH}</b></div>
   </div>`);
 }
 function bpShowProcs(){
   if(!bpGraphData) return;
-  const procs=(bpGraphData.processes||[]).filter(p=>p.status==='running');
-  if(!procs.length){ bpOpenModal(`<div class="bp-modal-t">💻 运行进程<button class="bp-modal-x" onclick="this.closest('.bp-modal-ov').remove()">✕</button></div><div class="b">暂无运行进程</div>`); return; }
+  const procs=(bpGraphData.processes||[]).slice().sort((a,b)=>(a.status==='running'?0:1)-(b.status==='running'?0:1));
+  if(!procs.length){ bpOpenModal(`<div class="bp-modal-t">💻 进程<button class="bp-modal-x" onclick="this.closest('.bp-modal-ov').remove()">✕</button></div><div class="b">无法读取进程状态</div>`); return; }
   const rows=procs.map(p=>{
-    const cpuC=p.cpu>80?'#c06a5e':p.cpu>50?'#e0b36a':'#5f9e7a';
-    return `<tr><td><span class="dot ${p.status==='running'?'g':'r'}"></span>${esc(p.name)}</td><td class="num">${p.pid||'—'}</td><td class="num" style="color:${cpuC}">${p.cpu||0}%</td><td class="num">${p.mem_mb||0}MB</td><td class="num">${p.restarts||0}</td><td class="num">${p.uptime_sec?fmtDur(p.uptime_sec):'—'}</td></tr>`;
+    const bad=p.status!=='running';
+    const cpuC=bad?'#c06a5e':p.cpu>80?'#c06a5e':p.cpu>50?'#e0b36a':'#5f9e7a';
+    return `<tr><td><span class="dot ${bad?'r':'g'}"></span>${esc(p.name)}${p.version?' <span style="color:var(--text3)">v'+esc(p.version)+'</span>':''}</td><td class="num">${p.pid||'—'}</td><td class="num" style="color:${cpuC}">${p.cpu||0}%</td><td class="num">${p.mem_mb||0}MB</td><td class="num">${p.restarts||0}</td><td class="num">${p.uptime_sec?fmtDur(p.uptime_sec):'—'}</td></tr>`;
   }).join('');
-  bpOpenModal(`<div class="bp-modal-t">💻 ${T('运行进程','Processes')} <span class="bp-tag">${procs.length} 个</span><button class="bp-modal-x" onclick="this.closest('.bp-modal-ov').remove()">✕</button></div>
+  const onlineN=procs.filter(p=>p.status==='running').length;
+  bpOpenModal(`<div class="bp-modal-t">💻 ${T('运行进程','Processes')} <span class="bp-tag">${onlineN}/${procs.length} 在线</span><button class="bp-modal-x" onclick="this.closest('.bp-modal-ov').remove()">✕</button></div>
   <div style="overflow-x:auto"><table class="bp-proc-tbl"><thead><tr><th>名称</th><th>PID</th><th>CPU</th><th>内存</th><th>重启</th><th>运行时长</th></tr></thead><tbody>${rows}</tbody></table></div>`);
 }
 
@@ -3427,6 +3431,18 @@ PANELS.admin=async function(){
     <span><span class="dot ${h.ok?'g':'r'}"></span>${esc(h.source)}</span>
     <span class="data-ts">${h.ms}ms · ${fmtTs(h.ts)}${h.detail?' · '+esc(String(h.detail).slice(0,60)):''}</span></div>`).join('');
   const jobs=['gate-prices','futures-markets','lsr-trader','lsr-whale','funding-arb','consensus','fear-greed','openclue','daily-verdict'];
+  // 进程概览：异常优先排序，再按累计重启降序
+  const procAll=(sys.pm2||[]).slice();
+  const procSt={running:'运行中',stopped:'已停止',errored:'错误',launching:'启动中',stopping:'停止中',unknown:'未知'};
+  const procOn=procAll.filter(p=>p.status==='running').length;
+  const procBad=procAll.length-procOn;
+  const procRestarts=procAll.reduce((a,p)=>a+(p.restarts||0),0);
+  const procUnstable=procAll.reduce((a,p)=>a+(p.unstable_restarts||0),0);
+  const procList=procAll.sort((a,b)=>{
+    const ab=a.status==='running'?0:1, bb=b.status==='running'?0:1;
+    if(ab!==bb)return ab-bb;
+    return (b.restarts||0)-(a.restarts||0) || String(a.name).localeCompare(String(b.name));
+  });
   main.innerHTML=`
   <div class="card">
     <div class="card-title">👥 ${T('访问统计','Access')}
@@ -3475,21 +3491,33 @@ PANELS.admin=async function(){
       <div class="bar-track"><div class="bar-fill ${barClass(sys.disk.used_pct)}" style="width:${sys.disk.used_pct}%"></div></div>
       <span class="bar-label">${(sys.disk.used_bytes/1073741824).toFixed(1)}G / ${(sys.disk.total_bytes/1073741824).toFixed(1)}G (${sys.disk.used_pct}%)</span>
     </div>
-    <div class="card-title" style="margin-top:12px;font-size:13px">${T('进程','Processes')}</div>
+    <div class="card-title" style="margin-top:14px;font-size:13px">${T('进程','Processes')}</div>
+    <div class="proc-summary">
+      <span class="ps-item ok">● ${procOn}/${procAll.length} ${T('在线','online')}</span>
+      ${procBad?`<span class="ps-item bad">● ${procBad} ${T('异常','down')}</span>`:`<span class="ps-item ok">${T('全部正常','all healthy')}</span>`}
+      <span class="ps-item">↺ ${T('累计重启','total restarts')} <b>${procRestarts}</b></span>
+      ${procUnstable?`<span class="ps-item bad">${T('不稳定重启','unstable')} <b>${procUnstable}</b></span>`:''}
+      <span class="ps-item" style="margin-left:auto">${T('异常优先排列','problems first')}</span>
+    </div>
     <div class="proc-grid">
-      ${(sys.pm2||[]).map(p => {
-        const cpuPct = Math.min(p.cpu,100);
-        const memMb = (p.mem_bytes/1048576).toFixed(0);
-        return `<div class="proc-card">
-          <div class="proc-name"><span class="dot ${p.status==='running'?'g':'r'}"></span>${esc(p.name)}</div>
+      ${procList.map(p => {
+        const bad = p.status!=='running';
+        const cpuPct = Math.min(Number(p.cpu)||0,100);
+        const memMb = Math.round((p.mem_bytes||0)/1048576);
+        return `<div class="proc-card ${bad?'proc-bad':''}">
+          <div class="proc-name"><span class="dot ${bad?'r':'g'}"></span>${esc(p.name)}
+            <span class="proc-pill ${bad?'bad':'ok'}">${procSt[p.status]||esc(p.status||'unknown')}</span>
+            ${p.version?`<span class="proc-ver">v${esc(p.version)}</span>`:''}
+          </div>
           <div class="proc-stat">
-            <span>PID <b>${p.pid}</b></span>
-            <span>CPU <div class="bar-track" style="display:inline-flex;width:50px;height:6px;vertical-align:middle"><div class="bar-fill ${barClass(cpuPct)}" style="width:${cpuPct}%"></div></div> <b>${p.cpu}%</b></span>
+            <span>PID <b>${p.pid||'—'}</b></span>
+            <span>CPU <div class="bar-track" style="display:inline-flex;width:50px;height:6px;vertical-align:middle"><div class="bar-fill ${barClass(cpuPct)}" style="width:${cpuPct}%"></div></div> <b>${p.cpu||0}%</b></span>
             <span>MEM <b>${memMb}MB</b></span>
-            <span>⏱ ${fmtDur(Math.floor(p.uptime_ms/1000))}</span>
+            <span title="${T('本次运行时长','current uptime')}">⏱ ${p.uptime_ms?fmtDur(Math.floor(p.uptime_ms/1000)):'—'}</span>
+            <span title="${T('pm2 累计重启次数（含部署重启）','pm2 restarts incl. deploys')}">↺ <b>${p.restarts||0}</b></span>
           </div>
         </div>`;
-      }).join('')}
+      }).join('')||`<div class="empty">${T('无法读取进程状态','process state unavailable')}</div>`}
     </div>
     ${sys.top_cpu&&sys.top_cpu.length ?
       `<div class="card-title" style="margin-top:12px;font-size:13px">${T('活跃进程 Top5','Top 5 by CPU')}</div>
@@ -3518,7 +3546,7 @@ PANELS.admin=async function(){
     <div class="card">
       <div class="card-title">🏗️ ${T('系统蓝图 · William Cloud 云端架构','Blueprint · William Cloud')}</div>
       <div class="blueprint" id="bpRoot"><div class="empty">${T('加载系统蓝图…','Loading blueprint…')}</div></div>
-      <div class="data-ts" style="margin-top:10px">WILLIAM QUANT BOARD W1 v5.0.0 · 自 2026-07 持续迭代 · 全球宏观数据接入 2026-08-14 · 全部数据仅供研究</div>
+      <div class="data-ts" style="margin-top:10px">WILLIAM QUANT BOARD W1 v5.1.4 · 自 2026-07 持续迭代 · 全球宏观数据接入 2026-08-14 · 全部数据仅供研究</div>
     </div>
   </div>
 `;

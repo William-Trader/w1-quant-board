@@ -808,6 +808,17 @@ footer{max-width:1280px;margin:30px auto 0;padding:18px 20px 26px;border-top:1px
 .proc-card .proc-stat{display:flex;gap:12px;flex-wrap:wrap;margin-top:5px;color:var(--text3)}
 .proc-card .proc-stat span{white-space:nowrap}
 .proc-card .proc-stat b{color:var(--text2);font-weight:400}
+.proc-summary{display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-family:var(--mono);font-size:11px;color:var(--text3);margin:2px 0 8px;padding:8px 10px;background:var(--bg1);border:1px solid var(--line);border-radius:6px}
+.proc-summary .ps-item{white-space:nowrap}
+.proc-summary .ps-item b{color:var(--text);font-weight:600}
+.proc-summary .ps-item.ok{color:#5f9e7a}
+.proc-summary .ps-item.bad{color:#c06a5e;font-weight:600}
+.proc-card.proc-bad{border-color:rgba(192,106,94,.55);background:rgba(192,106,94,.06)}
+.proc-pill{display:inline-block;font-size:10px;line-height:1;padding:3px 6px;border-radius:999px;margin-left:6px;vertical-align:middle;font-weight:500}
+.proc-pill.ok{color:#5f9e7a;background:rgba(95,158,122,.14)}
+.proc-pill.bad{color:#c06a5e;background:rgba(192,106,94,.16)}
+.proc-ver{font-size:10px;color:var(--text3);margin-left:6px}
+
 
 /* ---- 消息面 ---- */
 .news-bar{display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
