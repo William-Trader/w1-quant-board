@@ -27,7 +27,7 @@
   PANELS.news = async function(){
     startTabTimer('news', PANELS.news);
     var main = $('#main');
-    main.innerHTML = '<div class="intel-hero"><div><div class="intel-hero-title">📰 情报 · 消息面</div><div class="intel-hero-sub">先看摘要与高影响，再看卡片流；权重按类别去重，不按关键词次数叠加。</div></div><div id="intelSummary" class="intel-stats"></div></div><div id="newsBiasPro"></div><div class="intel-toolbar"><input id="intelNewsQ" class="intel-search" placeholder="搜索标题/内容"><select id="intelNewsSrc" class="intel-select"><option value="all">全部来源</option></select><span class="intel-chip" data-sent="all">全部</span><span class="intel-chip" data-sent="bullish">利多</span><span class="intel-chip" data-sent="bearish">利空</span><span class="intel-chip" data-sent="neutral">中性</span><span class="intel-chip" data-high="1">仅高影响</span><select id="intelNewsSort" class="intel-select"><option value="time">按时间</option><option value="impact">按影响力</option></select><span id="intelNewsCount" class="rs-sub"></span></div><div id="intelTopics" class="intel-toolbar" style="margin-top:0"></div><div id="intelTop"></div><div id="intelNewsBody"></div>';
+    main.innerHTML = '<div class="intel-hero"><div><div class="intel-hero-title">'+T("📰 情报 · 消息面","📰 Intel · News")+'</div><div class="intel-hero-sub">'+T("先看摘要与高影响，再看卡片流；权重按类别去重，不按关键词次数叠加。","Summary & high-impact first, then card stream; weights dedupe by category.")+'</div></div><div id="intelSummary" class="intel-stats"></div></div><div id="newsBiasPro"></div><div id="intelCalib"></div><div class="intel-toolbar"><input id="intelNewsQ" class="intel-search" placeholder="搜索标题/内容"><select id="intelNewsSrc" class="intel-select"><option value="all">全部来源</option></select><span class="intel-chip" data-sent="all">全部</span><span class="intel-chip" data-sent="bullish">利多</span><span class="intel-chip" data-sent="bearish">利空</span><span class="intel-chip" data-sent="neutral">中性</span><span class="intel-chip" data-high="1">仅高影响</span><select id="intelNewsSort" class="intel-select"><option value="time">按时间</option><option value="impact">按影响力</option></select><span id="intelNewsCount" class="rs-sub"></span></div><div id="intelTopics" class="intel-toolbar" style="margin-top:0"></div><div id="intelTop"></div><div id="intelNewsBody"></div>';
     $('#intelNewsQ').value = state.intelNews.q || '';
     $('#intelNewsSort').value = state.intelNews.sort || 'time';
     var data = null;
@@ -44,6 +44,7 @@
       if (!d || !d.ok) { $('#intelNewsBody').innerHTML = '<div class="intel-empty">加载失败 <button class="btn secondary" id="intelNewsRetry">重试</button></div>'; var b=$('#intelNewsRetry'); if(b)b.onclick=load; return; }
       data = d;
       renderBiasPro(d.bias_24h);
+      loadCalibration();
       var sel = $('#intelNewsSrc');
       sel.innerHTML = '<option value="all">全部来源</option>' + (d.sources || []).map(function(s){ return '<option value="' + esc(s.source) + '">' + esc(s.source) + ' (' + s.count + ')</option>'; }).join('');
       sel.value = state.intelNews.source || 'all';
@@ -55,6 +56,22 @@
       var keys = ['all'].concat(Object.keys(counts).sort(function(a,b){return counts[b]-counts[a]}));
       $('#intelTopics').innerHTML = keys.map(function(k){ var active=state.intelNews.topic===k; return '<span class="intel-topic'+(active?' active':'')+'" data-topic="'+esc(k)+'">'+(k==='all'?'全部':esc(k))+' '+(k==='all'?all.length:(counts[k]||0))+'</span>'; }).join('');
       $$('#intelTopics [data-topic]').forEach(function(x){ x.onclick=function(){ state.intelNews.topic=x.dataset.topic; renderTopics(); render(); }; });
+    }
+    async function loadCalibration(){
+      try {
+        var c = await api('/api/news/calibration');
+        var el = $('#intelCalib');
+        if (!el) return;
+        if (!c || !c.ok || !c.calibration) { el.innerHTML = ''; return; }
+        var cal = c.calibration;
+        var cats = (cal.categories || []).slice(0, 4).map(function(x){
+          var dd = x.cal_weight - x.base_weight;
+          var arrow = dd > 0.05 ? '↑' : dd < -0.05 ? '↓' : '=';
+          var col = dd > 0.05 ? 'var(--up)' : dd < -0.05 ? 'var(--down)' : 'var(--text3)';
+          return '<span style="color:'+col+'">'+esc(x.label)+' '+arrow+' '+(x.hit_rate==null?'—':x.hit_rate+'%')+'</span>';
+        }).join(' · ');
+        el.innerHTML = '<div class="rs-sub" style="margin-top:10px">'+T('权重已按历史校准','Weights calibrated from history')+'（'+cal.days+'d · '+cal.matched+' '+T('样本','samples')+'）：'+cats+'</div>';
+      } catch(e) {}
     }
     function renderBiasPro(b){
       var el=$('#newsBiasPro'); if(!el) return;
@@ -116,7 +133,7 @@
   PANELS.events = async function(){
     startTabTimer('events', PANELS.events);
     var main = $('#main');
-    main.innerHTML = '<div class="intel-hero"><div><div class="intel-hero-title">📅 情报 · 事件日历</div><div class="intel-hero-sub">高影响事件优先，按日期成组，事件前 1h 禁交易窗口。</div></div><div id="eventStats" class="intel-stats"></div></div><div class="intel-toolbar"><input id="intelEvQ" class="intel-search" placeholder="搜索事件/国家"><span class="intel-chip" data-impact="all">全部</span><span class="intel-chip" data-impact="high">高影响</span><span class="intel-chip" data-impact="medium">中影响</span><span class="intel-chip" data-impact="low">低影响</span><span id="intelEvCount" class="rs-sub"></span></div><div id="intelEvBody"></div>';
+    main.innerHTML = '<div class="intel-hero"><div><div class="intel-hero-title">'+T("📅 情报 · 事件日历","📅 Intel · Events")+'</div><div class="intel-hero-sub">'+T("高影响事件优先，按日期成组，事件前 1h 禁交易窗口。","High-impact first, grouped by date, 1h blackout before events.")+'</div></div><div id="eventStats" class="intel-stats"></div></div><div class="intel-toolbar"><input id="intelEvQ" class="intel-search" placeholder="搜索事件/国家"><span class="intel-chip" data-impact="all">全部</span><span class="intel-chip" data-impact="high">高影响</span><span class="intel-chip" data-impact="medium">中影响</span><span class="intel-chip" data-impact="low">低影响</span><span id="intelEvCount" class="rs-sub"></span></div><div id="intelEvBody"></div>';
     $('#intelEvQ').value = state.intelEvents.q || '';
     var data = null;
     function chips(){ $$('.intel-chip').forEach(function(x){ if(x.dataset.impact)x.classList.toggle('active',x.dataset.impact===state.intelEvents.impact); }); }
@@ -155,7 +172,7 @@
   PANELS['cross-asset'] = async function(){
     startTabTimer('cross-asset', PANELS['cross-asset']);
     var main=$('#main');
-    main.innerHTML='<div class="intel-hero"><div><div class="intel-hero-title">🌐 情报 · 跨资产</div><div class="intel-hero-sub">风险偏好、类别强弱与 BTC 相关性。</div></div><div id="crossStats" class="intel-stats"></div></div><div class="intel-toolbar"><input id="crossQ" class="intel-search" placeholder="搜索标的"><select id="crossCls" class="intel-select"><option value="all">全部类别</option></select><select id="crossSort" class="intel-select"><option value="5d">按 5 日</option><option value="1d">按 1 日</option><option value="20d">按 20 日</option></select><span id="crossCount" class="rs-sub"></span></div><div id="crossTop"></div><div id="crossBody"></div>';
+    main.innerHTML='<div class="intel-hero"><div><div class="intel-hero-title">'+T("🌐 情报 · 跨资产","🌐 Intel · Cross-Asset")+'</div><div class="intel-hero-sub">'+T("风险偏好、类别强弱与 BTC 相关性。","Risk appetite, asset strength & BTC correlation.")+'</div></div><div id="crossStats" class="intel-stats"></div></div><div class="intel-toolbar"><input id="crossQ" class="intel-search" placeholder="搜索标的"><select id="crossCls" class="intel-select"><option value="all">全部类别</option></select><select id="crossSort" class="intel-select"><option value="5d">按 5 日</option><option value="1d">按 1 日</option><option value="20d">按 20 日</option></select><span id="crossCount" class="rs-sub"></span></div><div id="crossTop"></div><div id="crossBody"></div>';
     var d=await api('/api/research/cross-asset');
     if(!d||!d.ok){$('#crossBody').innerHTML='<div class="intel-empty">'+(d&&d.__needLogin?'会员专属：请先登录':'数据不足')+'</div>';return;}
     var rows=d.rows||[]; var cls={}; rows.forEach(function(x){cls[x.cls||'other']=1;});

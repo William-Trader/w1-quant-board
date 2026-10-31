@@ -11,8 +11,9 @@
   }
   function bar(v, c) { return '<div class="md-bar"><i style="width:' + Math.max(0, Math.min(100, v || 0)) + '%;background:' + c + '"></i></div>'; }
 
+  var LBL = { '全球风险偏好':'Global Risk', '美元流动性':'USD Liquidity', '实际利率压力':'Real-Rate Pressure', '加密市场环境':'Crypto Env' };
   function render(d) {
-    if (!d || !d.ok) return '<div class="card">宏观数据不可用</div>';
+    if (!d || !d.ok) return '<div class="card">'+T('宏观数据不可用','Macro data unavailable')+'</div>';
     var s = d.scores || {}, e = d.engines || [], bt = d.backtest;
     var conf = d.confidence != null ? d.confidence + '%' : '—';
     var cards = [
@@ -22,19 +23,19 @@
       ['加密市场环境', s.crypto_env, false, s.crypto_env >= 60 ? '改善' : s.crypto_env <= 40 ? '恶化' : '中性']
     ].map(function(x) {
       var c = col(x[1], x[2]);
-      return '<div class="md-card"><div class="k">' + x[0] + '</div><div class="v" style="color:' + c + '">' + (x[1] == null ? '—' : x[1]) + '</div><div class="s">' + x[3] + '</div>' + bar(x[1], c) + '</div>';
+      return '<div class="md-card"><div class="k">' + T(x[0], LBL[x[0]] || x[0]) + '</div><div class="v" style="color:' + c + '">' + (x[1] == null ? '—' : x[1]) + '</div><div class="s">' + x[3] + '</div>' + bar(x[1], c) + '</div>';
     }).join('');
     var eng = e.map(function(x) {
       var c = col(x.value, true);
       return '<div class="md-eng-row"><div class="n">' + x.name + '</div><div class="x" style="color:' + c + '">' + (x.value == null ? '—' : x.value) + '</div><div class="t">' + (x.note || '') + '</div>' + bar(x.value, c) + '</div>';
     }).join('');
     var btHtml = bt ? '<div class="md-bt"><span>复验样本 <b>' + bt.days + '</b> 天</span><span>相关性 <b>' + bt.corr + '</b></span><span>高分后 7d 命中 <b>' + (bt.high.hit == null ? '—' : bt.high.hit + '%') + '</b>（均值 ' + (bt.high.avg_ret == null ? '—' : bt.high.avg_ret + '%') + '）</span><span>低分后 7d 命中 <b>' + (bt.low.hit == null ? '—' : bt.low.hit + '%') + '</b>（均值 ' + (bt.low.avg_ret == null ? '—' : bt.low.avg_ret + '%') + '）</span></div>' : '';
-    return '<div class="md-hero"><div><div class="md-sub">全球宏观 · ' + (d.as_of ? new Date(d.as_of * 1000).toLocaleString('zh-CN', { hour12: false }) : '—') + '</div>'
+    return '<div class="md-hero"><div><div class="md-sub">'+T('全球宏观','Global Macro')+' · ' + (d.as_of ? new Date(d.as_of * 1000).toLocaleString('zh-CN', { hour12: false }) : '—') + '</div>'
       + '<div class="md-regime">' + (d.regime || '—') + ' <span style="color:#22d3ee">' + conf + '</span></div>'
       + '<div class="md-sub">增长 ' + (d.growth == null ? '—' : d.growth) + ' / 通胀 ' + (d.inflation == null ? '—' : d.inflation) + ' · FRED + 本地缓存合成</div></div>'
       + '<div style="min-width:220px;flex:1;max-width:320px"><div class="md-sub">增长</div>' + bar(d.growth, '#22d3ee') + '<div class="md-sub" style="margin-top:6px">通胀</div>' + bar(d.inflation, '#7c5cff') + '</div></div>'
       + '<div class="md-grid">' + cards + '</div>'
-      + '<div class="card"><div class="card-title">核心引擎</div><div class="md-eng">' + eng + '</div>' + btHtml
+      + '<div class="card"><div class="card-title">'+T('核心引擎','Core Engines')+'</div><div class="md-eng">' + eng + '</div>' + btHtml
       + '<div class="data-ts" style="margin-top:8px">压力类数值越高越紧；复验为 composite 日度 vs BTC 未来 7 日收益，样本有限，仅作参考。</div></div>';
   }
 
