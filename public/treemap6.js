@@ -22,14 +22,14 @@
   function buildSVG(d){
     var coins = d.futures_top.filter(function(c){ return c && Number(c.mcap_usd) > 0; }).sort(function(a,b){ return Number(b.mcap_usd)-Number(a.mcap_usd); }).slice(0, 50);
     var total = coins.reduce(function(s,c){return s+Number(c.mcap_usd);},0);
-    var W = 1200, H = 620, items = coins.map(function(c){ return { value:Number(c.mcap_usd)/total*W*H, c:c }; });
+    var W = 1200, H = 860, items = coins.map(function(c){ return { value:Number(c.mcap_usd)/total*W*H, c:c }; });
     var rects = []; squarify(items, 0, 0, W, H, rects);
     var svg = '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;display:block;border-radius:10px;overflow:hidden;background:var(--bg0)">';
     rects.forEach(function(r){
       var c=r.it.c, chg=Number(c.change_24h)||0;
       var fill = chg >= 0 ? 'var(--up)' : 'var(--down)';
       var op = Math.min(0.85, 0.25 + Math.abs(chg)/8);
-      var fs = Math.max(9, Math.min(20, Math.sqrt(r.w*r.h)/9));
+      var fs = Math.max(10, Math.min(24, Math.sqrt(r.w*r.h)/8));
       svg += '<g style="cursor:pointer" data-sym="'+esc(c.symbol)+'"><rect x="'+(r.x+1)+'" y="'+(r.y+1)+'" width="'+Math.max(0,r.w-2)+'" height="'+Math.max(0,r.h-2)+'" rx="4" style="fill:'+fill+';fill-opacity:'+op.toFixed(2)+';stroke:var(--bg0);stroke-width:1"><title>'+esc(c.symbol)+' '+chg.toFixed(2)+'% · 市值 '+fmtCap(c.mcap_usd)+'</title></rect>';
       if (r.w > 46 && r.h > 30) {
         svg += '<text x="'+(r.x+6)+'" y="'+(r.y+fs+4)+'" font-size="'+fs+'" font-weight="700" fill="#fff" style="pointer-events:none">'+esc(String(c.symbol).replace(/USDT$/,''))+'</text>';
