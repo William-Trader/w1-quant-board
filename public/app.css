@@ -1349,3 +1349,113 @@ input:focus,select:focus,textarea:focus{border-color:#22d3ee!important;box-shado
 .mini-row:last-child{border-bottom:none}
 .mini-row span:first-child{color:var(--text);white-space:nowrap}
 .mini-row span:last-child{color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right}
+
+/* ==========================================================================
+   W1 · Design System v2  (2026-11-10, batch 1)
+   增量视觉层：只增强材质 / 排版 / 可读性 / 可访问性 / 涨跌语义，
+   不改动任何布局、定位、尺寸规则。整体追加于文件末尾，可整段回滚。
+   ========================================================================== */
+:root{
+  --ds-r-sm:8px; --ds-r-md:12px; --ds-r-lg:18px;
+  --ds-shadow-1:0 1px 2px rgba(0,0,0,.30), 0 2px 10px rgba(0,0,0,.18);
+  --ds-shadow-2:0 6px 20px rgba(0,0,0,.34), 0 1px 3px rgba(0,0,0,.26);
+  --ds-ring:0 0 0 1px rgba(59,158,255,.26), 0 8px 30px rgba(59,158,255,.10);
+  --ds-ease:cubic-bezier(.22,.61,.36,1);
+  --ds-dur:180ms;
+  --ds-hair:rgba(255,255,255,.055);
+}
+
+/* --- 1. 排版：金融数字等宽对齐，避免刷新时跳动 --- */
+body{
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  text-rendering:optimizeLegibility;
+  background-image:radial-gradient(1200px 620px at 50% -12%, rgba(59,158,255,.055), transparent 70%);
+  background-attachment:fixed;
+}
+:where(.stat-pill,.big-v,.nb-count,.nb-meta,.mini-row,.ls-dist-row .v,
+       .clock,.badge,.field,td,th,table,.mon-bar,.kb-bubble,.nb-point){
+  font-variant-numeric:tabular-nums lining-nums;
+  font-feature-settings:"tnum" 1,"lnum" 1;
+}
+:where(h1,h2,h3,.card-title,.nb-title,.hero-brief){ letter-spacing:.012em; }
+:where(th){ letter-spacing:.03em; color:var(--text3); }
+
+/* --- 2. 卡片材质：统一细高光 + 阴影，悬停加深 --- */
+.card,.proc-card,.bp-src-card,.bp-eng-card,.kb-bubble,.vip-hero,
+.proc-summary,.stat-pill,.kb-result,.news-bias{
+  box-shadow:var(--ds-shadow-1), inset 0 1px 0 rgba(255,255,255,.045);
+}
+.card:hover,.proc-card:hover,.bp-src-card:hover,.bp-eng-card:hover,
+.news-bias:hover{
+  border-color:var(--line2);
+  box-shadow:var(--ds-shadow-2), inset 0 1px 0 rgba(255,255,255,.06);
+}
+:where(.card,.proc-card,.news-bias,.bp-src-card,.bp-eng-card,.kb-bubble){
+  transition:box-shadow var(--ds-dur) var(--ds-ease),
+             border-color var(--ds-dur) var(--ds-ease);
+}
+
+/* --- 3. 交互控件：一致反馈 + 键盘焦点可见 --- */
+:where(button,.btn,.tab,.subtab,.lang-btn,.color-btn,.badge,.nb-cat){
+  transition:transform var(--ds-dur) var(--ds-ease),
+             box-shadow var(--ds-dur) var(--ds-ease),
+             background-color var(--ds-dur) var(--ds-ease),
+             border-color var(--ds-dur) var(--ds-ease),
+             color var(--ds-dur) var(--ds-ease);
+}
+:where(button:hover,.btn:hover){ transform:translateY(-1px); }
+:where(button:active,.btn:active){ transform:translateY(0); }
+:where(a,button,input,select,textarea,[role="button"],.tab,.subtab):focus-visible{
+  outline:2px solid var(--accent);
+  outline-offset:2px;
+  border-radius:var(--ds-r-sm);
+}
+
+/* --- 4. 涨跌语义统一：全部走 --up / --down，尊重 body.cn-flip（A股红涨绿跌） ---
+   原样式里多处硬编码 #34d399 / #fb7185，导致切换口径后颜色不翻转，这里统一收口。 */
+.nb-meta .up,.news-share.up,.nb-cat.up,.nb-point.up{ color:var(--up); }
+.nb-meta .down,.news-share.down,.nb-cat.down,.nb-point.down{ color:var(--down); }
+.nb-bar i.up,.split-bar .up{
+  background:linear-gradient(90deg, rgba(255,255,255,.16), var(--up));
+}
+.nb-bar i.down,.split-bar .down{
+  background:linear-gradient(90deg, var(--down), rgba(255,255,255,.16));
+}
+.nb-cat.up,.news-share.up,.nb-point.up{
+  border-color:var(--up); background:var(--up-soft);
+}
+.nb-cat.down,.news-share.down,.nb-point.down{
+  border-color:var(--down); background:var(--down-soft);
+}
+
+/* --- 5. 数据密集区域可读性 --- */
+:where(tbody tr){ transition:background-color var(--ds-dur) var(--ds-ease); }
+:where(tbody tr:hover){ background:var(--ds-hair); }
+:where(.mini-row,.nb-meta,.ls-dist-row){ letter-spacing:.01em; }
+:where(.st-dot){ box-shadow:0 0 0 3px rgba(255,255,255,.035); }
+
+/* --- 6. 顶栏层级与玻璃感（不改变背景色，避免影响对比度） --- */
+.topbar{
+  -webkit-backdrop-filter:saturate(140%) blur(12px);
+  backdrop-filter:saturate(140%) blur(12px);
+  box-shadow:0 1px 0 var(--ds-hair), 0 8px 24px rgba(0,0,0,.22);
+}
+
+/* --- 7. 滚动条 / 选区 --- */
+::-webkit-scrollbar-thumb{
+  background:var(--line2);
+  border:2px solid var(--bg0);
+  border-radius:8px;
+}
+::-webkit-scrollbar-thumb:hover{ background:var(--accent-dim); }
+::selection{ background:var(--accent-dim); color:#fff; }
+
+/* --- 8. 可访问性：尊重系统「减少动效」 --- */
+@media (prefers-reduced-motion: reduce){
+  *,button,.btn,.tab,.card,.proc-card,.news-bias{
+    transition:none!important;
+    animation:none!important;
+    transform:none!important;
+  }
+}
