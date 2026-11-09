@@ -95,25 +95,34 @@ async function main() {
   console.log(new Date().toISOString(), status);
 
   // 有异常才推群，正常静默
+  // 2026-11-06 刷屏根因修复：旧签名 problems.join('|') 里含「断供1784分」，
+  // 每 5 分钟分龄数字都变 → 30 分钟去重永远不命中 → 每 5 分钟推一条。
+  // 现按「去掉数字后的稳定签名」去重：同一组问题只推一次，6h 后才重提醒，恢复时推一条恢复通知。
+  const sigOf = arr => arr.map(s => s.replace(/\d+(\.\d+)?/g, '#')).sort().join('|');
+  const sig = sigOf(problems);
+  const now = Date.now();
+  const SAME_ESCALATE_MS = 6 * 3600 * 1000;
+  const lastRow = db.prepare("SELECT value FROM kv WHERE key='health:last_push'").get();
+  let prev = null;
+  try { prev = lastRow ? JSON.parse(lastRow.value) : null; } catch (e) { prev = null; }
+
   if (problems.length) {
-    // 去重防刷屏：同类告警 30 分钟内只推一次（2026-08-13 凌晨刷屏修复）
-    const sig = problems.join('|');
-    const now = Date.now();
-    const lastRow = db.prepare("SELECT value FROM kv WHERE key='health:last_push'").get();
-    let dup = false;
-    if (lastRow) {
-      try {
-        const p = JSON.parse(lastRow.value);
-        if (p.sig === sig && now - p.ts < 30 * 60 * 1000) dup = true;
-      } catch (e) {}
-    }
-    if (!dup) {
-      db.prepare("INSERT OR REPLACE INTO kv(key,value) VALUES('health:last_push',?)").run(JSON.stringify({ sig, ts: now }));
+    const same = !!(prev && prev.sig === sig);
+    const firstTs = same ? (prev.first_ts || prev.ts || now) : now;
+    const escalate = !same || (now - firstTs >= SAME_ESCALATE_MS);
+    if (escalate) {
+      db.prepare("INSERT OR REPLACE INTO kv(key,value) VALUES('health:last_push',?)")
+        .run(JSON.stringify({ sig, ts: now, first_ts: firstTs, problems }));
       await pushToGroup(env, db, `⚠️【系统告警 ${new Date().toLocaleString('zh-CN')}】\n` + problems.join('\n'));
-      console.log(new Date().toISOString(), '已推送告警（30分钟内同类不再重复）');
+      console.log(new Date().toISOString(), same ? '同一组问题满6h，重提醒一次' : '新告警，已推送');
     } else {
-      console.log(new Date().toISOString(), '同类告警重复，30分钟内不重复推送');
+      console.log(new Date().toISOString(), '同一组问题持续中，静默（6h重提醒/恢复时通知）');
     }
+  } else if (prev && prev.sig) {
+    db.prepare("INSERT OR REPLACE INTO kv(key,value) VALUES('health:last_push',?)")
+      .run(JSON.stringify({ sig: '', ts: now, first_ts: 0 }));
+    await pushToGroup(env, db, `🟢【W1 恢复通知 ${new Date().toLocaleString('zh-CN')}】\n系统告警已全部消除，各数据源恢复正常。`);
+    console.log(new Date().toISOString(), '已推送恢复通知');
   }
   db.close();
 }

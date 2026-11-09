@@ -1,19 +1,5 @@
 # W1 Quant Board · Crypto Market Monitoring Terminal
 
-<p align="center">
-  <a href="https://www.7baobtc.com"><img alt="Live Demo" src="https://img.shields.io/badge/LIVE%20DEMO-www.7baobtc.com-22d3ee?style=for-the-badge"></a>
-  <img alt="License" src="https://img.shields.io/badge/LICENSE-Non--Commercial%20Only-red?style=for-the-badge">
-  <img alt="Commercial" src="https://img.shields.io/badge/COMMERCIAL-Written%20License%20Required-black?style=for-the-badge">
-</p>
-
-> ### 🟢 实机演示 / Live Demo
-> **<https://www.7baobtc.com>** — 公开可访问的实机运行面板（生产环境，非录屏、非静态图）。
->
-> ### ⚠️ 授权 / License
-> 本项目**仅授权非商业用途**。**任何商业使用（含 SaaS、付费产品、企业内部生产、二次销售、托管服务）必须事先取得作者书面授权**；未获授权即商用，作者将依法追究法律责任。
-> **Commercial use of any kind requires a prior written license. Unauthorized commercial use will be pursued to the fullest extent permitted by law.**
-> 授权联系 / Licensing: <https://www.7baobtc.com> · GitHub [@William-Trader](https://github.com/William-Trader)
-
 **中文** ｜ **English**
 
 > **定位 / Positioning**：面向交易者与社群运营者的 crypto 市场监测终端：行情、多空 LSR、费率、清算、新闻、宏观、研究与回测，支持 QQ / Telegram / Discord 告警。  
@@ -21,26 +7,6 @@
 >
 > **边界 / Scope**：只做数据加工、校验与展示；所有数据标注来源与新鲜度，不构成投资建议。  
 > **Data processing, validation and presentation only; every data point carries its source and freshness. Not investment advice.**
-
----
-
-## 实机截图 · Live Screenshots
-
-> 以下截图来自 <https://www.7baobtc.com> 实机运行环境（2026-10-31）。
-
-| 总览 Overview | 消息面 News |
-|---|---|
-| ![Overview](docs/screenshots/overview.png) | ![News](docs/screenshots/news.png) |
-
-| 链上 / 鲸鱼 On-chain | 资金流 Flows |
-|---|---|
-| ![On-chain](docs/screenshots/onchain.png) | ![Flows](docs/screenshots/flows.png) |
-
-> ### 消息面权重点与事件回测（v5.2）
-> - 每条新闻拆成“论点”，**同类别+同方向只计一次**，单边权重封顶 3.0；LLM 只负责识别论点与类别，权重由统一框架计算，模型不能直接改分。
-> - 30 天 46,448 条新闻回测：货币政策 4h 方向命中 **52.0%**、安全事件 **52.4%**、价格技术类仅 **48.8%**（权重压到 0.2）。
-> - 典型事件：10-29 加息概率升至 79.6% → BTC 4h **-2.86%**；10-29 币安疑似被盗 → BTC 4h **-3.99%**。
-> - 结论：单条噪声大（日度 IC ≈ 0.064），消息面只做上下文与风险提示，不单独触发交易。
 
 ---
 
@@ -607,16 +573,6 @@ PolyForm Noncommercial 1.0.0. Non-commercial research use only; contact the repo
 ---
 
 ## 更新日志 / Changelog
-
-### 2026-11-06 · 消息面地域权重与噪声过滤（v6.2.0）
-
-- 新增 `lib/news_sources.js`：给 8 个新闻源建立地域/层级/相关度画像（全球加密源、中文加密源、中文财经、中文本地）。
-- 权重改为 `类别 × 强度 × 置信 × 币种范围 × 地域折价 × 相关度`：英文加密源 1.0、中文加密源 0.85、中文财经 0.55、非加密本地事件 0.25；明确提到 BTC/ETH/加密事件时地域折价收窄。
-- 低相关（`relevance < 0.25`）直接不计入多空占比；聚合层增加跨源同题去重与影响力弱加权（1 星 0.8 → 5 星 1.2）。
-- 修复「24h 多空占比」实际只统计缓存最近 100 条的问题：改为按 24h 全量 DB 行聚合。
-- 新闻表新增 `region/source_tier/geo_mult/relevance/ignored` 并自动回填；新增 `scripts/news_rescore.js` 维护脚本。
-- 前端消息面：显示忽略/跨源去重条数与地域分布，默认隐藏低相关，可一键切换显示。
-- 验收（2026-11-06）：24h 2370 条，忽略 1417、跨源去重 29、参与计分 650；`npm test` 全通过；30d 回测日度 IC 0.077。
 
 ### 2026-10-31 · 山寨异动系统（v5.1.3）
 

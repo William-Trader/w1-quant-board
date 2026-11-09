@@ -94,7 +94,7 @@ async function get(p, timeout = 8000) {
   try {
     const r = db.prepare("SELECT MAX(ts) m FROM liquidation WHERE exchange='AGG'").get();
     const age = r && r.m != null ? now - Number(r.m) : null;
-    add('源路由', 'fast 聚合清算', age != null && age <= 900, age == null ? 'no AGG row' : `${age}s / 阈值 900s`);
+    add('源路由', 'fast 聚合清算', age != null && age <= 1800, age == null ? 'no AGG row' : `${age}s / 阈值 1800s（与 /api/sources 一致）`);
   } catch (e) { add('源路由', 'fast 聚合清算', false, e.message); }
   try {
     const r = db.prepare("SELECT MAX(ts) m FROM cgpro_snapshots WHERE endpoint IN ('liq_agg_map','liq_map','liq_max_pain')").get();
